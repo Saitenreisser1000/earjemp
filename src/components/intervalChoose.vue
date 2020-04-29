@@ -2,15 +2,17 @@
     <v-select
             v-model="selectInt"
             :items="intervals"
-
-            attach
             chips
+            deletable-chips
+            return-object
             label="Choose Intervals"
             multiple
     ></v-select>
 </template>
 
 <script>
+    import { mapActions } from 'vuex';
+
     export default {
         name: "intervalChoose",
         data() {
@@ -32,7 +34,29 @@
                     {text: 'b9', value: 13},
                     {text: '9', value: 14}
                 ],
-                selectInt: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],
+                selectInt:[
+                    {text: '2', value: 2},
+                    {text: 'b3', value: 3},
+                    {text: '3', value: 4},
+                    {text: '4', value: 5},
+                    {text: '5', value: 7},
+                    {text: '6', value: 9},
+                    {text: '7', value: 11},
+                    {text: '8', value: 12},
+                ]
+            }
+        },
+
+        methods: {
+            ...mapActions(['setSelectIntervals']),
+        },
+
+        watch: {
+            selectInt: {
+                immediate: true,
+                handler() {
+                    this.setSelectIntervals(this.selectInt)
+                }
             }
         }
     }

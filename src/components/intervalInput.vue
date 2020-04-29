@@ -1,18 +1,32 @@
 <template>
     <div>
-        <v-btn :key="index" @click="/*guessInterval(int.value)*/" class="ml-2 mb-2" v-for="(int, index) in getSelectIntervals"
+        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" v-for="(int, index) in getSelectIntervals"
                x-large>{{int.text}}
         </v-btn>
     </div>
 </template>
 
 <script>
-    import {mapGetters} from 'vuex'
+    import {mapGetters, mapActions} from 'vuex'
 
     export default {
         name: "intervalInput",
+
         computed: {
-            ...mapGetters(['getSelectIntervals'])
+            ...mapGetters(['getSelectIntervals']),
+            getIntervals(){
+                let int;
+                int = this.getSelectIntervals;
+                return int.sort((a,b) => a.value - b.value)
+            }
+        },
+
+        methods: {
+            ...mapActions(['setGuess']),
+
+            guessInterval(value){
+                this.setGuess(value);
+            }
         }
     }
 </script>
