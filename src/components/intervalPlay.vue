@@ -1,7 +1,7 @@
 <template>
     <div>
         <v-card-actions class="pa-0">
-            <v-btn color="deep-purple primary" x-large @click="triggerTone">
+            <v-btn color="deep-purple primary" width="200" height="50" @click="triggerTone">
                 <v-icon>play_arrow</v-icon>
             </v-btn>
             <v-btn color="deep-purple primary" x-large @click="nextTone">
@@ -45,13 +45,21 @@
                 chooseOrder: 'increase'
             }
         },
+
+        watch:{
+            chooseOrder() {
+                this.setOrder(this.chooseOrder)
+            }
+        },
+
         methods: {
-            ...mapActions(['playIntervals']),
+            ...mapActions(['playNextInterval', 'playAgain', 'setOrder']),
             triggerTone(){
+                this.playAgain();
 
             },
             nextTone(){
-                this.playIntervals(this.chooseOrder);
+                this.playNextInterval(this.chooseOrder);
             }
         }
     }

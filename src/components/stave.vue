@@ -1,5 +1,5 @@
 <template>
-        <v-card min-width="360px" height="400" flat>
+        <v-card min-width="250px" height="350" flat>
 
             <img class=clef src="../assets/clef.svg" height="150">
             <div class="lineContainer">
@@ -9,40 +9,40 @@
             <div class="basslineContainer">
                 <div class="line" :key="index" v-for="index in 5"></div>
             </div>
-            <div class="orientationline"></div>
 
 <!-----------------notes---------------------->
-            <div  :key="index" v-for="(tone, index) in getAllTones">
-                <img
-                        class="note"
-                        @click="clickTone(tone)"
-                        src="../assets/notes/wholeNote.svg"
-                        height="20"
-                        :style="{ top: tone.yPos + 'px'}"
-                        :class="{noteClicked: tone.isActive}"
-                >
-                <!--div class="flat" v-if="tone.alt">
-                    <img src="../assets/notes/b.png" height="25">
-                </div-->
 
-                <div class="sharp" v-if="tone.alt && tone.alt[0].isActive" :style="{'top': tone.alt[0].yPos +'px'}">
-                    <img src="../assets/notes/hashtag.svg" height="20">
-                </div>
+            <div v-if="firstTone()">
+                <img class="note"
+                     src="../assets/notes/wholeNote.svg"
+                     :style="{top: firstTone().yPos+'px'}"
+                     height="20">
+                <img v-if="firstFlat" class="flat" src="../assets/notes/b.png"
+                     :style="{top: firstTone().yPos-18+'px'}"
+                     height="40px">
+                <img v-if="firstSharp" class="sharp" src="../assets/notes/sharp.png"
+
+                     :style="{top: firstTone().yPos-10+'px'}"
+                     height="40px">
             </div>
 
+            <div v-if="secondTone() && show">
+                <img class="note"
+                     src="../assets/notes/wholeNote.svg"
+                     :class="{seconds: isSecond()}"
+                     :style="{top: secondTone().yPos+'px'}"
+                     height="20">
+                <img v-if="secondFlat" class="flat" src="../assets/notes/b.png"
+                     :style="{top: secondTone().yPos-18+'px'}"
+                     height="40px">
+                <img v-if="secondSharp" class="sharp" src="../assets/notes/sharp.png"
+                     :style="{top: secondTone().yPos-10+'px'}"
+                     height="40px">
+            </div>
 
+            <div :key="index" v-for="(helper, index) in helperlines()" class="helperlines" :style="{top:170+'px'}"></div>
 
-            <div class="helperlines"></div>
-
-            <v-btn-toggle class="float-right btn-toggle" width="100px"
-                mandatory dark active-class="primary"
-            >
-                <v-btn height="80px">b</v-btn>
-                <br>
-                <v-btn height="80px">-</v-btn>
-                <br>
-                <v-btn height="80px">#</v-btn>
-            </v-btn-toggle>
+            <!--v-btn @click="clickTone">ShowSecond</v-btn-->
 
         </v-card>
 </template>
@@ -54,34 +54,110 @@
         name: "stave",
         data(){
             return {
-                isPrime: false,
-                isSelected: false,
-                firstTone: '',
-            }
+                show: true,
+                first: '',
+                second: '',
+
+                randomAcc: 1,
+
+                firstFlat: false,
+                firstSharp: false,
+
+                secondFlat: false,
+                secondSharp: false,
+
+
+                notes: [
+                    {id:0,  tone: 'E1', yPos:293,},
+                    {id:1,  tone: 'F1', yPos:282,},
+                    {id:2,  tone: 'G1', yPos:271,},
+                    {id:3,  tone: 'A1', yPos:260,},
+                    {id:4,  tone: 'B1', yPos:249,},
+                    {id:5,  tone: 'C2', yPos:238,},
+                    {id:6,  tone: 'D2', yPos:227,},
+                    {id:7,  tone: 'E2', yPos:216,},
+                    {id:8,  tone: 'F2', yPos:205,},
+                    {id:9,  tone: 'G2', yPos:194,},
+                    {id:10, tone: 'A2', yPos:183,},
+                    {id:11, tone: 'B2', yPos:172,},
+                    {id:12, tone: 'C3', yPos:161,},
+                    {id:13, tone: 'D3', yPos:150,},
+                    {id:14, tone: 'E3', yPos:139,},
+                    {id:15, tone: 'F3', yPos:128,},
+                    {id:16, tone: 'G3', yPos:117,},
+                    {id:17, tone: 'A3', yPos:106,},
+                    {id:18, tone: 'B3', yPos:95, },
+                    {id:19, tone: 'C4', yPos:84, },
+                    {id:20, tone: 'D4', yPos:73, },
+                    {id:21, tone: 'E4', yPos:62, },
+                    {id:22, tone: 'F4', yPos:51, },
+                    {id:23, tone: 'G4', yPos:40, },
+                    {id:24, tone: 'A4', yPos:29, },
+                    {id:25, tone: 'B4', yPos:18, },
+                    {id:26, tone: 'C5', yPos:7,  },
+             ],
+
+        }
         },
         methods:{
-            clickTone(){
-                this.isSelected = !this.isSelected
+
+            helperlines(){
+                if(this.firstTone().tone === 'C3' || this.secondTone().tone === 'C3' ){
+                    return this.notes[12]
+                }
+                return null
+            },
+
+
+           isSecond(){
+              return Math.abs(this.firstTone.id - this.secondTone.id) === 1;
+           },
+           isPrime(){
+               return Math.abs(this.firstTone.id - this.secondTone.id) === 0;
+           },
+            firstTone() {
+                if(this.getFirstTone.accidental !== undefined){
+                    this.first = this.getFirstTone.accidental[this.randomAcc];
+                    if(this.randomAcc === 1){
+                        this.firstFlat = true;
+                    }else{
+                        this.firstSharp = true;
+                    }
+                }
+                else{
+                    this.first = this.getFirstTone.tone;
+                    this.firstFlat = false;
+                    this.firstSharp = false;
+                }
+                return this.notes.find(note => note.tone === this.first)
+            },
+            secondTone() {
+                if(this.getSecondTone.accidental !== undefined){
+                    this.second = this.getSecondTone.accidental[this.randomAcc];
+                    if(this.randomAcc === 1){
+                        this.secondFlat = true;
+                    }
+                    else{
+                        this.secondSharp = true;
+                    }
+                }
+                else{
+                    this.second = this.getSecondTone.tone;
+                    this.secondFlat = false;
+                    this.secondSharp = false;
+                }
+
+                return this.notes.find(note => note.tone === this.second)
             },
         },
 
         computed: {
-            ...mapGetters(['getAllPlayedTones', 'getAllTones']),
-
+            ...mapGetters(['getAllPlayedTones', 'getAllTones', 'getFirstTone', 'getSecondTone']),
         }
     }
 </script>
 
 <style scoped>
-
-    .orientationline{
-        position:absolute;
-        opacity: 0.3;
-        height:100%;
-        left: 123px;
-        width: 50px;
-        background-color: wheat;
-    }
 
     .lineContainer{
         position:absolute;
@@ -116,19 +192,12 @@
         position:absolute;
         left: 135px;
         z-index: 1;
-        opacity: 0;
     }
-    .note:hover{
-        z-index: 1;
-        opacity: 0.5;
+
+    .seconds{
+        left: 158px
     }
-    .noteClicked{
-        z-index: 1;
-        opacity: 1;
-    }
-    .secondTone{
-        left: 160px;
-    }
+
     .btn-toggle {
         flex-direction: column;
         justify-content: center;
@@ -142,6 +211,10 @@
     }
     .sharp{
         position:absolute;
+        left: 115px;
+    }
+
+    .sharpSeconds{
         left: 100px;
     }
     .flat{
