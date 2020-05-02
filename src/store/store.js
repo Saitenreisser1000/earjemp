@@ -92,7 +92,9 @@ export const store = new Vuex.Store({
         randomInterval: '',
 
         activatedOrders: '',
-        randomOrder: ''
+        randomOrder: '',
+
+        randomAccidental: 0
     },
 
     mutations: {
@@ -122,6 +124,8 @@ export const store = new Vuex.Store({
                 state.firstTone = '';
                 state.secondTone = '';
             }
+
+            state.randomAccidental = Math.floor(Math.random() * Math.floor(2));
 
             //this.randomOrder = order[0];
             if(this.activatedOrders.length > 1){
@@ -217,6 +221,8 @@ export const store = new Vuex.Store({
         getIntervalNames: (state) => {return state.intervalNames},
         getPlayedInterval: (state) => {return state.response},
         getAllPlayedTones: (state) => {return state.playedTones},
-        getSelectIntervals: (state) => {return state.selectedIntervals}
+        getSelectIntervals: (state) => {return state.selectedIntervals},
+
+        getRandomAcc: (state) => {return state.randomAccidental}
     }
 });

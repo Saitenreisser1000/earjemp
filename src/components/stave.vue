@@ -21,7 +21,6 @@
                      :style="{top: firstTone().yPos-18+'px'}"
                      height="40px">
                 <img v-if="firstSharp" class="sharp" src="../assets/notes/sharp.png"
-
                      :style="{top: firstTone().yPos-10+'px'}"
                      height="40px">
             </div>
@@ -29,18 +28,22 @@
             <div v-if="secondTone() && show">
                 <img class="note"
                      src="../assets/notes/wholeNote.svg"
-                     :class="{seconds: isSecond()}"
+                     :class="{seconds: isSecond(), prime: isPrime()}"
                      :style="{top: secondTone().yPos+'px'}"
                      height="20">
                 <img v-if="secondFlat" class="flat" src="../assets/notes/b.png"
                      :style="{top: secondTone().yPos-18+'px'}"
+                     :class="{accSeconds: isSecond()}"
                      height="40px">
                 <img v-if="secondSharp" class="sharp" src="../assets/notes/sharp.png"
                      :style="{top: secondTone().yPos-10+'px'}"
+                     :class="{accSeconds: isSecond()}"
                      height="40px">
             </div>
 
-            <div :key="index" v-for="(helper, index) in helperlines()" class="helperlines" :style="{top:170+'px'}"></div>
+            <!--div :key="index" v-for="(helper, index) in firstTonehelperlines()" class="helperlines" :style="{top:170+'px'}"></div-->
+            <helper-lines v-if="firstTone()"  :tone="firstTone().tone"></helper-lines>
+            <helper-lines v-if="secondTone()" :tone="secondTone().tone"></helper-lines>
 
             <!--v-btn @click="clickTone">ShowSecond</v-btn-->
 
@@ -49,9 +52,11 @@
 
 <script>
     import { mapGetters } from 'vuex';
+    import HelperLines from "@/components/helperLines";
 
     export default {
         name: "stave",
+        components: {HelperLines},
         data(){
             return {
                 show: true,
@@ -101,24 +106,16 @@
         },
         methods:{
 
-            helperlines(){
-                if(this.firstTone().tone === 'C3' || this.secondTone().tone === 'C3' ){
-                    return this.notes[12]
-                }
-                return null
-            },
-
-
            isSecond(){
-              return Math.abs(this.firstTone.id - this.secondTone.id) === 1;
+              return Math.abs(this.firstTone().id - this.secondTone().id) === 1;
            },
            isPrime(){
-               return Math.abs(this.firstTone.id - this.secondTone.id) === 0;
+               return Math.abs(this.firstTone().id - this.secondTone().id) === 0;
            },
             firstTone() {
                 if(this.getFirstTone.accidental !== undefined){
-                    this.first = this.getFirstTone.accidental[this.randomAcc];
-                    if(this.randomAcc === 1){
+                    this.first = this.getFirstTone.accidental[this.getRandomAcc];
+                    if(this.getRandomAcc === 1){
                         this.firstFlat = true;
                     }else{
                         this.firstSharp = true;
@@ -133,8 +130,8 @@
             },
             secondTone() {
                 if(this.getSecondTone.accidental !== undefined){
-                    this.second = this.getSecondTone.accidental[this.randomAcc];
-                    if(this.randomAcc === 1){
+                    this.second = this.getSecondTone.accidental[this.getRandomAcc];
+                    if(this.getRandomAcc === 1){
                         this.secondFlat = true;
                     }
                     else{
@@ -152,7 +149,7 @@
         },
 
         computed: {
-            ...mapGetters(['getAllPlayedTones', 'getAllTones', 'getFirstTone', 'getSecondTone']),
+            ...mapGetters(['getAllPlayedTones', 'getAllTones', 'getFirstTone', 'getSecondTone', 'getRandomAcc']),
         }
     }
 </script>
@@ -194,6 +191,10 @@
         z-index: 1;
     }
 
+    .prime{
+        left: 164px;
+    }
+
     .seconds{
         left: 158px
     }
@@ -202,20 +203,14 @@
         flex-direction: column;
         justify-content: center;
     }
-    .helperlines{
-        position:absolute;
-        width: 35px;
-        left: 131px;
-        height: 2px;
-        background-color: black;
-    }
+
     .sharp{
         position:absolute;
         left: 115px;
     }
 
-    .sharpSeconds{
-        left: 100px;
+    .accSeconds{
+        left: 110px;
     }
     .flat{
         position:absolute;
