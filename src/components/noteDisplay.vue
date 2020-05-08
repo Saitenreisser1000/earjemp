@@ -1,0 +1,29 @@
+<template>
+    <v-expansion-panels focusable>
+        <v-expansion-panel>
+            <v-expansion-panel-header>settings</v-expansion-panel-header>
+            <v-expansion-panel-content>
+                <settings></settings>
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+            <v-expansion-panel-header>notation</v-expansion-panel-header>
+            <v-expansion-panel-content>
+                <stave></stave>
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+    </v-expansion-panels>
+</template>
+
+<script>
+    import Stave from "@/components/stave";
+    import Settings from "@/components/settings";
+    export default {
+        name: "noteDisplay",
+        components: {Settings, Stave}
+    }
+</script>
+
+<style scoped>
+
+</style>

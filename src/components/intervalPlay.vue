@@ -1,37 +1,14 @@
 <template>
     <div>
-        <v-card-actions class="pa-0">
-            <v-btn color="deep-purple primary" width="200" height="50" @click="triggerTone">
+        <v-card-actions >
+            <v-btn color="deep-purple primary" width="180" height="50" @click="playAgain">
                 <v-icon>play_arrow</v-icon>
             </v-btn>
-            <v-btn color="deep-purple primary" x-large @click="nextTone">
+            <v-btn color="deep-purple primary" width="50" height="50" @click="playNextInterval">
                 <v-icon>skip_next</v-icon>
             </v-btn>
         </v-card-actions>
         <br>
-        <v-btn-toggle
-                v-model="chooseOrder"
-                dense
-                dark
-                background-color="secondary"
-                active-class="primary"
-                multiple
-                mandatory
-        >
-
-            <v-btn value="increase">
-                <v-icon>expand_less</v-icon>
-            </v-btn>
-
-            <v-btn value="decrease">
-                <v-icon>expand_more</v-icon>
-            </v-btn>
-
-            <v-btn value="simultaneous">
-                <v-icon>unfold_more</v-icon>
-            </v-btn>
-
-        </v-btn-toggle>
     </div>
 </template>
 
@@ -40,27 +17,8 @@
 
     export default {
         name: "intervalPlay",
-        data() {
-            return{
-                chooseOrder: 'increase'
-            }
-        },
-
-        watch:{
-            chooseOrder() {
-                this.setOrder(this.chooseOrder)
-            }
-        },
-
         methods: {
-            ...mapActions(['playNextInterval', 'playAgain', 'setOrder']),
-            triggerTone(){
-                this.playAgain();
-
-            },
-            nextTone(){
-                this.playNextInterval(this.chooseOrder);
-            }
+            ...mapActions(['playNextInterval', 'playAgain']),
         }
     }
 

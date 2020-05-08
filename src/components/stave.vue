@@ -1,5 +1,5 @@
 <template>
-    <v-card min-width="250px" height="350" flat>
+    <v-card min-width="200px" height="350" flat>
 
         <img class=clef src="../assets/clef.svg" height="150">
         <div class="lineContainer">
@@ -114,7 +114,6 @@
                 //if(# oder b)
                 if (this.getFirstTone.accidental !== undefined) {
                     this.first = this.getFirstTone.accidental[this.getRandomAcc];
-                    console.log(this.getRandomAcc)
                     if (this.getRandomAcc === 1) {
                         this.firstSharp = false;
                         this.firstFlat = true;

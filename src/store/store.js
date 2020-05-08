@@ -1,8 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import { Player } from '@/store/player'
-// eslint-disable-next-line no-unused-vars
-import Tone from 'tone'
 
 Vue.use(Vuex);
 
@@ -77,13 +75,12 @@ export const store = new Vuex.Store({
                 {id:44, tone: 'C5' },
             ],
         playedInterval: '',
-        playedTones: [],
         selectedIntervals: [],
         response: '',
-        playOrder: [],
 
         firstTone: '',
         secondTone: '',
+
         randEnharmonic: '',
         hasPlayed: false,
 
@@ -94,12 +91,14 @@ export const store = new Vuex.Store({
         activatedOrders: '',
         randomOrder: '',
 
-        randomAccidental: 0
+        randomAccidental: 0,
+        toneDelay: 500
     },
 
     mutations: {
         setSelectIntervals(state, intervals){
             state.selectedIntervals = intervals
+            //state.selectedIntervals = state.selectedIntervals.sort((a,b) => a.value - b.value)
         },
 
         setOrder(state, order){
@@ -111,7 +110,7 @@ export const store = new Vuex.Store({
             if(interval === state.playedInterval){
                 state.response ='right, well done!';
                 console.log('yes');
-                store.dispatch('playNextInterval', this.activatedOrders);
+                store.dispatch('playNextInterval');
             }
             else{
                 state.response = 'sorry, it is: '+ state.intervalNames[state.playedInterval];
@@ -119,7 +118,6 @@ export const store = new Vuex.Store({
         },
 
         playNextInterval(state){
-
             if(state.hasPlayed) {
                 state.firstTone = '';
                 state.secondTone = '';
@@ -127,7 +125,7 @@ export const store = new Vuex.Store({
 
             state.randomAccidental = Math.floor(Math.random() * Math.floor(2));
 
-            //this.randomOrder = order[0];
+            this.randomOrder = this.activatedOrders[0];
             if(this.activatedOrders.length > 1){
                 let rand = randomRangeInt({min: 0, max: this.activatedOrders.length});
                 this.randomOrder = this.activatedOrders[rand]
@@ -150,9 +148,14 @@ export const store = new Vuex.Store({
             store.dispatch('playIntervals');
         },
 
-        // eslint-disable-next-line no-unused-vars
         playAgain(state){
-            store.dispatch('playIntervals');
+
+            if(!state.hasPlayed){
+                store.dispatch('playNextInterval');
+            }
+            else{
+                store.dispatch('playIntervals');
+            }
         },
 
         playIntervals(state){
@@ -170,12 +173,11 @@ export const store = new Vuex.Store({
                 state.player.samplerPlay(state.firstTone.tone);
 
                 let second = this.reducedDecListTone - this.randomInterval.value;
-                Tone.Transport.scheduleOnce(function () {
+
+                setTimeout(() => {
                     state.secondTone = state.toneID[second];
                     state.player.samplerPlay(state.secondTone.tone)
-                }, "0:1");
-                Tone.Transport.start();
-                Tone.Transport.seconds = 0
+                }, state.toneDelay)
 
             } else {
 
@@ -183,15 +185,10 @@ export const store = new Vuex.Store({
                 state.player.samplerPlay(state.firstTone.tone);
 
                 let second = this.reducedIncListTone + this.randomInterval.value;
-                Tone.Transport.scheduleOnce(function () {
+                setTimeout(() => {
                     state.secondTone = state.toneID[second];
-                    state.player.samplerPlay(state.secondTone.tone);
-
-                }, "0:1");
-                Tone.Transport.start();
-                Tone.Transport.seconds = 0
-
-
+                    state.player.samplerPlay(state.secondTone.tone)
+                }, state.toneDelay)
             }
 
             //at least one time
@@ -209,6 +206,7 @@ export const store = new Vuex.Store({
         playAgain:({commit}) => {commit('playAgain')},
         playNextInterval:({commit}) => {commit('playNextInterval')},
         setGuess: ({commit}, interval) => {commit('setGuess', interval)},
+        setDelay: ({commit}, delay) => {commit('setDelay', delay)}
     },
 
     getters: {
@@ -220,9 +218,10 @@ export const store = new Vuex.Store({
 
         getIntervalNames: (state) => {return state.intervalNames},
         getPlayedInterval: (state) => {return state.response},
-        getAllPlayedTones: (state) => {return state.playedTones},
         getSelectIntervals: (state) => {return state.selectedIntervals},
 
-        getRandomAcc: (state) => {return state.randomAccidental}
+        getRandomAcc: (state) => {return state.randomAccidental},
+
+        getDelay: (state) => {return state.toneDelay}
     }
 });

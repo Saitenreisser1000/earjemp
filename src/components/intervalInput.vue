@@ -1,7 +1,6 @@
 <template>
     <div>
-        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" v-for="(int, index) in getSelectIntervals"
-               x-large>{{int.text}}
+        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" v-for="(int, index) in this.getSelectIntervals" x-large>{{int.text}}
         </v-btn>
     </div>
 </template>
@@ -14,23 +13,21 @@
 
         computed: {
             ...mapGetters(['getSelectIntervals']),
-            getIntervals(){
-                let int;
-                int = this.getSelectIntervals;
-                return int.sort((a,b) => a.value - b.value)
-            }
         },
 
         methods: {
             ...mapActions(['setGuess']),
-
             guessInterval(value){
                 this.setGuess(value);
-            }
+            },
         }
     }
 </script>
 
 <style scoped>
+    .v-btn{
+        text-transform: none !important;
+    }
+
 
 </style>
