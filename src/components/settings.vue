@@ -42,7 +42,7 @@
                 chooseOrder: 'increase'
             }
         },
-        computed: {
+        methods: {
             ...mapActions(['setOrder']),
         },
         watch:{
