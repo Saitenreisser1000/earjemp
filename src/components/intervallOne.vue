@@ -9,6 +9,10 @@
                         </v-row>
                         <br>
                         <v-row>
+                            <display></display>
+                        </v-row>
+                        <br>
+                        <v-row>
                             <interval-play></interval-play>
                             <interval-input></interval-input>
                         </v-row>
@@ -23,11 +27,13 @@
     import IntervalInput from "@/components/intervalInput";
     import IntervalPlay from "@/components/intervalPlay";
     import NoteDisplay from "@/components/noteDisplay";
+    import Display from "@/components/display";
 
     export default {
         name: "intervallOne",
 
         components:{
+            Display,
             NoteDisplay,
             IntervalPlay,
             IntervalInput,

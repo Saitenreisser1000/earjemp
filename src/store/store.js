@@ -108,12 +108,11 @@ export const store = new Vuex.Store({
         setGuess(state, interval){
 
             if(interval === state.playedInterval){
-                state.response ='right, well done!';
-                console.log('yes');
+                state.response = true//'right, well done!';
                 store.dispatch('playNextInterval');
             }
             else{
-                state.response = 'sorry, it is: '+ state.intervalNames[state.playedInterval];
+                state.response = false//'sorry, it is: '+ state.intervalNames[state.playedInterval] + ' try again!';
             }
         },
 
@@ -213,15 +212,21 @@ export const store = new Vuex.Store({
         getAllTones: (state) => {return state.toneID },
 
         getOrder: (state) => {return state.randomOrder},
+
         getFirstTone: (state) => {return state.firstTone},
+
         getSecondTone: (state) => {return state.secondTone},
 
         getIntervalNames: (state) => {return state.intervalNames},
+
         getPlayedInterval: (state) => {return state.response},
+
         getSelectIntervals: (state) => {return state.selectedIntervals},
 
         getRandomAcc: (state) => {return state.randomAccidental},
 
-        getDelay: (state) => {return state.toneDelay}
+        getDelay: (state) => {return state.toneDelay},
+
+        getResponse:(state) => {return state.response}
     }
 });

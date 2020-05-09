@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" v-for="(int, index) in this.getSelectIntervals" x-large>{{int.text}}
+        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" v-for="(int, index) in getSelectIntervals" x-large>{{int.text}}
         </v-btn>
     </div>
 </template>
@@ -10,13 +10,13 @@
 
     export default {
         name: "intervalInput",
-
         computed: {
             ...mapGetters(['getSelectIntervals']),
         },
 
         methods: {
             ...mapActions(['setGuess']),
+
             guessInterval(value){
                 this.setGuess(value);
             },

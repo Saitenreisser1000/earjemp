@@ -21,7 +21,7 @@
       </v-btn>
     </v-app-bar>
 
-    <v-content class="pa-5">
+    <v-content class="pa-4 mt-8">
       <br>
       <intervallOne></intervallOne>
     </v-content>

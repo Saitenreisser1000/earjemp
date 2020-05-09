@@ -1,5 +1,5 @@
 <template>
-    <!--v-select
+    <v-select
             v-model="selectInt"
             :items="intervals"
             chips
@@ -7,59 +7,7 @@
             return-object
             label="Choose Intervals"
             multiple
-    ></v-select-->
-    <div>
-
-        <v-btn-toggle
-                class="mb-1 white--text textToLowerCase"
-                v-model="toggle_multiple1"
-                dense
-                active-class="primary"
-                multiple
-                mandatory
-        >
-            <v-btn><span>1</span></v-btn>
-            <v-btn><span>b2</span></v-btn>
-            <v-btn><span>2</span></v-btn>
-            <v-btn><span>b3</span></v-btn>
-            <v-btn><span>3</span></v-btn>
-
-
-        </v-btn-toggle>
-
-        <v-btn-toggle
-                class="mb-1 white--text textToLowerCase"
-                v-model="toggle_multiple2"
-                dense
-                active-class="primary"
-                multiple
-                mandatory
-        >
-            <v-btn><span>4</span></v-btn>
-            <v-btn><span>#4</span></v-btn>
-            <v-btn><span>5</span></v-btn>
-            <v-btn><span>b6</span></v-btn>
-            <v-btn><span>6</span></v-btn>
-
-        </v-btn-toggle>
-
-        <v-btn-toggle
-                class="mb-1 white--text textToLowerCase"
-                v-model="toggle_multiple3"
-                dense
-                active-class="primary"
-                multiple
-                mandatory
-        >
-            <v-btn><span>b7</span></v-btn>
-            <v-btn><span>7</span></v-btn>
-            <v-btn><span>8</span></v-btn>
-            <v-btn><span>b9</span></v-btn>
-            <v-btn><span>9</span></v-btn>
-
-        </v-btn-toggle>
-
-    </div>
+    ></v-select>
 </template>
 
 <script>
@@ -69,9 +17,6 @@
         name: "intervalChoose",
         data() {
             return {
-                toggle_multiple1: [],
-                toggle_multiple2: [],
-                toggle_multiple3: [],
                 intervals: [
                     {text: '1', value: 0},
                     {text: 'b2', value: 1},
@@ -110,7 +55,9 @@
             selectInt: {
                 immediate: true,
                 handler() {
+                    console.log(this.selectInt)
                     this.setSelectIntervals(this.selectInt)
+
                 }
             }
         }

@@ -1,8 +1,11 @@
 <template>
     <v-expansion-panels focusable>
-        <v-expansion-panel>
+        <v-expansion-panel
+                v-model="panel">
             <v-expansion-panel-header>settings</v-expansion-panel-header>
-            <v-expansion-panel-content>
+            <v-expansion-panel-content
+                eager
+            >
                 <settings></settings>
             </v-expansion-panel-content>
         </v-expansion-panel>
@@ -20,6 +23,12 @@
     import Settings from "@/components/settings";
     export default {
         name: "noteDisplay",
+        data(){
+            return{
+                panel: 0,
+            }
+        },
+
         components: {Settings, Stave}
     }
 </script>
