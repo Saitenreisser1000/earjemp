@@ -146,246 +146,56 @@ export const store = new Vuex.Store({
             {id:113, toneID:43, name:'Cb5' ,tone:'B4', linePos:26,},
             {id:114, toneID:44, name:'B#4' ,tone:'C5', linePos:25,},
         ],
-
-        playedInterval: '',
         selectedIntervals: [],
-        response: '',
-
-        firstTone: '',
-        secondTone: '',
-
-        hasPlayed: false,
-
-        randomInterval: '',
-
-        activatedOrders: '',
-        randomOrder: '',
-
-        reducedIncList: '',
-        reducedDecList: '',
+        firstTone:'',
+        secondTone:'',
+        intervalDirection:''
     },
 
     mutations: {
-
         setSelectIntervals(state, intervals){
             state.selectedIntervals = intervals
         },
 
-        setOrder(state, order){
-              this.activatedOrders = order
+        setIntervalDirection(state, direction){
+            state.intervalDirection = direction
+            console.log(direction)
         },
 
-        setGuess(state, interval){
+        playIntervals(state, payload){
 
-            if(interval === state.playedInterval){
-                state.response = true//'right, well done!';
-                store.dispatch('playNextInterval');
-            }
-            else{
-                state.response = false//'sorry, it is: '+ state.intervalNames[state.playedInterval] + ' try again!';
-            }
-        },
+            state.firstTone = payload.firstTone
+            state.secondTone = payload.secondTone
 
-        playNextInterval(state){
-            //reset
-            if(state.hasPlayed) {
-                state.firstTone = '';
-                state.secondTone = '';
-            }
+            if(state.intervalDirection[0] === 'simultaneous'){
+                state.player.samplerPlay(payload.firstTone.tone);
+                state.player.samplerPlay(payload.secondTone.tone);
 
-            //choose Order
-            this.randomOrder = this.activatedOrders[0];
-            if(this.activatedOrders.length > 1){
-                let rand = randomRangeInt({min: 0, max: this.activatedOrders.length});
-                this.randomOrder = this.activatedOrders[rand]
-            }
+            }else if(state.intervalDirection[0] === 'decrease'){
+                state.player.samplerPlay(payload.secondTone.tone);
+                setTimeout(() => {
+                    state.player.samplerPlay(payload.firstTone.tone);
+                }, 500)
 
-            //create Interval
-            this.randomInterval = randomRangeInt({min: 0, max: state.selectedIntervals.length});
-            this.randomInterval = state.selectedIntervals[this.randomInterval];
-
-            state.playedInterval = this.randomInterval;
-
-            state.reducedIncList = state.toneChain.filter(tone => tone.toneID <= 44-this.randomInterval.value && tone.id < 63);
-            state.reducedDecList = state.toneChain.filter(tone => tone.toneID >= this.randomInterval.value && tone.toneID <= 44 && tone.id < 63);
-
-            function randomRangeInt(range){
-                let min = Math.ceil(range.min);
-                let max = Math.floor(range.max);
-                return Math.floor(Math.random() * (max - min)) + min;
-            }
-
-            store.dispatch('playIntervals');
-        },
-
-        playAgain(state){
-
-            if(!state.hasPlayed){
-                store.dispatch('playNextInterval');
-            }
-            else{
-                store.dispatch('playIntervals');
+            }else{
+                state.player.samplerPlay(payload.firstTone.tone);
+                setTimeout(() => {
+                    state.player.samplerPlay(payload.secondTone.tone);
+                }, 500)
 
             }
-        },
-
-        playIntervals(state){
-
-/**************not any more*****************************/
-            if (state.randomOrder === 'simultaneous') {
-
-                //choose number from reduced length
-                let rand = randomRangeInt({min: 0, max: state.reducedIncList.length});
-
-                //choose new first tone based on number
-                state.firstTone = state.reducedIncList[rand];
-
-                //calc second tone
-                calcInterval(state.toneChain[rand], 'simultaneous');
-
-            } else if (state.randomOrder === 'decrease') {
-
-                //choose number from reduced length
-                let rand = randomRangeInt({min: 0, max: state.reducedIncList.length});
-
-                //choose new first tone based on number
-                state.firstTone = state.reducedDecList[rand];
-
-                //calc second tone
-                calcInterval(state.toneChain[rand], 'decrease');
-
-
-            } else {
-
-//*********************Order Increased*****************************************/
-
-                //choose number from reduced length
-                let rand = randomRangeInt({min: 0, max: state.reducedIncList.length});
-
-                //choose new first tone based on number
-                state.firstTone = state.reducedIncList[rand];
-
-                //calc second tone
-                calcInterval(state.toneChain[rand]);
-            }
-
-            //at least one time
-            state.hasPlayed = true;
-
-            function randomRangeInt(range){
-                let min = Math.ceil(range.min);
-                let max = Math.floor(range.max);
-                return Math.floor(Math.random() * (max - min)) + min;
-            }
-
-            function calcInterval(firstTone){
-
-                //let test = state.playedInterval.value;
-                let test = 3;
-
-                let nextTone="";
-                state.secondTone = firstTone;
-
-
-
-                switch (test){
-                    case  1: nextTone =  1; break;  //b2
-                    case  2: nextTone =  2; break;  //2
-                    case  3: nextTone =  3; break;  //b3
-                    case  4: nextTone =  4; break;  //3
-                    case  5: nextTone =  5; break;  //4
-                    case  6: nextTone =  6; break;  //#4
-                    case  7: nextTone =  7; break;  //5
-                    case  8: nextTone =  8; break;  //b6
-                    case  9: nextTone =  9; break;  //6
-                    case 10: nextTone = 10; break;  //b7
-                    case 11: nextTone = 11; break;  //7
-                    case 12: nextTone = 12; break;  //8
-                    case 13: nextTone = 13; break;  //b9
-                    case 14: nextTone = 14; break;  //9
-                }
-
-                //*****************crawler*******************************/
-                if(state.randomOrder === 'decrease'){
-                    for(let i = 0; i < nextTone; i++){
-                        state.secondTone = state.toneChain[state.secondTone.prev]
-                    }
-                }
-                else{
-                    for(let i = 0; i < nextTone; i++){
-                        state.secondTone = state.toneChain[state.secondTone.next]
-                    }
-                }
-                //*****************crawler*******************************/
-
-                //play first note
-                state.player.samplerPlay(state.firstTone.tone);
-
-                console.log(`secondTone: ${state.secondTone.name}`);
-
-                if(Math.abs(state.secondTone.linePos - state.firstTone.linePos) !== state.playedInterval.lineDist){
-                    console.log('switch');
-                    let alternate = state.secondTone.enh;
-
-                    if( Math.abs(state.toneChain[alternate[0]].linePos - state.firstTone.linePos) === state.playedInterval.lineDist){
-                        state.secondTone = state.toneChain[alternate[0]]
-                    }
-                    else if(alternate[1] && Math.abs(state.toneChain[alternate[1]].linePos - state.firstTone.linePos) === state.playedInterval.lineDist){
-                        state.secondTone = state.toneChain[alternate[1]]
-                    }
-
-                }
-
-                if(state.randomOrder === 'simultaneous'){
-                    state.player.samplerPlay(state.secondTone.tone);
-                } else {
-                    setTimeout(() => {
-                        state.player.samplerPlay(state.secondTone.tone);
-                    }, 500);
-
-                }
-
-
-                console.log(`firstTone: ${state.firstTone.name}`);
-                //console.log(state.playedInterval.text);
-                console.log(`secondTone: ${state.secondTone.name}`);
-                console.log(`calcPosDistance: ${state.secondTone.linePos-state.firstTone.linePos}`);
-                console.log(`gotLineDistance: ${state.playedInterval.lineDist}`);
-                console.log("")
-
-            }
-        },
+        }
     },
 
     actions: {
         setSelectIntervals: ({commit}, intervals) => {commit('setSelectIntervals', intervals)},
-        setOrder:({commit}, order) => {commit('setOrder', order)},
-
-        playIntervals: ({commit}) => {commit('playIntervals'); },
-        playAgain:({commit}) => {commit('playAgain')},
-        playNextInterval:({commit}) => {commit('playNextInterval')},
-        setGuess: ({commit}, interval) => {commit('setGuess', interval)},
-        setDelay: ({commit}, delay) => {commit('setDelay', delay)},
-        pickRandomTone: ({commit}) => {commit('randomNote')}
+        setIntervalDirection: ({commit}, payload) => {commit('setIntervalDirection', payload)},
+        playIntervals: ({commit}, payload) => {commit('playIntervals', payload)},
     },
 
     getters: {
-        getAllTones: (state) => {return state.toneID },
+        getToneChain: (state) => {return state.toneChain},
+        getSelectedIntervals: (state) => {return state.selectedIntervals},
 
-        getOrder: (state) => {return state.randomOrder},
-
-        getFirstTone: (state) => {return state.firstTone},
-
-        getSecondTone: (state) => {return state.secondTone},
-
-        getIntervalNames: (state) => {return state.intervalNames},
-
-        getPlayedInterval: (state) => {return state.response},
-
-        getSelectIntervals: (state) => {return state.selectedIntervals},
-
-        //getDelay: (state) => {return state.toneDelay},
-
-        getResponse:(state) => {return state.response}
     }
 });

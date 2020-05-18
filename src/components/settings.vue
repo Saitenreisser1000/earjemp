@@ -44,13 +44,13 @@
             }
         },
         methods: {
-            ...mapActions(['setOrder']),
+            ...mapActions(['setIntervalDirection']),
         },
         watch:{
             chooseOrder:{
                 immediate: true,
                 handler(){
-                    this.setOrder(this.chooseOrder)
+                    this.setIntervalDirection(this.chooseOrder)
                 },
             }
         },
