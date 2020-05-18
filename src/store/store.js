@@ -149,10 +149,14 @@ export const store = new Vuex.Store({
         selectedIntervals: [],
         firstTone:'',
         secondTone:'',
-        intervalDirection:''
+        intervalDirection:'',
+
+        selectedChords: []
     },
 
     mutations: {
+
+ /***************intervals***************************/
         setSelectIntervals(state, intervals){
             state.selectedIntervals = intervals
         },
@@ -184,6 +188,23 @@ export const store = new Vuex.Store({
                 }, 500)
 
             }
+        },
+
+
+/**********************chords*********************/
+        setSelectedChords(state, chords){
+            state.selectedChords = chords
+        },
+
+        playChords(state, tones){
+            state.player.samplerPlay(tones[0].tone);
+            state.player.samplerPlay(tones[1].tone);
+            state.player.samplerPlay(tones[2].tone);
+            if(tones[3]){
+                state.player.samplerPlay(tones[3].tone);
+            }
+
+
         }
     },
 
@@ -191,11 +212,16 @@ export const store = new Vuex.Store({
         setSelectIntervals: ({commit}, intervals) => {commit('setSelectIntervals', intervals)},
         setIntervalDirection: ({commit}, payload) => {commit('setIntervalDirection', payload)},
         playIntervals: ({commit}, payload) => {commit('playIntervals', payload)},
+
+        setSelectedChords: ({commit}, payload) => {commit('setSelectedChords', payload)},
+        playChords: ({commit}, payload) => {commit('playChords', payload)}
     },
 
     getters: {
         getToneChain: (state) => {return state.toneChain},
         getSelectedIntervals: (state) => {return state.selectedIntervals},
+
+        getSelectedChords: (state) => {return state.selectedChords}
 
     }
 });

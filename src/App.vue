@@ -25,18 +25,21 @@
     <v-content class="pa-4 mt-8">
       <br>
       <intervallOne></intervallOne>
+      <chordjemp></chordjemp>
     </v-content>
   </v-app>
 </template>
 
 <script>
   import intervallOne from "@/components/intervallOne";
+  import chordjemp from "@/components/chordjemp/chordjemp";
 
 export default {
   name: 'App',
 
   components: {
-    intervallOne
+    intervallOne,
+    chordjemp
   },
 
   data: () => ({

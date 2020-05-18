@@ -55,7 +55,6 @@
             selectInt: {
                 immediate: true,
                 handler() {
-                    console.log(this.selectInt)
                     this.setSelectIntervals(this.selectInt)
 
                 }
