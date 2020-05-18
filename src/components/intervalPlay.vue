@@ -7,6 +7,11 @@
             <!--v-icon>skip_next</v-icon-->
             <span>new</span>
         </v-btn>
+
+        <v-btn color="deep-purple primary" x-large @click="pickRandomTone">
+            <!--v-icon>skip_next</v-icon-->
+            <span>test</span>
+        </v-btn>
         <br>
     </div>
 </template>
@@ -17,7 +22,7 @@
     export default {
         name: "intervalPlay",
         methods: {
-            ...mapActions(['playNextInterval', 'playAgain']),
+            ...mapActions(['playNextInterval', 'playAgain', 'pickRandomTone']),
         }
     }
 

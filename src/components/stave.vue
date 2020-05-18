@@ -55,11 +55,12 @@
 
 <script>
     import {mapGetters} from 'vuex';
-    import HelperLines from "@/components/helperLines";
+    import HelperLines from "@/components/stave/helperLines";
 
     export default {
         name: "stave",
         components: {HelperLines},
+        props: ["msg"],
         data() {
             return {
                 show: true,

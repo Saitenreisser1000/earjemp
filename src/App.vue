@@ -4,6 +4,7 @@
       app
       color="primary"
       dark
+
     >
       <div class="d-flex align-center">
         <div>ear<span style="{size: 26px}">JEMP</span></div>
