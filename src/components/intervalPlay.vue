@@ -13,6 +13,8 @@
 
 <script>
     import {mapActions, mapGetters} from 'vuex';
+    import toneCalcService from "./mixins/toneCalcService";
+
 
     export default {
         name: "intervalPlay",
@@ -25,6 +27,7 @@
                 secondTone:''
             }
         },
+        mixins: [toneCalcService],
         computed: {
             ...mapGetters(['getToneChain', 'getSelectedIntervals']),
 
@@ -44,11 +47,7 @@
                 this.randomInterval = this.randomRangeInt({min: 0, max: this.getSelectedIntervals.length});
                 this.randomInterval = this.getSelectedIntervals[this.randomInterval];
 
-                this.reduceToneList();
-            },
-
-            reduceToneList(){
-                this.reducedIncList = this.getToneChain.filter(tone => tone.toneID <= 44-this.randomInterval.value && tone.id < 63);
+                this.reducedIncList = this.reduceToneList(this.randomInterval.value);
                 this.calcFirstTone();
             },
 
@@ -59,36 +58,11 @@
             },
 
             calcInterval(){
-                this.secondTone = this.firstTone;
-
-                //list crawler
-                for(let i = 0; i < this.randomInterval.value; i++){
-                    this.secondTone = this.getToneChain[this.secondTone.next]
-                }
-
-
-                //switch to enharmonic equal that matches required lineDist
-                if(Math.abs(this.secondTone.linePos - this.firstTone.linePos) !== this.randomInterval.lineDist){
-                    console.log('switch');
-                    let alternate = this.secondTone.enh;
-
-                    if( Math.abs(this.getToneChain[alternate[0]].linePos - this.firstTone.linePos) === this.randomInterval.lineDist){
-                        this.secondTone = this.getToneChain[alternate[0]]
-                    }
-
-                    else if(alternate[1] && Math.abs(this.getToneChain[alternate[1]].linePos - this.firstTone.linePos) === this.randomInterval.lineDist){
-                        this.secondTone = this.getToneChain[alternate[1]]
-                    }
-                }
+                this.secondTone = this.getInterval(this.firstTone, this.randomInterval.value, this.randomInterval.lineDist);
+                this.logger({interval: this.randomInterval.text, firstTone: this.firstTone.name, secondTone: this.secondTone.name});
 
                 this.playIntervals({firstTone: this.firstTone, secondTone: this.secondTone})
             },
-
-            randomRangeInt(range){
-                let min = Math.ceil(range.min);
-                let max = Math.floor(range.max);
-                return Math.floor(Math.random() * (max - min)) + min;
-            }
         }
     }
 

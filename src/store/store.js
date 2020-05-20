@@ -93,59 +93,60 @@ export const store = new Vuex.Store({
 
             //alterations - enharmonics
             //not direct accessible for random tone finder
-            {id:63,  toneID:0,  name:'Fb1' ,tone:'E1', linePos:1, },
-            {id:64,  toneID:1,  name:'E#1' ,tone:'F1', linePos:0, },
-            {id:65,  toneID:1,  name:'Gbb1',tone:'F1', linePos:2, },
-            {id:66,  toneID:3,  name:'Fx1' ,tone:'G1', linePos:1, },
-            {id:67,  toneID:3,  name:'Abb1',tone:'G1', linePos:3, },
-            {id:68,  toneID:5,  name:'Gx1' ,tone:'A1', linePos:2, },
-            {id:69,  toneID:5,  name:'Bbb1',tone:'A1', linePos:4, },
-            {id:70,  toneID:6,  name:'Ax1' ,tone:'B1', linePos:3, },
-            {id:71,  toneID:6,  name:'Cb1' ,tone:'B1', linePos:5, },
-            {id:72,  toneID:8,  name:'B#1' ,tone:'C2', linePos:4, },
-            {id:73,  toneID:8,  name:'Dbb2',tone:'C2', linePos:6, },
-            {id:74,  toneID:9,  name:'Cx2' ,tone:'D2', linePos:5, },
-            {id:75,  toneID:9,  name:'Ebb2',tone:'D2', linePos:7, },
-            {id:76,  toneID:12, name:'Dx2' ,tone:'E2', linePos:6, },
-            {id:77,  toneID:12, name:'Fb2' ,tone:'E2', linePos:8, },
-            {id:78,  toneID:13, name:'E#2' ,tone:'F2', linePos:7, },
-            {id:79,  toneID:13, name:'Gbb2',tone:'F2', linePos:9, },
-            {id:80,  toneID:15, name:'Fx2' ,tone:'G2', linePos:8, },
-            {id:81,  toneID:15, name:'Abb2',tone:'G2', linePos:10,},
-            {id:82,  toneID:17, name:'Gx2' ,tone:'A2', linePos:9, },
-            {id:83,  toneID:17, name:'Bbb2',tone:'A2', linePos:11,},
-            {id:84,  toneID:18, name:'Ax2' ,tone:'B2', linePos:10,},
-            {id:85,  toneID:18, name:'Cb3' ,tone:'B2', linePos:12,},
-            {id:86,  toneID:20, name:'B#2' ,tone:'C3', linePos:11,},
-            {id:87,  toneID:20, name:'Dbb3',tone:'C3', linePos:13,},
-            {id:88,  toneID:22, name:'Cx3' ,tone:'D3', linePos:12,},
-            {id:89,  toneID:22, name:'Ebb3',tone:'D3', linePos:14,},
-            {id:90,  toneID:24, name:'Dx3' ,tone:'E3', linePos:13,},
-            {id:91,  toneID:24, name:'Fb3' ,tone:'E3', linePos:15,},
-            {id:92,  toneID:25, name:'E#3' ,tone:'F3', linePos:14,},
-            {id:93,  toneID:25, name:'Gbb3',tone:'F3', linePos:16,},
-            {id:94,  toneID:27, name:'Fx3' ,tone:'G3', linePos:15,},
-            {id:95,  toneID:27, name:'Abb3',tone:'G3', linePos:17,},
-            {id:96,  toneID:29, name:'Gx3' ,tone:'A3', linePos:16,},
-            {id:97,  toneID:29, name:'Bbb3',tone:'A3', linePos:18,},
-            {id:98,  toneID:31, name:'Ax3' ,tone:'B3', linePos:17,},
-            {id:99,  toneID:31, name:'Cb3' ,tone:'B3', linePos:19,},
-            {id:100, toneID:32, name:'B#3' ,tone:'C4', linePos:18,},
-            {id:101, toneID:32, name:'Dbb4',tone:'C4', linePos:20,},
-            {id:102, toneID:34, name:'Cx4' ,tone:'D4', linePos:19,},
-            {id:103, toneID:34, name:'Ebb4',tone:'D4', linePos:21,},
-            {id:104, toneID:36, name:'Dx4' ,tone:'E4', linePos:20,},
-            {id:105, toneID:36, name:'Fb4' ,tone:'E4', linePos:22,},
-            {id:106, toneID:37, name:'E#4' ,tone:'F4', linePos:21,},
-            {id:107, toneID:37, name:'Gbb4',tone:'F4', linePos:23,},
-            {id:108, toneID:39, name:'Fx4' ,tone:'G4', linePos:22,},
-            {id:109, toneID:39, name:'Abb4',tone:'G4', linePos:24,},
-            {id:110, toneID:41, name:'Gx4' ,tone:'A4', linePos:23,},
-            {id:111, toneID:41, name:'Bbb4',tone:'A4', linePos:25,},
-            {id:112, toneID:43, name:'Ax4' ,tone:'B4', linePos:24,},
-            {id:113, toneID:43, name:'Cb5' ,tone:'B4', linePos:26,},
-            {id:114, toneID:44, name:'B#4' ,tone:'C5', linePos:25,},
+            {id:63,  toneID:0,  name:'Fb1' ,tone:'E1', linePos:1,  prev:'', next:1 },
+            {id:64,  toneID:1,  name:'E#1' ,tone:'F1', linePos:0,  prev:0,  next:2 },
+            {id:65,  toneID:1,  name:'Gbb1',tone:'F1', linePos:2,  prev:0,  next:2 },
+            {id:66,  toneID:3,  name:'Fx1' ,tone:'G1', linePos:1,  prev:3,  next:5 },
+            {id:67,  toneID:3,  name:'Abb1',tone:'G1', linePos:3,  prev:3,  next:5 },
+            {id:68,  toneID:5,  name:'Gx1' ,tone:'A1', linePos:2,  prev:6,  next:8 },
+            {id:69,  toneID:5,  name:'Bbb1',tone:'A1', linePos:4,  prev:6,  next:8 },
+            {id:70,  toneID:6,  name:'Ax1' ,tone:'B1', linePos:3,  prev:9,  next:11},
+            {id:71,  toneID:6,  name:'Cb1' ,tone:'B1', linePos:5,  prev:9,  next:11},
+            {id:72,  toneID:8,  name:'B#1' ,tone:'C2', linePos:4,  prev:10, next:12},
+            {id:73,  toneID:8,  name:'Dbb2',tone:'C2', linePos:6,  prev:10, next:12},
+            {id:74,  toneID:9,  name:'Cx2' ,tone:'D2', linePos:5,  prev:13, next:15},
+            {id:75,  toneID:9,  name:'Ebb2',tone:'D2', linePos:7,  prev:13, next:15},
+            {id:76,  toneID:12, name:'Dx2' ,tone:'E2', linePos:6,  prev:16, next:18},
+            {id:77,  toneID:12, name:'Fb2' ,tone:'E2', linePos:8,  prev:16, next:18},
+            {id:78,  toneID:13, name:'E#2' ,tone:'F2', linePos:7,  prev:17, next:19},
+            {id:79,  toneID:13, name:'Gbb2',tone:'F2', linePos:9,  prev:17, next:19},
+            {id:80,  toneID:15, name:'Fx2' ,tone:'G2', linePos:8,  prev:20, next:22},
+            {id:81,  toneID:15, name:'Abb2',tone:'G2', linePos:10, prev:20, next:22},
+            {id:82,  toneID:17, name:'Gx2' ,tone:'A2', linePos:9,  prev:23, next:25},
+            {id:83,  toneID:17, name:'Bbb2',tone:'A2', linePos:11, prev:23, next:25},
+            {id:84,  toneID:18, name:'Ax2' ,tone:'B2', linePos:10, prev:26, next:28},
+            {id:85,  toneID:18, name:'Cb3' ,tone:'B2', linePos:12, prev:26, next:28},
+            {id:86,  toneID:20, name:'B#2' ,tone:'C3', linePos:11, prev:27, next:27},
+            {id:87,  toneID:20, name:'Dbb3',tone:'C3', linePos:13, prev:27, next:27},
+            {id:88,  toneID:22, name:'Cx3' ,tone:'D3', linePos:12, prev:30, next:32},
+            {id:89,  toneID:22, name:'Ebb3',tone:'D3', linePos:14, prev:30, next:32},
+            {id:90,  toneID:24, name:'Dx3' ,tone:'E3', linePos:13, prev:33, next:35},
+            {id:91,  toneID:24, name:'Fb3' ,tone:'E3', linePos:15, prev:33, next:35},
+            {id:92,  toneID:25, name:'E#3' ,tone:'F3', linePos:14, prev:34, next:36},
+            {id:93,  toneID:25, name:'Gbb3',tone:'F3', linePos:16, prev:34, next:36},
+            {id:94,  toneID:27, name:'Fx3' ,tone:'G3', linePos:15, prev:37, next:39},
+            {id:95,  toneID:27, name:'Abb3',tone:'G3', linePos:17, prev:37, next:39},
+            {id:96,  toneID:29, name:'Gx3' ,tone:'A3', linePos:16, prev:40, next:42},
+            {id:97,  toneID:29, name:'Bbb3',tone:'A3', linePos:18, prev:40, next:42},
+            {id:98,  toneID:31, name:'Ax3' ,tone:'B3', linePos:17, prev:43, next:45},
+            {id:99,  toneID:31, name:'Cb3' ,tone:'B3', linePos:19, prev:43, next:45},
+            {id:100, toneID:32, name:'B#3' ,tone:'C4', linePos:18, prev:44, next:46},
+            {id:101, toneID:32, name:'Dbb4',tone:'C4', linePos:20, prev:44, next:46},
+            {id:102, toneID:34, name:'Cx4' ,tone:'D4', linePos:19, prev:47, next:49},
+            {id:103, toneID:34, name:'Ebb4',tone:'D4', linePos:21, prev:47, next:49},
+            {id:104, toneID:36, name:'Dx4' ,tone:'E4', linePos:20, prev:50, next:52},
+            {id:105, toneID:36, name:'Fb4' ,tone:'E4', linePos:22, prev:50, next:52},
+            {id:106, toneID:37, name:'E#4' ,tone:'F4', linePos:21, prev:51, next:53},
+            {id:107, toneID:37, name:'Gbb4',tone:'F4', linePos:23, prev:51, next:53},
+            {id:108, toneID:39, name:'Fx4' ,tone:'G4', linePos:22, prev:54, next:56},
+            {id:109, toneID:39, name:'Abb4',tone:'G4', linePos:24, prev:54, next:56},
+            {id:110, toneID:41, name:'Gx4' ,tone:'A4', linePos:23, prev:57, next:59},
+            {id:111, toneID:41, name:'Bbb4',tone:'A4', linePos:25, prev:57, next:59},
+            {id:112, toneID:43, name:'Ax4' ,tone:'B4', linePos:24, prev:60, next:62},
+            {id:113, toneID:43, name:'Cb5' ,tone:'B4', linePos:26, prev:60, next:62},
+            {id:114, toneID:44, name:'B#4' ,tone:'C5', linePos:25, prev:61, next:''},
         ],
+
         selectedIntervals: [],
         firstTone:'',
         secondTone:'',
@@ -163,7 +164,6 @@ export const store = new Vuex.Store({
 
         setIntervalDirection(state, direction){
             state.intervalDirection = direction
-            console.log(direction)
         },
 
         playIntervals(state, payload){
@@ -190,6 +190,15 @@ export const store = new Vuex.Store({
             }
         },
 
+        /*calcScale(rootTone, scale, range){
+            major = []
+            let scaleContainer = [];
+            this.toneChain.find(tone => tone.name === rootTone)
+            for(let i = 0; i < range; i++){
+
+            }
+        }*/
+
 
 /**********************chords*********************/
         setSelectedChords(state, chords){
@@ -203,8 +212,10 @@ export const store = new Vuex.Store({
             if(tones[3]){
                 state.player.samplerPlay(tones[3].tone);
             }
+        },
 
-
+        playTone(state, tone){
+            state.player.samplerPlay(tone.tone)
         }
     },
 
@@ -214,14 +225,16 @@ export const store = new Vuex.Store({
         playIntervals: ({commit}, payload) => {commit('playIntervals', payload)},
 
         setSelectedChords: ({commit}, payload) => {commit('setSelectedChords', payload)},
-        playChords: ({commit}, payload) => {commit('playChords', payload)}
+        playChords: ({commit}, payload) => {commit('playChords', payload)},
+        playTone: ({commit}, tone)  => {commit('playTone', tone)}
     },
 
     getters: {
         getToneChain: (state) => {return state.toneChain},
         getSelectedIntervals: (state) => {return state.selectedIntervals},
 
-        getSelectedChords: (state) => {return state.selectedChords}
+        getSelectedChords: (state) => {return state.selectedChords},
+        getMajorScales: (state) => {return state.majorScales}
 
     }
 });

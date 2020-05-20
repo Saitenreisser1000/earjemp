@@ -26,6 +26,7 @@
       <br>
       <intervallOne></intervallOne>
       <chordjemp></chordjemp>
+      <scale-jemp></scale-jemp>
     </v-content>
   </v-app>
 </template>
@@ -33,11 +34,13 @@
 <script>
   import intervallOne from "@/components/intervallOne";
   import chordjemp from "@/components/chordjemp/chordjemp";
+  import ScaleJemp from "@/components/scaleJemp/scaleJemp";
 
 export default {
   name: 'App',
 
   components: {
+    ScaleJemp,
     intervallOne,
     chordjemp
   },

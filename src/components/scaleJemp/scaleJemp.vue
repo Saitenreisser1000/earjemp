@@ -5,11 +5,11 @@
                 <v-row>
                     <v-col>
                         <v-row>
-                            <chordChoose></chordChoose>
+                            <scaleChoose></scaleChoose>
                         </v-row>
                         <br>
                         <v-row>
-                            <chordPlay></chordPlay>
+                            <scalePlay></scalePlay>
                         </v-row>
                         <br>
                         <v-row>
@@ -23,16 +23,12 @@
 </template>
 
 <script>
-    import {mapGetters} from 'vuex';
-    import chordChoose from "@/components/chordjemp/chordChoose";
-    import chordPlay from "@/components/chordjemp/chordPlay";
+    import scaleChoose from "@/components/scaleJemp/scaleChoose";
+    import scalePlay from "@/components/scaleJemp/scalePlay";
 
     export default {
-        name: "chordjemp",
-        computed: {
-            ...mapGetters(['getToneChain'])
-        },
-        components: {chordChoose, chordPlay}
+        name: "scaleJemp",
+        components: {scaleChoose, scalePlay}
     }
 </script>
 

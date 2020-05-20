@@ -1,43 +1,56 @@
 <template>
     <div class="mb-6">
-        <v-btn color="deep-purple primary" class="mr-2" width="190" height="50" @click="playAgain">
+        <v-btn color="deep-purple primary" class="mr-2" width="190" height="50" @click="playAgain()">
             <v-icon>play_arrow</v-icon>
         </v-btn>
-        <v-btn color="deep-purple primary" x-large @click="chooseRandomChord()">
+        <v-btn color="deep-purple primary" class="mr-2" x-large @click="chooseRandomChord()">
             <!--v-icon>skip_next</v-icon-->
             <span>new</span>
+        </v-btn>
+
+        <v-btn color="deep-purple primary" x-large @click="arpeggiateChord()">
+            <!--v-icon>skip_next</v-icon-->
+            <span>Arp</span>
         </v-btn>
         <br>
     </div>
 </template>
 
 <script>
-    import {mapGetters, mapActions} from 'vuex';
+    import { mapGetters, mapActions } from 'vuex';
+    import toneCalcService from "../mixins/toneCalcService";
+
     export default {
         name: "chordPlay",
+
         data(){
             return{
                 randomChord:'',
                 reducedList:'',
                 rootTone:'',
                 secondTone: '',
-                thirdTone: ''
+                thirdTone: '',
             }
         },
+        mixins: [toneCalcService],
         computed: {
             ...mapGetters(['getSelectedChords', 'getToneChain'])
         },
         methods: {
-            ...mapActions(['playChords']),
+            ...mapActions(['playChords', 'playTone']),
 
-            chooseRandomChord(){
-                let rand = this.randomRangeInt({min: 0, max: this.getSelectedChords.length})
-                this.randomChord = this.getSelectedChords[rand]
-                this.reduceToneList()
+            playAgain(){
+                if(this.rootTone === ''){
+                    this.chooseRandomChord()
+                }else{
+                    this.playChords([this.rootTone, this.secondTone, this.thirdTone])
+                }
             },
 
-            reduceToneList(){
-                this.reducedList = this.getToneChain.filter(tone => tone.toneID <= 44-this.randomChord.maxRange && tone.id < 63);
+            chooseRandomChord(){
+                let rand = this.randomRangeInt({min: 0, max: this.getSelectedChords.length});
+                this.randomChord = this.getSelectedChords[rand];
+                this.reducedList = this.reduceToneList(this.randomChord.maxRange);
                 this.calcFirstTone()
             },
 
@@ -47,32 +60,25 @@
             },
 
             calcChord(){
-                console.log(this.rootTone.name);
-                this.secondTone = this.rootTone;
-                for(let i = 0; i < this.randomChord.toneSteps[0]; i++){
-                    console.log('i')
-                    this.secondTone = this.getToneChain[this.secondTone.next];
 
-                }
-                this.thirdTone = this.secondTone;
-                for(let i = 0; i < this.randomChord.toneSteps[1]; i++){
-                    this.thirdTone = this.getToneChain[this.thirdTone.next]
-                }
-
-                console.log(this.randomChord.text);
-                console.log(this.rootTone.name);
-                console.log(this.secondTone.name);
-                console.log(this.thirdTone.name);
+                this.secondTone = this.getInterval(this.rootTone, this.randomChord.toneSteps[0], this.randomChord.lineDist[0]);
+                this.thirdTone = this.getInterval(this.rootTone, this.randomChord.toneSteps[0] + this.randomChord.toneSteps[1], this.randomChord.lineDist[0]+this.randomChord.lineDist[1]);
+                //this.logger({chord: this.randomChord.text, firstTone: this.rootTone.name, secondTone: this.secondTone.name, thirdTone: this.thirdTone.name});
 
                 this.playChords([this.rootTone, this.secondTone, this.thirdTone])
 
             },
 
-            randomRangeInt(range){
-                let min = Math.ceil(range.min);
-                let max = Math.floor(range.max);
-                return Math.floor(Math.random() * (max - min)) + min;
-            }
+            arpeggiateChord(){
+                this.playTone(this.rootTone);
+                setTimeout(() => {
+                    this.playTone(this.secondTone);
+                }, 300),
+
+                setTimeout(() => {
+                    this.playTone(this.thirdTone);
+                }, 600)
+            },
         }
     }
 </script>
