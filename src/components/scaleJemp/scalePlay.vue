@@ -1,40 +1,24 @@
 <template>
-    <div class="mb-6">
-        <v-btn color="deep-purple primary" class="mr-2" width="190" height="50" @click="playAgain">
-            <v-icon>play_arrow</v-icon>
+    <div class="container">
+        <v-btn color="primary" class="mr-0" width="190" height="51" @click="$emit('playAgain')">
+            <v-icon>mdi-play</v-icon>
         </v-btn>
-        <v-btn color="deep-purple primary" x-large @click="playScale()">
-            <!--v-icon>skip_next</v-icon-->
-            <span>new</span>
+        <v-btn color="primary" x-large @click="$emit('playRandomScale')">
+            <span>next</span>
         </v-btn>
         <br>
     </div>
 </template>
 
 <script>
-    import toneCalcService from "@/components/mixins/toneCalcService";
-    import {mapGetters} from 'vuex';
     export default {
         name: "scalePlay",
-        mixins: [toneCalcService],
-        computed:{
-            ...mapGetters(['getToneChain'])
-        },
-        methods:{
-            playAgain(){
-
-            },
-            playScale(){
-                console.log("--------------------------")
-                let s = this.getScale('E3');
-                s.forEach(tone => {
-                    console.log(tone.name)
-                })
-            }
-        }
     }
 </script>
 
 <style scoped>
-
+    .container{
+        display: flex;
+        justify-content: space-evenly;
+    }
 </style>

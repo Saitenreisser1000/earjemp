@@ -37,15 +37,29 @@ export default {
             return Math.floor(Math.random() * (max - min)) + min;
         },
 
-        getScale(rootTone){
-            let scale = [{step: 2, dist:1 },{step:3, dist:2}, {step:5, dist:3}, {step:7, dist:4}, {step:9, dist:5}, {step: 11, dist:6}, {step:12, dist:7}];
+        getScale(rootTone, scale){
             let notes = [];
-            let root = this.getToneChain.find(tone => tone.name === rootTone);
+            let root = this.getToneChain[rootTone];
+            let temp = root;
             notes.push(root);
-            for(let tone of scale){
-                notes.push(this.getInterval(root, tone.step, tone.dist))
+
+            for(let steps of scale){
+                temp = this.getInterval(temp, steps, 1);
+                notes.push(temp)
             }
             return notes
+        },
+
+        //helperfunction for timeaccuracy
+        setExactTimeout(callback, duration, resolution) {
+          const start = (new Date()).getTime();
+          const timeout = setInterval(function(){
+            if ((new Date()).getTime() - start > duration) {
+              callback();
+              clearInterval(timeout);
+            }
+          }, resolution);
+          return timeout;
         },
 
         logger(toLog){

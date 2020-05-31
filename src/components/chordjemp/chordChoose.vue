@@ -1,8 +1,8 @@
 <template>
     <v-select
-            v-model="selectChords"
+            v-model="selectedChords"
             :items="chords"
-            chips
+            small-chips
             deletable-chips
             return-object
             label="choose chord"
@@ -11,7 +11,7 @@
 </template>
 
 <script>
-    import {mapActions} from "vuex";
+    import { mapActions } from "vuex";
 
     export default {
         name: "chordChoose",
@@ -33,7 +33,7 @@
                     {text: 'augmented-7',   value: 12, toneSteps:[4,4,2],lineDist:[2,2,2], maxRange: 11},
 
                 ],
-                selectChords: [
+                selectedChords: [
                     {text: 'minor-3',       value: 0 , toneSteps:[3,4],  lineDist:[2,2],   maxRange: 7},
                     {text: 'major-3',       value: 1 , toneSteps:[4,3],  lineDist:[2,2],   maxRange: 7},
                     {text: 'diminished-3',  value: 2 , toneSteps:[3,3],  lineDist:[2,2],   maxRange: 6},
@@ -47,10 +47,10 @@
         },
 
         watch: {
-            selectChords: {
+            selectedChords: {
                 immediate: true,
                 handler() {
-                    this.setSelectedChords(this.selectChords)
+                    this.setSelectedChords(this.selectedChords)
                 }
             }
         }
