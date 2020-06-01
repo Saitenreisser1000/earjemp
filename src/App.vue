@@ -25,23 +25,23 @@
     <v-content class="pa-4 mt-8">
       <br>
       <intervalJemp></intervalJemp>
-      <chordjemp></chordjemp>
-      <scaleJemp></scaleJemp>
+      <!--chordjemp></chordjemp-->
+      <!--scaleJemp></scaleJemp-->
     </v-content>
   </v-app>
 </template>
 
 <script>
   import intervalJemp from '@/components/intervalJemp/intervalJemp';
-  import Chordjemp from "@/components/chordjemp/chordjemp";
-  import scaleJemp from "@/components/scaleJemp/scaleJemp";
+  //import Chordjemp from "@/components/chordjemp/chordjemp";
+  //import scaleJemp from "@/components/scaleJemp/scaleJemp";
 export default {
   name: 'App',
 
   components: {
-    Chordjemp,
+    //Chordjemp,
     intervalJemp,
-    scaleJemp
+    //scaleJemp
   },
 
   data: () => ({
