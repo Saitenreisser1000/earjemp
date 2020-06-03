@@ -39,6 +39,7 @@
                 firstTone:'',
                 secondTone: '',
                 thirdTone: '',
+                fourthTone: '',
 
                 autoplay: true
             }
@@ -64,13 +65,17 @@
             },
 
             calcFirstTone(){
-                this.firstTone = this.reducedList[this.randomRangeInt({min: 0, max: this.reducedList.length})];
+                this.firstTone = this.reducedList[this.randomRangeInt({min: 15, max: this.reducedList.length})];
                 this.calcChord();
             },
 
             calcChord(){
                 this.secondTone = this.getInterval(this.firstTone, this.randomChord.toneSteps[0], this.randomChord.lineDist[0]);
                 this.thirdTone = this.getInterval(this.secondTone, this.randomChord.toneSteps[1], this.randomChord.lineDist[1]);
+                if(this.randomChord.toneSteps.length === 3){
+                    this.fourthTone = this.getInterval(this.thirdTone, this.randomChord.toneSteps[2], this.randomChord.lineDist[2])
+                }
+                console.log(this.randomChord)
                 //this.logger({chord: this.randomChord.text, firstTone: this.firstTone.name, secondTone: this.secondTone.name, thirdTone: this.thirdTone.name});
                 this.playTones();
             },
@@ -80,6 +85,9 @@
                     this.setExactTimeout(() => { this.playAudio(this.firstTone.tone); }, 200, 20);
                     this.setExactTimeout(() => { this.playAudio(this.secondTone.tone); }, 600, 20);
                     this.setExactTimeout(() => { this.playAudio(this.thirdTone.tone); }, 1000, 20);
+                    if(this.randomChord.toneSteps.length === 3) {
+                        this.setExactTimeout(() => {this.playAudio(this.fourthTone.tone);}, 1400, 20)
+                    }
                 }
             },
 
@@ -90,6 +98,9 @@
                     this.playAudio(this.firstTone.tone);
                     this.playAudio(this.secondTone.tone);
                     this.playAudio(this.thirdTone.tone);
+                    if(this.randomChord.toneSteps.length === 3){
+                        this.playAudio(this.fourthTone.tone)
+                    }
                 }, 200, 20);
 
                 //reset inputlock

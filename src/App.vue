@@ -1,55 +1,78 @@
 <template>
+    <v-app>
+        <nav>
+            <v-toolbar
+                    bar
+                    dense
+                    color="primary"
+                    class="white--text"
+                    flat
+            >
+                <v-icon dark @click.stop="drawer = !drawer">menu</v-icon>
+                <v-spacer></v-spacer>
+                <v-toolbar-title style="float:right">earJEMP</v-toolbar-title>
 
-  <v-app>
+            </v-toolbar>
 
-    <v-toolbar
-    color="primary"
-    class="white--text"
-    >
-      <v-toolbar-title>earJEMP</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items class="hidden-sm-and-down">
-        <v-btn
+        </nav>
+        <v-navigation-drawer
+                v-model="drawer"
                 color="primary"
-                v-for="item in menu"
-                :key="item.icon"
-                :to="item.path"
-                depressed
-        >{{ item.title }}</v-btn>
-      </v-toolbar-items>
-      <v-menu class="hidden-md-and-up">
-        <!--v-toolbar-side-icon v-slot:"activator="{on}></v-toolbar-side-icon-->
-        <v-list>
-          <v-list-tile v-for="item in menu" :key="item.icon">
-            <v-list-tile-content>
-              <v-list-tile-title>{{ item.title }}</v-list-tile-title>
-            </v-list-tile-content>
-          </v-list-tile>
-        </v-list>
-      </v-menu>
-    </v-toolbar>
-    <v-content class="ma-2">
-      <router-view></router-view>
-    </v-content>
-  </v-app>
+                absolute
+                temporary
+                dark
+        >
+            <v-list
+                    dense
+                    nav
+                    class="py-0"
+            >
+                <v-list-item two-line :class="px-0">
+                    <v-list-item-content>
+                        <v-list-item-title>Menu</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+
+                <v-list-item
+                        v-for="item in items"
+                        :key="item.title"
+                        :to="item.path"
+                        link
+                >
+                    <v-list-item-icon>
+                        <v-icon>{{ item.icon }}</v-icon>
+                    </v-list-item-icon>
+
+                    <v-list-item-content>
+                        <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+            </v-list>
+        </v-navigation-drawer>
+
+        <v-content class="ma-2 overflow-hidden">
+            <router-view></router-view>
+        </v-content>
+    </v-app>
 </template>
 
 <script>
 
-export default {
-  name: 'App',
+    export default {
+        name: 'App',
 
-  data: () => ({
-    menu: [
-      { path: '/', title: 'intervalJemp' },
-      { path: '/chordJemp',title: 'chordJemp' },
-      { path: '/scaleJemp',title: 'scaleJemp' }
-    ]
-  }),
-};
+        data: () => ({
+            items: [
+                {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
+                {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-image'},
+                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-help-box'}
+            ],
+            drawer: false
+        }),
+    };
 </script>
 <style>
-  .button{
-    text-transform: none !important;
-  }
+    .button {
+        text-transform: none !important;
+    }
 </style>

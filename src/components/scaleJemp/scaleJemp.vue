@@ -46,6 +46,7 @@
                 scale: '',
                 reducedScale: '',
                 autoplay: true,
+                firstTone: ''
             }
         },
         computed: {
@@ -76,6 +77,7 @@
             playTones() {
                 this.setInputlock(true);
                 this.playLock = false;
+                this.firstTone = this.scale[0]
                 this.playAudio(this.scale[0].tone)
             },
 

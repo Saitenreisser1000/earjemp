@@ -246,10 +246,6 @@ export default {
             this.sounds.fade(1, 0, 1200, t)
         },
 
-        playNew(){
-
-        },
-
         playAgain(){
             if (this.firstTone === '') {
                 this.playRandom()
