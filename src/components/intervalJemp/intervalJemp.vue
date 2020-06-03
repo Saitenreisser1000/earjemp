@@ -1,32 +1,36 @@
 <template>
-    <v-card class="mx-auto blue-grey lighten-5" max-width="350" min-height="500" :disabled=lockInput>
-        <interval-choose></interval-choose>
+    <v-card class="pa-2 mx-auto blue-grey lighten-5" max-width="350" min-height="550" elevation="10">
+    <v-card class="mx-auto blue-grey lighten-5" max-width="350" min-height="550" :disabled=lockInput flat>
+        <interval-settings @setPlayOrder="setPlayOrder"></interval-settings>
         <v-switch
             v-model="autoplay"
-            :label="'autoplay'">
+            :label="'autoplay'"
+            class="mt-4"
+        >
         </v-switch>
         <response :resp-color="resColor"></response>
-        <!--stave-double></stave-double-->
-        <interval-play @playAgain="playAgain" @playRandomInterval="playRandomInterval"></interval-play>
+        <interval-play @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
         <guessInterval @guessResult="guessResult"></guessInterval>
+    </v-card>
     </v-card>
 </template>
 
 <script>
     import IntervalPlay from "@/components/intervalJemp/intervalPlay";
-    import IntervalChoose from "@/components/intervalJemp/intervalChoose";
-    //import StaveDouble from "@/components/notation/staveDouble";
+    import IntervalSettings from "@/components/intervalJemp/intervalSettings";
     import guessInterval from "@/components/intervalJemp/guessInterval";
     import {mapGetters} from 'vuex'
     import Response from "@/components/response";
     import toneCalcService from "@/components/mixins/toneCalcService";
     import playSounds from "@/components/mixins/playSounds";
+    import responseMixin from "@/components/mixins/responseMixin";
 
     export default {
         name: "intervallOne",
         data() {
             return {
                 lockInput: false,
+                playLock: false, //avoid secondtone starting a playloop
                 result: '',
                 resColor: '#9DA0A9',
 
@@ -35,39 +39,39 @@
                 reducedDecList: '',
                 firstTone: '',
                 secondTone: '',
-                autoplay: true
+                autoplay: true,
+                playOrder: ['increase'],
+                randomOrder: '',
+                delay: 700
             }
         },
         components: {
             Response,
-            //StaveDouble,
-            IntervalChoose,
+            IntervalSettings,
             IntervalPlay,
-            //IntervalInput,
             guessInterval
         },
-        mixins: [toneCalcService, playSounds],
+        mixins: [toneCalcService, playSounds, responseMixin],
         computed: {
             ...mapGetters(['getToneChain', 'getSelectedIntervals'])
         },
 
         methods: {
-            playAgain(){
-                if (this.firstTone === '') {
-                    this.playRandomInterval()
-                } else {
-                    this.playTones()
-                }
-            },
 
-            playRandomInterval(){
+            playRandom(){
+                //calc intervals
                 this.randomInterval = this.randomRangeInt({min: 0, max: this.getSelectedIntervals.length});
                 this.randomInterval = this.getSelectedIntervals[this.randomInterval];
 
+                this.reducedIncList = this.reduceToneList(this.randomInterval.value);
+
+                this.randomOrder = this.playOrder[0];
+                if(this.playOrder.length > 1){
+                    this.randomOrder = this.playOrder[this.randomRangeInt({min: 0, max: this.playOrder.length})]
+                }
+
                 this.setResult(this.randomInterval.text)
                 this.resetResponse()
-
-                this.reducedIncList = this.reduceToneList(this.randomInterval.value);
 
                 this.calcFirstTone();
             },
@@ -84,45 +88,63 @@
             },
 
             playTones() {
-                this.setInputlock(true)
+                this.setInputlock(true);
+                this.playLock = false;
 
-                let self = this;
-                this.setExactTimeout(function () {
-                    self.playAudio(self.firstTone.tone);
-                }, 200, 20);
-                this.setExactTimeout(function () {
-                    self.playAudio(self.secondTone.tone);
-                }, 700, 20);
+                if(this.randomOrder === 'simultaneous'){
+                    this.playLock = true;
 
+                    this.setExactTimeout(() => {
+                        this.playAudio(this.firstTone.tone);
+                        this.playAudio(this.secondTone.tone);
+                    }, 200, 20);
+
+                }else if(this.randomOrder === 'decrease'){
+
+                    let temp = this.firstTone;
+                    this.firstTone = this.secondTone;
+                    this.secondTone = temp;
+
+                    this.setExactTimeout(() => {
+                        this.playAudio(this.firstTone.tone);
+                    }, 200, 20);
+                }
+
+                //playOrder = increase
+                else{
+                    this.setExactTimeout(() => {
+                        this.playAudio(this.firstTone.tone);
+                    }, 200, 20);
+                }
                 //reset inputlock
-                this.setExactTimeout(function () {
-                    self.setInputlock(false)
+                this.setExactTimeout(() => {
+                    this.setInputlock(false)
                 }, 1000, 20);
             },
 
-            resetResponse(){
-                this.resColor = '#9DA0A9'
+            playSecond(){
+                if(!this.playLock){
+                    this.setExactTimeout( () => {
+                        this.playLock = true;
+                        this.playAudio(this.secondTone.tone);
+                    }, this.delay, 20);
+                }
             },
 
-            setInputlock(locked){
-                this.lockInput = locked
-            },
-
-            setResult(res) {
-                console.log(res)
-                this.result = res
-            },
             guessResult(guess) {
-                let self = this;
                 if (guess == this.result) {
                     this.resColor = 'green'
-                    this.setExactTimeout(function(){
-                        self.playRandomInterval()
+                    this.setExactTimeout(() => {
+                        this.playRandom()
                     },1000, 20)
 
                 } else {
                     this.resColor = 'indianred'
                 }
+            },
+
+            setPlayOrder(order){
+                this.playOrder = order;
             }
         }
     }

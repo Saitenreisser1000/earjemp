@@ -33,7 +33,7 @@
 
 <script>
     import {mapActions} from "vuex";
-    import IntervalChoose from "@/components/intervalJemp/intervalChoose";
+    import IntervalChoose from "@/components/intervalJemp/intervalSettings";
 
     export default {
         name: "settings",

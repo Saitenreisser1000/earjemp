@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn :key="index" @click="$emit('guessResult', item.text)" class="mb-2 mr-2 btn" v-for="(item, index) in getSelectedScales" >{{item.text}}
+        <v-btn :key="index" @click="$emit('guessResult', item.text)" class="mb-2 mr-2 btn" v-for="(item, index) in getSelectedScales" x-large>{{item.text}}
         </v-btn>
     </div>
 </template>

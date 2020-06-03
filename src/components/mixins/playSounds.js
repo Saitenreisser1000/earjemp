@@ -11,8 +11,12 @@ export default {
                     howlMp3,
                     howlOGG
                 ],
-                onload: function(){
-                    console.log('loaded')
+                buffer: true,
+
+                onplay: () => {
+                    if(this.playSecond)
+                    this.playSecond()
+
                 },
                 "sprite": {
                     "A1": [
@@ -240,6 +244,18 @@ export default {
         playAudio(tone) {
             let t = this.sounds.play(tone);
             this.sounds.fade(1, 0, 1200, t)
+        },
+
+        playNew(){
+
+        },
+
+        playAgain(){
+            if (this.firstTone === '') {
+                this.playRandom()
+            } else {
+                this.playTones()
+            }
         }
     }
 }

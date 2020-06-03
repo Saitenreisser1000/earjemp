@@ -1,14 +1,39 @@
 <template>
-    <v-select
-            v-model="selectInt"
-            :items="intervals"
-            mandatory
-            small-chips
-            deletable-chips
-            return-object
-            label="Choose Intervals"
-            multiple
-    ></v-select>
+    <div>
+        <v-select
+                v-model="selectInt"
+                :items="intervals"
+                mandatory
+                small-chips
+                deletable-chips
+                return-object
+                label="Choose Intervals"
+                multiple
+        ></v-select>
+        <v-btn-toggle
+                @change="$emit('setPlayOrder', playOrder)"
+                class="white--text"
+                v-model="playOrder"
+                dense
+                active-class="primary"
+                background-color="secondary"
+                multiple
+                mandatory
+        >
+            <v-btn value="increase">
+                <span>up</span>
+            </v-btn>
+
+            <v-btn value="decrease">
+                <span>down</span>
+            </v-btn>
+
+            <v-btn value="simultaneous">
+                <span>=</span>
+            </v-btn>
+        </v-btn-toggle>
+    </div>
+
 </template>
 
 <script>
@@ -18,6 +43,7 @@
         name: "intervalChoose",
         data() {
             return {
+                playOrder: 'increase',
                 intervals: [
                     {text: 'b2', value: 1 , lineDist:1},
                     {text: '2',  value: 2 , lineDist:1},

@@ -1,9 +1,9 @@
 <template>
-    <div class="container">
-        <v-btn color="primary" class="mr-0" width="190" height="51" @click="$emit('playAgain')">
+    <div class="mb-6 mt-6 container">
+        <v-btn color="primary" width="62.5%" height="52" class="mr-2 " @click="$emit('playAgain')">
             <v-icon>mdi-play</v-icon>
         </v-btn>
-        <v-btn color="primary" x-large @click="$emit('playRandomScale')">
+        <v-btn class="button" color="primary" width="30%" height="52" @click="$emit('playRandomScale')">
             <span>next</span>
         </v-btn>
         <br>
@@ -18,7 +18,6 @@
 
 <style scoped>
     .container{
-        display: flex;
-        justify-content: space-evenly;
+        padding:0;
     }
 </style>

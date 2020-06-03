@@ -7,6 +7,8 @@ export default {
             return this.getToneChain.filter(tone => tone.toneID <= 44 - reduceAmount  && tone.id < 63);
         },
 
+        //switch Tone if first = b second = #
+        //switch Tone linedistance doesn't match
         switchTone(first, second, lineDist) {
             let changedSecond = second;
 
@@ -31,6 +33,7 @@ export default {
             return newTone;
         },
 
+        //random takes {min:'' , max:''} object
         randomRangeInt(range){
             let min = Math.ceil(range.min);
             let max = Math.floor(range.max);

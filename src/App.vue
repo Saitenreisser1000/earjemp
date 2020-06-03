@@ -1,51 +1,55 @@
 <template>
+
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
 
+    <v-toolbar
+    color="primary"
+    class="white--text"
     >
-      <div class="d-flex align-center">
-        <div>ear<span style="{size: 26px}">JEMP</span></div>
-      </div>
-
+      <v-toolbar-title>earJEMP</v-toolbar-title>
       <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
-
-    <v-content class="pa-4 mt-8">
-      <br>
-      <intervalJemp></intervalJemp>
-      <!--chordjemp></chordjemp-->
-      <!--scaleJemp></scaleJemp-->
+      <v-toolbar-items class="hidden-sm-and-down">
+        <v-btn
+                color="primary"
+                v-for="item in menu"
+                :key="item.icon"
+                :to="item.path"
+                depressed
+        >{{ item.title }}</v-btn>
+      </v-toolbar-items>
+      <v-menu class="hidden-md-and-up">
+        <!--v-toolbar-side-icon v-slot:"activator="{on}></v-toolbar-side-icon-->
+        <v-list>
+          <v-list-tile v-for="item in menu" :key="item.icon">
+            <v-list-tile-content>
+              <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+        </v-list>
+      </v-menu>
+    </v-toolbar>
+    <v-content class="ma-2">
+      <router-view></router-view>
     </v-content>
   </v-app>
 </template>
 
 <script>
-  import intervalJemp from '@/components/intervalJemp/intervalJemp';
-  //import Chordjemp from "@/components/chordjemp/chordjemp";
-  //import scaleJemp from "@/components/scaleJemp/scaleJemp";
+
 export default {
   name: 'App',
 
-  components: {
-    //Chordjemp,
-    intervalJemp,
-    //scaleJemp
-  },
-
   data: () => ({
-    //
+    menu: [
+      { path: '/', title: 'intervalJemp' },
+      { path: '/chordJemp',title: 'chordJemp' },
+      { path: '/scaleJemp',title: 'scaleJemp' }
+    ]
   }),
 };
 </script>
+<style>
+  .button{
+    text-transform: none !important;
+  }
+</style>

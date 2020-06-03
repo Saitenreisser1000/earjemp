@@ -1,13 +1,17 @@
 <template>
-    <v-card class="mx-auto blue-grey lighten-5" max-width="350" min-height="500" :disabled=lockInput>
-        <chordChoose></chordChoose>
-        <v-switch
-            v-model="autoplay"
-            :label="'autoplay'">
-        </v-switch>
-        <response :resp-color="resColor"></response>
-        <chordPlay @playAgain="playAgain" @playRandomChord="playRandomChord" @playArpeggio="playArpeggio"></chordPlay>
-        <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>
+    <v-card class="pa-2 mx-auto blue-grey lighten-5" max-width="350" min-height="550" elevation="10">
+        <v-card class="mx-auto blue-grey lighten-5" max-width="350" min-height="550" :disabled=lockInput flat>
+            <chordChoose></chordChoose>
+            <v-switch
+                    v-model="autoplay"
+                    :label="'autoplay'"
+                    class="ma-0"
+            >
+            </v-switch>
+            <response :resp-color="resColor"></response>
+            <chordPlay @playAgain="playAgain" @playRandomChord="playRandom" @playArpeggio="playArpeggio"></chordPlay>
+            <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>
+        </v-card>
     </v-card>
 </template>
 
@@ -19,6 +23,7 @@
     import response from "@/components/response";
     import toneCalcService from "@/components/mixins/toneCalcService";
     import playSounds from "@/components/mixins/playSounds";
+    import responseMixin from "@/components/mixins/responseMixin";
 
     export default {
         name: "chordjemp",
@@ -38,26 +43,23 @@
                 autoplay: true
             }
         },
-        mixins: [toneCalcService, playSounds],
+        mixins: [toneCalcService, playSounds, responseMixin],
         computed: {
             ...mapGetters(['getToneChain','getSelectedChords'])
         },
         methods: {
 
-            playAgain(){
-                if(this.firstTone === ''){
-                    this.playRandomChord()
-                }else{
-                    this.playTones()
-                }
-            },
-
-            playRandomChord(){
+            playRandom(){
+                //calc random chord
                 let rand = this.randomRangeInt({min: 0, max: this.getSelectedChords.length});
-                this.randomChord = this.getSelectedChords[rand];
+                this.randomChord = this.getSelectedChords[rand]
+
+                this.reducedList = this.reduceToneList(this.randomChord.maxRange);
+
+                //set response
                 this.setResult(this.randomChord.text)
                 this.resetResponse()
-                this.reducedList = this.reduceToneList(this.randomChord.maxRange);
+
                 this.calcFirstTone()
             },
 
@@ -74,58 +76,31 @@
             },
 
             playArpeggio(){
-                let self = this;
-
                 if(this.firstTone){
-                    this.setExactTimeout(function(){
-                        self.playAudio(self.firstTone.tone);
-                    }, 200, 20);
-
-                    this.setExactTimeout(function(){
-                        self.playAudio(self.secondTone.tone);
-                    }, 600, 20);
-
-                    this.setExactTimeout(function(){
-                        self.playAudio(self.thirdTone.tone);
-                    }, 1000, 20);
+                    this.setExactTimeout(() => { this.playAudio(this.firstTone.tone); }, 200, 20);
+                    this.setExactTimeout(() => { this.playAudio(this.secondTone.tone); }, 600, 20);
+                    this.setExactTimeout(() => { this.playAudio(this.thirdTone.tone); }, 1000, 20);
                 }
             },
 
             playTones(){
                 this.setInputlock(true)
-                let self = this;
-                this.setExactTimeout(function () {
-                    self.playAudio(self.firstTone.tone);
-                    self.playAudio(self.secondTone.tone);
-                    self.playAudio(self.thirdTone.tone);
+
+                this.setExactTimeout(() => {
+                    this.playAudio(this.firstTone.tone);
+                    this.playAudio(this.secondTone.tone);
+                    this.playAudio(this.thirdTone.tone);
                 }, 200, 20);
 
-
-
                 //reset inputlock
-                this.setExactTimeout(function () {
-                    self.setInputlock(false)
-                }, 2000, 20);
+                this.setExactTimeout(() => { this.setInputlock(false) }, 1000, 20);
             },
 
-            resetResponse() {
-                this.resColor = '#9DA0A9'
-            },
-
-            setInputlock(locked){
-                this.lockInput = locked
-            },
-
-            setResult(res) {
-                console.log(res)
-                this.result = res
-            },
             guessResult(guess) {
-                let self = this
                 if (guess == this.result) {
                     this.resColor = 'green'
-                    this.setExactTimeout(function(){
-                        self.playRandomChord()
+                    this.setExactTimeout(() => {
+                        this.playRandom()
                     },1000, 20)
                 } else {
                     this.resColor = 'indianred'
