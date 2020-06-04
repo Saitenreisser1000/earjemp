@@ -64,8 +64,8 @@
         data: () => ({
             items: [
                 {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
-                {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-image'},
-                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-help-box'}
+                {path: '/chordJemp', title: 'chordJEMP', icon: 'format_align_right'},
+                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'show_chart'}
             ],
             drawer: false,
             soundLoading: true
