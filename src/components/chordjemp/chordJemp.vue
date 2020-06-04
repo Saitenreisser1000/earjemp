@@ -75,7 +75,6 @@
                 if(this.randomChord.toneSteps.length === 3){
                     this.fourthTone = this.getInterval(this.thirdTone, this.randomChord.toneSteps[2], this.randomChord.lineDist[2])
                 }
-                console.log(this.randomChord)
                 //this.logger({chord: this.randomChord.text, firstTone: this.firstTone.name, secondTone: this.secondTone.name, thirdTone: this.thirdTone.name});
                 this.playTones();
             },

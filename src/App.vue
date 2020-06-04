@@ -59,7 +59,7 @@
                 color="primary"
 
         >
-            <span style="font-size: 14px; margin-right:5px">proudly presented by</span> <span class="white--text">JEMPCompany</span>
+            <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="white--text">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2020</span>
         </v-footer>
     </v-app>
 </template>

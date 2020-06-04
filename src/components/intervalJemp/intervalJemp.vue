@@ -42,6 +42,7 @@
                 autoplay: true,
                 playOrder: ['increase'],
                 randomOrder: '',
+                decrSwitched:'',
                 delay: 700
             }
         },
@@ -73,6 +74,8 @@
                 this.setResult(this.randomInterval.text)
                 this.resetResponse()
 
+                this.decrSwitched = false;
+
                 this.calcFirstTone();
             },
 
@@ -101,9 +104,14 @@
 
                 }else if(this.randomOrder === 'decrease'){
 
-                    let temp = this.firstTone;
-                    this.firstTone = this.secondTone;
-                    this.secondTone = temp;
+                    //switch tones
+                    if(!this.decrSwitched){
+                        let temp = this.firstTone;
+                        this.firstTone = this.secondTone;
+                        this.secondTone = temp;
+                        this.decrSwitched = true;
+                    }
+
 
                     this.setExactTimeout(() => {
                         this.playAudio(this.firstTone.tone);
