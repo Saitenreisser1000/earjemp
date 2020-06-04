@@ -27,7 +27,7 @@
                     nav
                     class="py-0"
             >
-                <v-list-item two-line :class="px-0">
+                <v-list-item two-line >
                     <v-list-item-content>
                         <v-list-item-title>Menu</v-list-item-title>
                     </v-list-item-content>
@@ -49,10 +49,10 @@
                 </v-list-item>
             </v-list>
         </v-navigation-drawer>
-
-        <v-content class="ma-2 overflow-hidden">
-            <router-view></router-view>
-        </v-content>
+        <v-overlay :value="soundLoading" :opacity="0.8">loading sounds...</v-overlay>
+            <v-content class="ma-2 overflow-hidden">
+                <router-view @setSoundLoaded="setSoundLoaded"></router-view>
+            </v-content>
     </v-app>
 </template>
 
@@ -67,8 +67,14 @@
                 {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-image'},
                 {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-help-box'}
             ],
-            drawer: false
+            drawer: false,
+            soundLoading: true
         }),
+        methods:{
+            setSoundLoaded(loading){
+                this.soundLoading = loading
+            }
+        }
     };
 </script>
 <style>

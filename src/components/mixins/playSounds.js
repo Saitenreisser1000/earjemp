@@ -1,7 +1,7 @@
 import {Howl} from 'howler'
 
 let howlMp3 = require("@/assets/sounds/newAudio.mp3");
-//let howlOGG = require("@/assets/sounds/newAudio.ogg");
+let howlOGG = require("@/assets/sounds/newAudio.ogg");
 
 export default {
     data(){
@@ -9,7 +9,7 @@ export default {
             sounds : new Howl({
                 "src": [
                     howlMp3,
-                    //howlOGG
+                    howlOGG
                 ],
                 buffer: true,
 
@@ -17,6 +17,9 @@ export default {
                     if(this.playSecond)
                     this.playSecond()
 
+                },
+                onload: () => {
+                    this.$emit('setSoundLoaded', false)
                 },
                 "sprite": {
                     "A1": [
