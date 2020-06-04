@@ -50,9 +50,17 @@
             </v-list>
         </v-navigation-drawer>
         <v-overlay :value="soundLoading" :opacity="0.8">loading sounds...</v-overlay>
-            <v-content class="ma-2 overflow-hidden">
+
+            <v-content class="ma-2 overflow-hidden background">
                 <router-view @setSoundLoaded="setSoundLoaded"></router-view>
             </v-content>
+
+        <v-footer
+                color="primary"
+
+        >
+            <span style="font-size: 14px; margin-right:5px">proudly presented by</span> <span class="white--text">JEMPCompany</span>
+        </v-footer>
     </v-app>
 </template>
 
@@ -80,5 +88,9 @@
 <style>
     .button {
         text-transform: none !important;
+    }
+    .background{
+        background-image: url("../pics/webb.png");
+        background-repeat: repeat;
     }
 </style>
