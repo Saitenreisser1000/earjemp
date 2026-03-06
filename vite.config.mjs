@@ -2,8 +2,8 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-export default defineConfig({
-  base: '/earjemp/',
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/earjemp/' : '/',
   plugins: [vue()],
   resolve: {
     alias: {
@@ -14,4 +14,4 @@ export default defineConfig({
   test: {
     environment: 'jsdom'
   }
-})
+}))
