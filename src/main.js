@@ -1,17 +1,15 @@
-import Vue from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
-import vuetify from './plugins/vuetify';
+import vuetify from './plugins/vuetify'
 import { store } from './store/store'
-import 'material-design-icons-iconfont/dist/material-design-icons.css'
-import VueRouter from 'vue-router'
-//import Routes from "@/routes";
+import '@mdi/font/css/materialdesignicons.css'
 import intervalJemp from "@/components/intervalJemp/intervalJemp";
 import chordJemp from "@/components/chordjemp/chordJemp";
 import scaleJemp from "@/components/scaleJemp/scaleJemp";
+import { createRouter, createWebHashHistory } from 'vue-router'
 
-Vue.use(VueRouter);
-
-const router = new VueRouter({
+const router = createRouter({
+  history: createWebHashHistory(),
   routes: [
     { path: '/', component: intervalJemp},
     { path: '/chordJemp', component: chordJemp},
@@ -19,11 +17,4 @@ const router = new VueRouter({
   ]
 });
 
-Vue.config.productionTip = false;
-
-new Vue({
-  vuetify,
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app');
+createApp(App).use(vuetify).use(router).use(store).mount('#app')

@@ -4,8 +4,10 @@
                 v-model="selectInt"
                 :items="intervals"
                 mandatory
-                small-chips
-                deletable-chips
+                item-title="text"
+                item-value="value"
+                chips
+                closable-chips
                 return-object
                 label="Choose Intervals"
                 multiple

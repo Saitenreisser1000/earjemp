@@ -1,7 +1,6 @@
 import {Howl} from 'howler'
-
-let howlMp3 = require("@/assets/sounds/newAudio.mp3");
-let howlOGG = require("@/assets/sounds/newAudio.ogg");
+import howlMp3 from '@/assets/sounds/newAudio.mp3'
+import howlOGG from '@/assets/sounds/newAudio.ogg'
 
 export default {
     data(){

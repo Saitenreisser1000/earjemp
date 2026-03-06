@@ -2,8 +2,10 @@
     <v-select
             v-model="selectedChords"
             :items="chords"
-            small-chips
-            deletable-chips
+            item-title="text"
+            item-value="value"
+            chips
+            closable-chips
             return-object
             label="choose chord"
             multiple

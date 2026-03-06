@@ -2,13 +2,12 @@
     <v-app>
         <nav>
             <v-toolbar
-                    bar
-                    dense
+                    density="compact"
                     color="primary"
                     class="white--text"
                     flat
             >
-                <v-icon dark @click.stop="drawer = !drawer">menu</v-icon>
+                <v-icon dark @click.stop="drawer = !drawer">mdi-menu</v-icon>
                 <v-spacer></v-spacer>
                 <v-toolbar-title style="float:right">earJEMP</v-toolbar-title>
 
@@ -28,32 +27,24 @@
                     class="py-0"
             >
                 <v-list-item two-line >
-                    <v-list-item-content>
-                        <v-list-item-title>Menu</v-list-item-title>
-                    </v-list-item-content>
+                    <v-list-item-title>Menu</v-list-item-title>
                 </v-list-item>
 
                 <v-list-item
                         v-for="item in items"
                         :key="item.title"
+                        :title="item.title"
+                        :prepend-icon="item.icon"
                         :to="item.path"
                         link
-                >
-                    <v-list-item-icon>
-                        <v-icon>{{ item.icon }}</v-icon>
-                    </v-list-item-icon>
-
-                    <v-list-item-content>
-                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
+                />
             </v-list>
         </v-navigation-drawer>
-        <v-overlay :value="soundLoading" :opacity="0.8">loading sounds...</v-overlay>
+        <v-overlay :model-value="soundLoading" :opacity="0.8">loading sounds...</v-overlay>
 
-            <v-content class="ma-2 overflow-hidden background">
+            <v-main class="ma-2 overflow-hidden background">
                 <router-view @setSoundLoaded="setSoundLoaded"></router-view>
-            </v-content>
+            </v-main>
 
         <v-footer
                 color="primary"
@@ -72,8 +63,8 @@
         data: () => ({
             items: [
                 {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
-                {path: '/chordJemp', title: 'chordJEMP', icon: 'format_align_right'},
-                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'show_chart'}
+                {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-format-align-right'},
+                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'}
             ],
             drawer: false,
             soundLoading: true

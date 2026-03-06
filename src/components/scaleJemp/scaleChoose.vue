@@ -3,8 +3,10 @@
             v-model="selectedScales"
             :items="scales"
             mandatory
-            small-chips
-            deletable-chips
+            item-title="text"
+            item-value="value"
+            chips
+            closable-chips
             return-object
             label="choose scale"
             multiple
