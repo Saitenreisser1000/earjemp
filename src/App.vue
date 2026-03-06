@@ -4,10 +4,12 @@
             <v-toolbar
                     density="compact"
                     color="primary"
-                    class="white--text"
+                    class="text-white px-4"
                     flat
             >
-                <v-icon dark @click.stop="drawer = !drawer">mdi-menu</v-icon>
+                <v-btn icon variant="text" color="white" class="ml-n2" @click.stop="drawer = !drawer">
+                    <v-icon>mdi-menu</v-icon>
+                </v-btn>
                 <v-spacer></v-spacer>
                 <v-toolbar-title style="float:right">earJEMP</v-toolbar-title>
 
@@ -17,9 +19,9 @@
         <v-navigation-drawer
                 v-model="drawer"
                 color="primary"
+                theme="dark"
                 absolute
                 temporary
-                dark
         >
             <v-list
                     dense
@@ -40,17 +42,23 @@
                 />
             </v-list>
         </v-navigation-drawer>
-        <v-overlay :model-value="soundLoading" :opacity="0.8">loading sounds...</v-overlay>
+        <v-overlay :model-value="soundLoading" :opacity="0.82" class="align-center justify-center">
+            <v-sheet rounded="lg" elevation="8" class="pa-4" min-width="280">
+                <div class="text-subtitle-2 mb-2">sound load</div>
+                <v-progress-linear indeterminate color="primary"></v-progress-linear>
+                <div class="text-caption mt-2">{{ soundStatus }}</div>
+            </v-sheet>
+        </v-overlay>
 
             <v-main class="ma-2 overflow-hidden background">
-                <router-view @setSoundLoaded="setSoundLoaded"></router-view>
+                <router-view @setSoundLoaded="setSoundLoaded" @setSoundStatus="setSoundStatus"></router-view>
             </v-main>
 
         <v-footer
                 color="primary"
 
         >
-            <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="white--text">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2020</span>
+            <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="text-white">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2020</span>
             <v-spacer></v-spacer>
             <span class="mr-2">v.1.0</span>
         </v-footer>
@@ -69,11 +77,15 @@
                 {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'}
             ],
             drawer: false,
-            soundLoading: true
+            soundLoading: false,
+            soundStatus: 'loading sounds...'
         }),
         methods:{
             setSoundLoaded(loading){
                 this.soundLoading = loading
+            },
+            setSoundStatus(status){
+                this.soundStatus = status
             }
         }
     };

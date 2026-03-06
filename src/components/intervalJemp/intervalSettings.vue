@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="d-flex flex-column ga-4">
         <v-select
                 v-model="selectInt"
                 :items="intervals"
@@ -14,7 +14,7 @@
         ></v-select>
         <v-btn-toggle
                 @change="$emit('setPlayOrder', playOrder)"
-                class="white--text"
+                class="text-white mt-n1"
                 v-model="playOrder"
                 dense
                 active-class="primary"

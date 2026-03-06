@@ -3,7 +3,7 @@
         <br>
 
         <v-btn-toggle
-                class="white--text"
+                class="text-white"
                 v-model="chooseOrder"
                 dense
                 active-class="primary"

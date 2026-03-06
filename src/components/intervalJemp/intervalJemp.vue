@@ -1,11 +1,10 @@
 <template>
-    <v-card class="pa-2 mx-auto blue-grey lighten-5" max-width="350" min-height="550" elevation="10">
-    <v-card class="mx-auto blue-grey lighten-5" max-width="350" min-height="550" :disabled=lockInput flat>
+    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5" max-width="350" min-height="550" elevation="10">
+    <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-4" max-width="350" min-height="550" :disabled=lockInput flat>
         <interval-settings @setPlayOrder="setPlayOrder"></interval-settings>
         <v-switch
             v-model="autoplay"
             :label="'autoplay'"
-            class="mt-4"
         >
         </v-switch>
         <response :resp-color="resColor"></response>

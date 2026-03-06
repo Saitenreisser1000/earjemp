@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" v-for="(int, index) in getSelectedIntervals" x-large>{{int.text}}
+        <v-btn :key="index" @click="guessInterval(int.value)" class="mb-2 mr-2" color="primary" v-for="(int, index) in getSelectedIntervals" size="x-large">{{int.text}}
         </v-btn>
     </div>
 </template>

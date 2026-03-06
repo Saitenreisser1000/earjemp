@@ -1,17 +1,15 @@
 <template>
-    <v-card class="pa-2 mx-auto blue-grey lighten-5" max-width="350" min-height="550" elevation="10">
-    <v-card class="mx-auto blue-grey lighten-5 pb-5" max-width="350" min-height="550" :disabled=lockInput flat>
+    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5" max-width="350" min-height="550" elevation="10">
+    <v-card class="mx-auto bg-blue-grey-lighten-5 pb-5 d-flex flex-column ga-4" max-width="350" min-height="550" :disabled=lockInput flat>
         <scaleChoose></scaleChoose>
             <v-switch
                 v-model="autoplay"
                 :label="'autoplay'"
-                class="ma-0"
             >
             </v-switch>
             <v-switch
                 v-model="offsetFirst"
                 :label="'1st Tone Offset'"
-                class="ma-0"
             >
         </v-switch>
         <response :resp-color="resColor"></response>
