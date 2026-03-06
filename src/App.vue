@@ -56,7 +56,8 @@
 
         <v-footer
                 color="primary"
-
+                height="72"
+                class="px-4 d-flex align-center"
         >
             <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="text-white">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2020</span>
             <v-spacer></v-spacer>

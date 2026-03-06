@@ -18,10 +18,9 @@
 </script>
 
 <style scoped>
-    .container{
+.container{
         /*display: flex;
         justify-content: space-evenly;*/
-        margin:0;
         padding:0;
     }
 </style>
