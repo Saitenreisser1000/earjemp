@@ -1,20 +1,48 @@
 <template>
-    <div class="d-flex flex-column ga-4">
+    <div>
+        <div class="choose-header">
+            <v-menu location="bottom end" :close-on-content-click="false">
+                <template #activator="{ props }">
+                    <v-btn
+                        v-bind="props"
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        prepend-icon="mdi-cog"
+                    >
+                        options
+                    </v-btn>
+                </template>
+                <v-card min-width="220" class="pa-2">
+                    <v-switch
+                        v-model="localAutoplay"
+                        label="autoplay"
+                        class="my-0"
+                        density="compact"
+                        hide-details
+                    />
+                </v-card>
+            </v-menu>
+        </div>
+        <div class="between-slot">
+            <slot name="between"></slot>
+        </div>
         <v-select
                 v-model="selectInt"
                 :items="intervals"
                 mandatory
                 item-title="text"
                 item-value="value"
-                chips
-                closable-chips
                 return-object
-                label="Choose Intervals"
+                label="Select Intervals"
                 multiple
-        ></v-select>
+                hide-details
+        >
+            <template #selection></template>
+        </v-select>
         <v-btn-toggle
                 @change="$emit('setPlayOrder', playOrder)"
-                class="text-white mt-n1"
+                class="text-white mt-2"
                 v-model="playOrder"
                 dense
                 active-class="primary"
@@ -41,8 +69,15 @@
 <script>
     import {mapActions} from 'vuex';
 
-    export default {
+export default {
         name: "intervalChoose",
+        props: {
+            autoplay: {
+                type: Boolean,
+                default: true
+            }
+        },
+        emits: ['update:autoplay', 'setPlayOrder'],
         data() {
             return {
                 playOrder: 'increase',
@@ -74,6 +109,16 @@
                 ]
             }
         },
+        computed: {
+            localAutoplay: {
+                get() {
+                    return this.autoplay;
+                },
+                set(value) {
+                    this.$emit('update:autoplay', value);
+                }
+            }
+        },
 
         methods: {
             ...mapActions(['setSelectedIntervals']),
@@ -91,7 +136,14 @@
 </script>
 
 <style scoped>
-
+    .choose-header {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 4px;
+    }
+    .between-slot {
+        margin-bottom: 10px;
+    }
     .v-btn{
         text-transform: none !important;
     }

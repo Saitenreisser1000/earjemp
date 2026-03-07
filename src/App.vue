@@ -1,10 +1,10 @@
 <template>
-    <v-app>
-        <nav>
+    <v-app class="app-shell">
+        <nav class="app-nav">
             <v-toolbar
-                    density="compact"
+                    height="5vh"
                     color="primary"
-                    class="text-white px-4"
+                    class="text-white px-4 app-header"
                     flat
             >
                 <v-btn icon variant="text" color="white" class="ml-n2" @click.stop="drawer = !drawer">
@@ -50,14 +50,14 @@
             </v-sheet>
         </v-overlay>
 
-            <v-main class="ma-2 overflow-hidden background">
+            <v-main class="overflow-hidden background app-main">
                 <router-view @setSoundLoaded="setSoundLoaded" @setSoundStatus="setSoundStatus"></router-view>
             </v-main>
 
         <v-footer
                 color="primary"
-                height="72"
-                class="px-4 d-flex align-center"
+                height="5vh"
+                class="px-4 d-flex align-center app-footer"
         >
             <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="text-white">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2020</span>
             <v-spacer></v-spacer>
@@ -75,7 +75,8 @@
             items: [
                 {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
                 {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-format-align-right'},
-                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'}
+                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'},
+                {path: '/melodyJemp', title: 'melodyJEMP', icon: 'mdi-music-note'}
             ],
             drawer: false,
             soundLoading: false,
@@ -98,5 +99,19 @@
     .background{
         background-image: url("../pics/webb.png");
         background-repeat: repeat;
+    }
+    .app-shell {
+        height: 100vh;
+        overflow: hidden;
+    }
+    .app-nav,
+    .app-header,
+    .app-footer {
+        height: 5vh !important;
+        min-height: 5vh !important;
+    }
+    .app-main {
+        height: 90vh !important;
+        min-height: 90vh !important;
     }
 </style>

@@ -1,17 +1,12 @@
 <template>
-    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5" max-width="350" min-height="550" elevation="10">
+        <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
         <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
-            <chordChoose></chordChoose>
-            <v-switch
-                    v-model="autoplay"
-                    :label="'autoplay'"
-                    class="my-0"
-                    density="compact"
-                    hide-details
-            >
-            </v-switch>
-            <response :resp-color="resColor"></response>
-            <chordPlay @playAgain="playAgain" @playRandomChord="playRandom" @playArpeggio="playArpeggio"></chordPlay>
+            <chordChoose v-model:autoplay="autoplay" v-model:play-order="playOrder">
+                <template #between>
+                    <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="chord" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+                </template>
+            </chordChoose>
+            <chordPlay @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
             <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>
         </v-card>
     </v-card>
@@ -22,14 +17,14 @@
     import chordChoose from "@/components/chordjemp/chordChoose";
     import chordPlay from "@/components/chordjemp/chordPlay";
     import guessChord from "@/components/chordjemp/guessChord";
-    import response from "@/components/response";
     import toneCalcService from "@/components/mixins/toneCalcService";
     import playSounds from "@/components/mixins/playSounds";
     import responseMixin from "@/components/mixins/responseMixin";
+    import StaffRenderer from "@/features/notation/components/StaffRenderer";
 
     export default {
         name: "chordjemp",
-        components: {chordChoose, chordPlay, guessChord, response},
+        components: {chordChoose, chordPlay, guessChord, StaffRenderer},
         data() {
             return {
                 lockInput: false,
@@ -43,12 +38,43 @@
                 thirdTone: '',
                 fourthTone: '',
 
-                autoplay: true
+                autoplay: true,
+                playOrder: ['simultaneous'],
+                randomOrder: 'simultaneous'
             }
         },
         mixins: [toneCalcService, playSounds, responseMixin],
         computed: {
-            ...mapGetters(['getToneChain','getSelectedChords'])
+            ...mapGetters(['getToneChain','getSelectedChords']),
+            notationNotes() {
+                const tones = [this.firstTone, this.secondTone, this.thirdTone, this.fourthTone]
+                return tones.filter((tone) => tone && tone.name).map((tone) => tone.name)
+            },
+            notationOctaveOffset() {
+                return 1
+            },
+            notationAdjustedOctaves() {
+                return this.notationNotes
+                    .map((n) => /(\d)$/.exec(n))
+                    .filter(Boolean)
+                    .map((m) => Number(m[1]) + this.notationOctaveOffset)
+            },
+            notationClef() {
+                if (!this.notationAdjustedOctaves.length) return 'treble'
+                return Math.max(...this.notationAdjustedOctaves) <= 3 ? 'bass' : 'treble'
+            },
+            notationClefOctave() {
+                if (!this.notationAdjustedOctaves.length) return ''
+                if (this.notationClef === 'bass') {
+                    return Math.min(...this.notationAdjustedOctaves) <= 2 ? '8vb' : ''
+                }
+                return Math.max(...this.notationAdjustedOctaves) >= 6 ? '8va' : ''
+            },
+            notationFeedbackState() {
+                if (this.resColor === 'green') return 'success'
+                if (this.resColor === 'indianred') return 'error'
+                return 'neutral'
+            }
         },
         methods: {
 
@@ -64,6 +90,10 @@
                 this.randomChord = this.getSelectedChords[rand]
 
                 this.reducedList = this.reduceToneList(this.randomChord.maxRange);
+                this.randomOrder = this.playOrder[0] || 'simultaneous';
+                if (this.playOrder.length > 1) {
+                    this.randomOrder = this.playOrder[this.randomRangeInt({min: 0, max: this.playOrder.length})]
+                }
 
                 //set response
                 this.setResult(this.randomChord.text)
@@ -100,18 +130,25 @@
 
             playTones(){
                 this.setInputlock(true)
+                const chordTones = [this.firstTone, this.secondTone, this.thirdTone];
+                if (this.randomChord.toneSteps.length === 3) chordTones.push(this.fourthTone);
 
-                this.setExactTimeout(() => {
-                    this.playAudio(this.firstTone.tone);
-                    this.playAudio(this.secondTone.tone);
-                    this.playAudio(this.thirdTone.tone);
-                    if(this.randomChord.toneSteps.length === 3){
-                        this.playAudio(this.fourthTone.tone)
-                    }
-                }, 200, 20);
+                if (this.randomOrder === 'simultaneous') {
+                    this.setExactTimeout(() => {
+                        for (const tone of chordTones) this.playAudio(tone.tone);
+                    }, 200, 20);
+                    this.setExactTimeout(() => { this.setInputlock(false) }, 1000, 20);
+                    return;
+                }
 
-                //reset inputlock
-                this.setExactTimeout(() => { this.setInputlock(false) }, 1000, 20);
+                const ordered = this.randomOrder === 'decrease' ? chordTones.slice().reverse() : chordTones;
+                let start = 200;
+                const delay = 350;
+                for (const tone of ordered) {
+                    this.setExactTimeout(() => { this.playAudio(tone.tone); }, start, 20);
+                    start += delay;
+                }
+                this.setExactTimeout(() => { this.setInputlock(false) }, start + 200, 20);
             },
 
             guessResult(guess) {
@@ -131,5 +168,9 @@
 </script>
 
 <style scoped>
-
+    .exercise-card {
+        max-height: calc(90vh - 16px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 </style>

@@ -1,0 +1,405 @@
+<template>
+    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
+        <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled="lockInput" flat>
+            <div class="choose-header">
+                <v-select
+                    v-model="bpm"
+                    :items="bpmOptions"
+                    item-title="label"
+                    item-value="value"
+                    label="BPM"
+                    density="compact"
+                    hide-details
+                    class="bpm-select"
+                />
+                <v-menu location="bottom end" :close-on-content-click="false">
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            variant="text"
+                            size="small"
+                            color="primary"
+                            prepend-icon="mdi-cog"
+                        >
+                            options
+                        </v-btn>
+                    </template>
+                <v-card min-width="220" class="pa-2">
+                    <v-switch
+                        v-model="autoplay"
+                        label="autoplay"
+                        class="my-0"
+                        density="compact"
+                        hide-details
+                    />
+                    <v-switch
+                        v-model="showFirstToneHint"
+                        label="show 1st note"
+                        class="my-0"
+                        density="compact"
+                        hide-details
+                    />
+                </v-card>
+            </v-menu>
+        </div>
+
+            <div class="between-slot">
+                <div class="staff-input-wrap" @click="handleStaffClick">
+                    <staff-renderer
+                        :notes="notationNotes"
+                        :comparison-notes="showCheckOverlay ? targetMelodyNames : []"
+                        :mismatch-indices="showCheckOverlay ? mismatchIndices : []"
+                        :clef="notationClef"
+                        :feedback-state="notationFeedbackState"
+                        :octave-offset="notationOctaveOffset"
+                        :optimize-layout="false"
+                        :preview-note="hoverNote"
+                        :show-insert-marker="targetMelody.length > 0"
+                        :insert-index="enteredMelodyNotes.length"
+                        :insert-count="melodyLength"
+                    />
+                    <div class="staff-input-overlay" @mousemove="handleStaffHover" @mouseleave="clearStaffHover"></div>
+                    <div
+                        v-if="hoverNote"
+                        class="hover-note"
+                        :style="{ left: `${hoverLeft}px`, top: `${hoverTop}px` }"
+                    >
+                        {{ hoverNote }}
+                    </div>
+                </div>
+                <div class="text-caption input-hint">click in staff to draw notes</div>
+            </div>
+
+            <v-select
+                v-model="melodyLength"
+                :items="lengthOptions"
+                item-title="label"
+                item-value="value"
+                label="Select Melody Length"
+                density="compact"
+                hide-details
+                class="length-select"
+                variant="underlined"
+            />
+
+            <div class="mb-2 mt-2 container">
+                <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
+                    <v-icon>mdi-play</v-icon>
+                </v-btn>
+                <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="playRandomMelody">
+                    <span>next</span>
+                </v-btn>
+            </div>
+
+            <div class="mb-2">
+                <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">undo</v-btn>
+                <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">clear</v-btn>
+                <v-btn color="primary" size="small" @click="checkAnswer">check</v-btn>
+            </div>
+        </v-card>
+    </v-card>
+</template>
+
+<script>
+import { mapGetters } from 'vuex'
+import toneCalcService from "@/components/mixins/toneCalcService";
+import playSounds from "@/components/mixins/playSounds";
+import responseMixin from "@/components/mixins/responseMixin";
+import StaffRenderer from "@/features/notation/components/StaffRenderer";
+
+export default {
+    name: "melodyJemp",
+    components: { StaffRenderer },
+    mixins: [toneCalcService, playSounds, responseMixin],
+    data() {
+        return {
+            lockInput: false,
+            autoplay: true,
+            melodyLength: 5,
+            bpm: 120,
+            targetMelody: [],
+            userMelody: [],
+            resColor: '#9DA0A9',
+            firstTone: '',
+            showFirstToneHint: true,
+            hoverNote: '',
+            hoverLeft: 0,
+            hoverTop: 0,
+            showCheckOverlay: false
+        }
+    },
+    computed: {
+        ...mapGetters(['getToneChain']),
+        lengthOptions() {
+            return [
+                { label: '4 Notes', value: 4 },
+                { label: '5 Notes', value: 5 },
+                { label: '6 Notes', value: 6 },
+                { label: '8 Notes', value: 8 }
+            ]
+        },
+        bpmOptions() {
+            return [
+                { label: '60', value: 60 },
+                { label: '80', value: 80 },
+                { label: '100', value: 100 },
+                { label: '120', value: 120 },
+                { label: '140', value: 140 },
+                { label: '160', value: 160 }
+            ]
+        },
+        notePalette() {
+            return this.getToneChain.filter((tone) => (
+                /^[A-G][34]$/.test(tone.name) &&
+                tone.id < 63
+            ))
+        },
+        notationNotes() {
+            return this.enteredMelodyNotes
+        },
+        targetMelodyNames() {
+            return this.targetMelody.map((t) => t.name)
+        },
+        enteredMelodyNotes() {
+            if (this.showFirstToneHint && this.targetMelody.length > 0) {
+                return [this.targetMelody[0].name, ...this.userMelody]
+            }
+            return this.userMelody
+        },
+        notationClef() {
+            if (!this.notationNotes.length) return 'treble'
+            const maxOctave = Math.max(...this.notationNotes.map((n) => Number((/(\d)$/.exec(n) || [])[1] || 4) + this.notationOctaveOffset))
+            return maxOctave <= 3 ? 'bass' : 'treble'
+        },
+        notationOctaveOffset() {
+            return 1
+        },
+        notationFeedbackState() {
+            if (this.resColor === 'green') return 'success'
+            if (this.resColor === 'indianred') return 'error'
+            return 'neutral'
+        },
+        maxInputLength() {
+            return this.showFirstToneHint ? Math.max(0, this.melodyLength - 1) : this.melodyLength
+        },
+        mismatchIndices() {
+            const target = this.targetMelodyNames
+            const entered = this.enteredMelodyNotes
+            const length = Math.max(target.length, entered.length)
+            const mismatches = []
+            for (let i = 0; i < length; i++) {
+                if (target[i] !== entered[i]) mismatches.push(i)
+            }
+            return mismatches
+        }
+    },
+    methods: {
+        playAgain() {
+            if (!this.targetMelody.length) {
+                this.playRandomMelody()
+                return
+            }
+            this.playTones()
+        },
+        playRandomMelody() {
+            this.clearInput()
+            this.resetResponse()
+            this.showCheckOverlay = false
+
+            const pool = this.notePalette
+            if (!pool.length) return
+
+            this.targetMelody = []
+            for (let i = 0; i < this.melodyLength; i++) {
+                const idx = this.randomRangeInt({ min: 0, max: pool.length })
+                this.targetMelody.push(pool[idx])
+            }
+            this.playTones()
+        },
+        playTones() {
+            if (!this.targetMelody.length) return
+            this.setInputlock(true)
+            this.firstTone = this.targetMelody[0]
+            let start = 200
+            const delay = Math.round(60000 / this.bpm)
+            for (const tone of this.targetMelody) {
+                this.setExactTimeout(() => {
+                    this.playAudio(tone.tone)
+                }, start, 20)
+                start += delay
+            }
+            this.setExactTimeout(() => { this.setInputlock(false) }, start + 100, 20)
+        },
+        addInputNote(noteName) {
+            if (this.userMelody.length >= this.maxInputLength) return
+            this.showCheckOverlay = false
+            this.userMelody.push(noteName)
+        },
+        handleStaffClick(event) {
+            if (!this.targetMelody.length) return
+            const picked = this.pickNoteFromPointerEvent(event)
+            if (!picked || !picked.noteName) return
+            this.addInputNote(picked.noteName)
+        },
+        handleStaffHover(event) {
+            const picked = this.pickNoteFromPointerEvent(event)
+            if (!picked || !picked.noteName) {
+                this.clearStaffHover()
+                return
+            }
+            this.hoverNote = picked.noteName
+            this.hoverLeft = picked.xInWrap + 10
+            this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+        },
+        clearStaffHover() {
+            this.hoverNote = ''
+        },
+        pickNoteFromPointerEvent(event) {
+            const overlay = event.currentTarget
+            const wrap = overlay.closest('.staff-input-wrap')
+            if (!wrap) return null
+            const svg = wrap.querySelector('svg')
+            if (!svg) return null
+
+            const wrapRect = wrap.getBoundingClientRect()
+            const svgRect = svg.getBoundingClientRect()
+            const xInWrap = event.clientX - wrapRect.left
+            const yInSvg = event.clientY - svgRect.top
+            const clampedYInSvg = Math.max(0, Math.min(svgRect.height, yInSvg))
+            const noteName = this.mapYToNoteName(clampedYInSvg)
+            const snappedYInSvg = this.noteYForClef(noteName, this.notationClef)
+            const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
+
+            return { noteName, xInWrap, snappedYInWrap }
+        },
+        mapYToNoteName(y) {
+            const candidates = this.notePalette.map((tone) => tone.name)
+            if (!candidates.length) return ''
+
+            let best = candidates[0]
+            let bestDist = Number.POSITIVE_INFINITY
+            for (const name of candidates) {
+                const expectedY = this.noteYForClef(name, this.notationClef)
+                const dist = Math.abs(expectedY - y)
+                if (dist < bestDist) {
+                    bestDist = dist
+                    best = name
+                }
+            }
+            return best
+        },
+        noteYForClef(noteName, clef) {
+            // SVG coordinates from StaffRenderer/VexFlow: bottom line at y≈55, 5px per diatonic step.
+            const bottomIndex = clef === 'bass' ? 18 : 30 // bass G2, treble E4
+            const bottomY = 55
+            const idx = this.diatonicIndex(noteName, this.notationOctaveOffset)
+            const drawingOffsetPx = 40 // one ninth (8 diatonic steps) downward correction
+            return bottomY - (idx - bottomIndex) * 5 + drawingOffsetPx
+        },
+        diatonicIndex(noteName, octaveOffset = 0) {
+            const match = /^([A-Ga-g])(\d)$/.exec(noteName || '')
+            if (!match) return 0
+            const letter = match[1].toLowerCase()
+            const octave = Number(match[2]) + octaveOffset
+            const map = { c: 0, d: 1, e: 2, f: 3, g: 4, a: 5, b: 6 }
+            return octave * 7 + map[letter]
+        },
+        undoInput() {
+            this.showCheckOverlay = false
+            this.userMelody.pop()
+        },
+        clearInput() {
+            this.showCheckOverlay = false
+            this.userMelody = []
+        },
+        checkAnswer() {
+            const target = this.targetMelodyNames
+            const entered = this.enteredMelodyNotes
+            const sameLength = entered.length === target.length
+            const equal = sameLength && entered.every((n, i) => n === target[i])
+            this.showCheckOverlay = true
+            this.resColor = equal ? 'green' : 'indianred'
+            if (equal && this.autoplay) {
+                this.setExactTimeout(() => {
+                    this.playRandomMelody()
+                }, 1000, 20)
+            }
+        }
+    },
+    watch: {
+        showFirstToneHint() {
+            this.clearInput()
+            this.resetResponse()
+            this.showCheckOverlay = false
+        }
+    }
+}
+</script>
+
+<style scoped>
+.exercise-card {
+    max-height: calc(90vh - 16px);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.choose-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+.bpm-select {
+    max-width: 120px;
+}
+.length-select :deep(.v-field) {
+    height: 42px !important;
+    min-height: 42px !important;
+}
+.length-select :deep(.v-input__control) {
+    min-height: 42px !important;
+}
+.length-select :deep(.v-field__input) {
+    min-height: 42px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+.between-slot {
+    margin-bottom: 10px;
+}
+.staff-input-wrap {
+    position: relative;
+    cursor: crosshair;
+}
+.staff-input-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+.hover-note {
+    position: absolute;
+    z-index: 3;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 12px;
+    line-height: 1.1;
+    pointer-events: none;
+}
+.input-hint {
+    margin-top: 2px;
+}
+.container{
+    padding: 0;
+}
+.btn{
+    width: 30%;
+    height: 50px;
+    font-size: 10px;
+    text-transform: none !important;
+}
+.depth-btn {
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.28);
+    filter: brightness(0.96);
+}
+</style>

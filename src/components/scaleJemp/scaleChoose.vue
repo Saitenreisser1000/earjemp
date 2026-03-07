@@ -1,23 +1,94 @@
 <template>
-    <v-select
-            v-model="selectedScales"
-            :items="scales"
-            mandatory
-            item-title="text"
-            item-value="value"
-            chips
-            closable-chips
-            return-object
-            label="choose scale"
-            multiple
-    ></v-select>
+    <div>
+        <div class="choose-header">
+            <v-menu location="bottom end" :close-on-content-click="false">
+                <template #activator="{ props }">
+                    <v-btn
+                        v-bind="props"
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        prepend-icon="mdi-cog"
+                    >
+                        options
+                    </v-btn>
+                </template>
+                <v-card min-width="220" class="pa-2">
+                    <v-switch
+                        v-model="localAutoplay"
+                        label="autoplay"
+                        class="my-0"
+                        density="compact"
+                        hide-details
+                    />
+                    <v-switch
+                        v-model="localOffsetFirst"
+                        label="1st Tone Offset"
+                        class="my-0"
+                        density="compact"
+                        hide-details
+                    />
+                </v-card>
+            </v-menu>
+        </div>
+        <div class="between-slot">
+            <slot name="between"></slot>
+        </div>
+        <v-select
+                v-model="selectedScales"
+                :items="scales"
+                mandatory
+                item-title="text"
+                item-value="value"
+                return-object
+                label="Select Scales"
+                multiple
+                hide-details
+        >
+            <template #selection></template>
+        </v-select>
+        <v-btn-toggle
+                v-model="localPlayOrder"
+                class="text-white mt-2"
+                dense
+                active-class="primary"
+                background-color="secondary"
+                multiple
+                mandatory
+        >
+            <v-btn value="increase">
+                <span>up</span>
+            </v-btn>
+            <v-btn value="decrease">
+                <span>down</span>
+            </v-btn>
+            <v-btn value="simultaneous">
+                <span>=</span>
+            </v-btn>
+        </v-btn-toggle>
+    </div>
 </template>
 
 <script>
     import {mapActions} from "vuex";
 
-    export default {
+export default {
         name: "scaleChoose",
+        props: {
+            autoplay: {
+                type: Boolean,
+                default: true
+            },
+            offsetFirst: {
+                type: Boolean,
+                default: true
+            },
+            playOrder: {
+                type: Array,
+                default: () => ['increase']
+            }
+        },
+        emits: ['update:autoplay', 'update:offsetFirst', 'update:playOrder'],
         data() {
             return {
                 scales: [
@@ -44,6 +115,32 @@
                 ]
             }
         },
+        computed: {
+            localAutoplay: {
+                get() {
+                    return this.autoplay;
+                },
+                set(value) {
+                    this.$emit('update:autoplay', value);
+                }
+            },
+            localOffsetFirst: {
+                get() {
+                    return this.offsetFirst;
+                },
+                set(value) {
+                    this.$emit('update:offsetFirst', value);
+                }
+            },
+            localPlayOrder: {
+                get() {
+                    return this.playOrder;
+                },
+                set(value) {
+                    this.$emit('update:playOrder', value);
+                }
+            }
+        },
 
         methods: {
           ...mapActions(['setSelectedScales']),
@@ -61,5 +158,15 @@
 </script>
 
 <style scoped>
-
+    .choose-header {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 4px;
+    }
+    .between-slot {
+        margin-bottom: 10px;
+    }
+    .v-btn{
+        text-transform: none !important;
+    }
 </style>

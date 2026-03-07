@@ -1,16 +1,11 @@
 <template>
-    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5" max-width="350" min-height="550" elevation="10">
+    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
     <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
-        <interval-settings @setPlayOrder="setPlayOrder"></interval-settings>
-        <v-switch
-            v-model="autoplay"
-            :label="'autoplay'"
-            class="my-0"
-            density="compact"
-            hide-details
-        >
-        </v-switch>
-        <response :resp-color="resColor"></response>
+        <interval-settings v-model:autoplay="autoplay" @setPlayOrder="setPlayOrder">
+            <template #between>
+                <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" :mode="notationMode" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+            </template>
+        </interval-settings>
         <interval-play @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
         <guessInterval @guessResult="guessResult"></guessInterval>
     </v-card>
@@ -22,10 +17,10 @@
     import IntervalSettings from "@/components/intervalJemp/intervalSettings";
     import guessInterval from "@/components/intervalJemp/guessInterval";
     import {mapGetters} from 'vuex'
-    import Response from "@/components/response";
     import toneCalcService from "@/components/mixins/toneCalcService";
     import playSounds from "@/components/mixins/playSounds";
     import responseMixin from "@/components/mixins/responseMixin";
+    import StaffRenderer from "@/features/notation/components/StaffRenderer";
 
     export default {
         name: "intervallOne",
@@ -49,14 +44,48 @@
             }
         },
         components: {
-            Response,
+            StaffRenderer,
             IntervalSettings,
             IntervalPlay,
             guessInterval
         },
         mixins: [toneCalcService, playSounds, responseMixin],
         computed: {
-            ...mapGetters(['getToneChain', 'getSelectedIntervals'])
+            ...mapGetters(['getToneChain', 'getSelectedIntervals']),
+            notationNotes() {
+                const notes = [];
+                if (this.firstTone && this.firstTone.name) notes.push(this.firstTone.name);
+                if (this.secondTone && this.secondTone.name) notes.push(this.secondTone.name);
+                return notes;
+            },
+            notationClef() {
+                if (!this.notationAdjustedOctaves.length) return 'treble';
+                return Math.max(...this.notationAdjustedOctaves) <= 3 ? 'bass' : 'treble';
+            },
+            notationClefOctave() {
+                if (!this.notationAdjustedOctaves.length) return '';
+                if (this.notationClef === 'bass') {
+                    return Math.min(...this.notationAdjustedOctaves) <= 2 ? '8vb' : '';
+                }
+                return Math.max(...this.notationAdjustedOctaves) >= 6 ? '8va' : '';
+            },
+            notationMode() {
+                return this.randomOrder === 'simultaneous' ? 'chord' : 'melody';
+            },
+            notationOctaveOffset() {
+                return 1;
+            },
+            notationAdjustedOctaves() {
+                return this.notationNotes
+                    .map((n) => /(\d)$/.exec(n))
+                    .filter(Boolean)
+                    .map((m) => Number(m[1]) + this.notationOctaveOffset);
+            },
+            notationFeedbackState() {
+                if (this.resColor === 'green') return 'success'
+                if (this.resColor === 'indianred') return 'error'
+                return 'neutral'
+            }
         },
 
         methods: {
@@ -144,9 +173,11 @@
             guessResult(guess) {
                 if (guess == this.result) {
                     this.resColor = 'green'
-                    this.setExactTimeout(() => {
-                        this.playRandom()
-                    },1000, 20)
+                    if (this.autoplay) {
+                        this.setExactTimeout(() => {
+                            this.playRandom()
+                        },1000, 20)
+                    }
 
                 } else {
                     this.resColor = 'indianred'
@@ -161,5 +192,9 @@
 </script>
 
 <style scoped>
-
+    .exercise-card {
+        max-height: calc(90vh - 16px);
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
 </style>
