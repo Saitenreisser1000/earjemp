@@ -2,16 +2,18 @@
     <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
         <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled="lockInput" flat>
             <div class="choose-header">
-                <v-select
-                    v-model="bpm"
-                    :items="bpmOptions"
-                    item-title="label"
-                    item-value="value"
-                    label="BPM"
+                <v-btn-toggle
+                    v-model="difficulty"
+                    class="text-white difficulty-toggle"
                     density="compact"
-                    hide-details
-                    class="bpm-select"
-                />
+                    active-class="primary"
+                    background-color="secondary"
+                    mandatory
+                >
+                    <v-btn value="easy" size="small">easy</v-btn>
+                    <v-btn value="advanced" size="small">advanced</v-btn>
+                    <v-btn value="expert" size="small">expert</v-btn>
+                </v-btn-toggle>
                 <v-menu location="bottom end" :close-on-content-click="false">
                     <template #activator="{ props }">
                         <v-btn
@@ -38,6 +40,16 @@
                         class="my-0"
                         density="compact"
                         hide-details
+                    />
+                    <v-select
+                        v-model="bpm"
+                        :items="bpmOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="BPM"
+                        density="compact"
+                        hide-details
+                        class="mt-1"
                     />
                 </v-card>
             </v-menu>
@@ -76,10 +88,8 @@
                 item-title="label"
                 item-value="value"
                 label="Select Melody Length"
-                density="compact"
                 hide-details
-                class="length-select"
-                variant="underlined"
+                class="melody-length-select flex-grow-0"
             />
 
             <div class="mb-2 mt-2 container">
@@ -106,6 +116,8 @@ import toneCalcService from "@/components/mixins/toneCalcService";
 import playSounds from "@/components/mixins/playSounds";
 import responseMixin from "@/components/mixins/responseMixin";
 import StaffRenderer from "@/features/notation/components/StaffRenderer";
+import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
+import { matchesTonePool } from "@/domain/music/difficulty";
 
 export default {
     name: "melodyJemp",
@@ -116,7 +128,8 @@ export default {
             lockInput: false,
             autoplay: true,
             melodyLength: 5,
-            bpm: 120,
+            bpm: 80,
+            difficulty: 'easy',
             targetMelody: [],
             userMelody: [],
             resColor: '#9DA0A9',
@@ -131,28 +144,13 @@ export default {
     computed: {
         ...mapGetters(['getToneChain']),
         lengthOptions() {
-            return [
-                { label: '4 Notes', value: 4 },
-                { label: '5 Notes', value: 5 },
-                { label: '6 Notes', value: 6 },
-                { label: '8 Notes', value: 8 }
-            ]
+            return MELODY_LENGTH_OPTIONS
         },
         bpmOptions() {
-            return [
-                { label: '60', value: 60 },
-                { label: '80', value: 80 },
-                { label: '100', value: 100 },
-                { label: '120', value: 120 },
-                { label: '140', value: 140 },
-                { label: '160', value: 160 }
-            ]
+            return BPM_OPTIONS
         },
         notePalette() {
-            return this.getToneChain.filter((tone) => (
-                /^[A-G][34]$/.test(tone.name) &&
-                tone.id < 63
-            ))
+            return this.getToneChain.filter((tone) => tone.id < 63 && matchesTonePool(tone, this.difficulty))
         },
         notationNotes() {
             return this.enteredMelodyNotes
@@ -297,7 +295,7 @@ export default {
             return bottomY - (idx - bottomIndex) * 5 + drawingOffsetPx
         },
         diatonicIndex(noteName, octaveOffset = 0) {
-            const match = /^([A-Ga-g])(\d)$/.exec(noteName || '')
+            const match = /^([A-Ga-g])[^0-9]*(\d)$/.exec(noteName || '')
             if (!match) return 0
             const letter = match[1].toLowerCase()
             const octave = Number(match[2]) + octaveOffset
@@ -348,20 +346,15 @@ export default {
     align-items: center;
     margin-bottom: 4px;
 }
-.bpm-select {
-    max-width: 120px;
+.difficulty-toggle :deep(.v-btn) {
+    text-transform: none !important;
+    min-width: 52px;
 }
-.length-select :deep(.v-field) {
-    height: 42px !important;
-    min-height: 42px !important;
+.melody-length-select :deep(.v-field) {
+    min-height: 56px !important;
 }
-.length-select :deep(.v-input__control) {
-    min-height: 42px !important;
-}
-.length-select :deep(.v-field__input) {
-    min-height: 42px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+.melody-length-select {
+    flex: 0 0 auto !important;
 }
 .between-slot {
     margin-bottom: 10px;

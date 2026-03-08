@@ -107,7 +107,7 @@
     .app-nav,
     .app-header,
     .app-footer {
-        height: 5vh !important;
+        height: 6vh !important;
         min-height: 5vh !important;
     }
     .app-main {

@@ -1,9 +1,18 @@
 <template>
     <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
     <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
-        <interval-settings v-model:autoplay="autoplay" @setPlayOrder="setPlayOrder">
+        <interval-settings v-model:autoplay="autoplay" v-model:difficulty="difficulty" @setPlayOrder="setPlayOrder">
             <template #between>
-                <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" :mode="notationMode" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+                <staff-renderer
+                    :notes="notationNotes"
+                    :comparison-notes="notationComparisonNotes"
+                    :mismatch-indices="notationMismatchIndices"
+                    :clef="notationClef"
+                    :clef-octave="notationClefOctave"
+                    :mode="notationMode"
+                    :octave-offset="notationOctaveOffset"
+                    :feedback-state="notationFeedbackState"
+                ></staff-renderer>
             </template>
         </interval-settings>
         <interval-play @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
@@ -21,6 +30,7 @@
     import playSounds from "@/components/mixins/playSounds";
     import responseMixin from "@/components/mixins/responseMixin";
     import StaffRenderer from "@/features/notation/components/StaffRenderer";
+    import { matchesTonePool } from "@/domain/music/difficulty";
 
     export default {
         name: "intervallOne",
@@ -37,10 +47,12 @@
                 firstTone: '',
                 secondTone: '',
                 autoplay: true,
+                difficulty: 'easy',
                 playOrder: ['increase'],
                 randomOrder: '',
-                decrSwitched:'',
-                delay: 700
+                delay: 700,
+                hasAnswered: false,
+                guessedSecondTone: null
             }
         },
         components: {
@@ -55,8 +67,25 @@
             notationNotes() {
                 const notes = [];
                 if (this.firstTone && this.firstTone.name) notes.push(this.firstTone.name);
+                if (!this.hasAnswered) return notes;
+
+                if (this.resColor === 'green') {
+                    if (this.secondTone && this.secondTone.name) notes.push(this.secondTone.name);
+                    return notes;
+                }
+                if (this.guessedSecondTone && this.guessedSecondTone.name) notes.push(this.guessedSecondTone.name);
+                return notes;
+            },
+            notationComparisonNotes() {
+                if (!this.hasAnswered || this.resColor === 'green') return [];
+                const notes = [];
+                if (this.firstTone && this.firstTone.name) notes.push(this.firstTone.name);
                 if (this.secondTone && this.secondTone.name) notes.push(this.secondTone.name);
                 return notes;
+            },
+            notationMismatchIndices() {
+                if (!this.hasAnswered || this.resColor === 'green') return [];
+                return [1];
             },
             notationClef() {
                 if (!this.notationAdjustedOctaves.length) return 'treble';
@@ -70,6 +99,7 @@
                 return Math.max(...this.notationAdjustedOctaves) >= 6 ? '8va' : '';
             },
             notationMode() {
+                if (this.hasAnswered && this.resColor !== 'green') return 'melody';
                 return this.randomOrder === 'simultaneous' ? 'chord' : 'melody';
             },
             notationOctaveOffset() {
@@ -105,13 +135,25 @@
                 this.setResult(this.randomInterval.text)
                 this.resetResponse()
 
-                this.decrSwitched = false;
+                this.hasAnswered = false;
+                this.guessedSecondTone = null;
 
                 this.calcFirstTone();
             },
 
             calcFirstTone() {
-                this.firstTone = this.reducedIncList[this.randomRangeInt({min: 0, max: this.reducedIncList.length})];
+                const poolFiltered = this.reducedIncList.filter((tone) => matchesTonePool(tone, this.difficulty));
+                const candidates = poolFiltered.filter((tone) => {
+                    const second = this.getInterval(tone, this.randomInterval.value, this.randomInterval.lineDist);
+                    return matchesTonePool(second, this.difficulty);
+                });
+                const usable = candidates.length ? candidates : poolFiltered;
+                const max = usable.length;
+                if (!max) {
+                    this.firstTone = this.reducedIncList[this.randomRangeInt({min: 0, max: this.reducedIncList.length})];
+                } else {
+                    this.firstTone = usable[this.randomRangeInt({min: 0, max})];
+                }
                 this.calcInterval();
             },
 
@@ -134,18 +176,8 @@
                     }, 200, 20);
 
                 }else if(this.randomOrder === 'decrease'){
-
-                    //switch tones
-                    if(!this.decrSwitched){
-                        let temp = this.firstTone;
-                        this.firstTone = this.secondTone;
-                        this.secondTone = temp;
-                        this.decrSwitched = true;
-                    }
-
-
                     this.setExactTimeout(() => {
-                        this.playAudio(this.firstTone.tone);
+                        this.playAudio(this.secondTone.tone);
                     }, 200, 20);
                 }
 
@@ -165,12 +197,21 @@
                 if(!this.playLock){
                     this.setExactTimeout( () => {
                         this.playLock = true;
-                        this.playAudio(this.secondTone.tone);
+                        const followTone = this.randomOrder === 'decrease' ? this.firstTone : this.secondTone;
+                        this.playAudio(followTone.tone);
                     }, this.delay, 20);
                 }
             },
 
             guessResult(guess) {
+                this.hasAnswered = true;
+                const guessedInterval = this.getSelectedIntervals.find((item) => item.text === guess);
+                if (guessedInterval && this.firstTone) {
+                    this.guessedSecondTone = this.getInterval(this.firstTone, guessedInterval.value, guessedInterval.lineDist);
+                } else {
+                    this.guessedSecondTone = null;
+                }
+
                 if (guess == this.result) {
                     this.resColor = 'green'
                     if (this.autoplay) {

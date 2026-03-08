@@ -1,6 +1,18 @@
 <template>
     <div>
         <div class="choose-header">
+            <v-btn-toggle
+                v-model="localDifficulty"
+                class="text-white difficulty-toggle"
+                density="compact"
+                active-class="primary"
+                background-color="secondary"
+                mandatory
+            >
+                <v-btn value="easy" size="small">easy</v-btn>
+                <v-btn value="advanced" size="small">advanced</v-btn>
+                <v-btn value="expert" size="small">expert</v-btn>
+            </v-btn-toggle>
             <v-menu location="bottom end" :close-on-content-click="false">
                 <template #activator="{ props }">
                     <v-btn
@@ -20,6 +32,16 @@
                         class="my-0"
                         density="compact"
                         hide-details
+                    />
+                    <v-select
+                        v-model="localResultDisplayMs"
+                        :items="resultDisplayOptions"
+                        item-title="label"
+                        item-value="value"
+                        label="result display"
+                        density="compact"
+                        hide-details
+                        class="mt-1"
                     />
                 </v-card>
             </v-menu>
@@ -63,6 +85,8 @@
 
 <script>
     import { mapActions } from "vuex";
+    import { createChordOptions, createDefaultSelectedChords } from "@/domain/music/definitions";
+    import { chordValuesForDifficulty } from "@/domain/music/difficulty";
 
 export default {
         name: "chordChoose",
@@ -71,35 +95,30 @@ export default {
                 type: Boolean,
                 default: true
             },
+            difficulty: {
+                type: String,
+                default: 'easy'
+            },
             playOrder: {
                 type: Array,
                 default: () => ['simultaneous']
+            },
+            resultDisplayMs: {
+                type: Number,
+                default: 1500
             }
         },
-        emits: ['update:autoplay', 'update:playOrder'],
+        emits: ['update:autoplay', 'update:difficulty', 'update:playOrder', 'update:resultDisplayMs'],
         data() {
             return {
-                chords: [
-                    {text: 'minor',       value: 0 , toneSteps:[3,4],  lineDist:[2,2],   maxRange: 7},
-                    {text: 'major',       value: 1 , toneSteps:[4,3],  lineDist:[2,2],   maxRange: 7},
-                    {text: 'diminished',  value: 2 , toneSteps:[3,3],  lineDist:[2,2],   maxRange: 6},
-                    {text: 'augmented',   value: 3 , toneSteps:[4,4],  lineDist:[2,2],   maxRange: 8},
-                    {text: 'sus2',         value: 4 , toneSteps:[2,5],  lineDist:[1,3],   maxRange: 7},
-                    {text: 'sus4',         value: 5 , toneSteps:[5,2],  lineDist:[3,1],   maxRange: 7},
-                    {text: 'm7',      value: 6 , toneSteps:[3,4,3],lineDist:[2,2,2], maxRange: 10},
-                    {text: 'm'+ String.fromCharCode(9651)+'7',      value: 7 , toneSteps:[3,4,4],lineDist:[2,2,2], maxRange: 11},
-                    {text: '7',      value: 8 , toneSteps:[4,3,3],lineDist:[2,2,2], maxRange: 10},
-                    {text: String.fromCharCode(9651)+'7',      value: 9 , toneSteps:[4,3,4],lineDist:[2,2,2], maxRange: 11},
-                    {text: 'halfDim7',     value: 10, toneSteps:[3,3,4],lineDist:[2,2,2], maxRange: 10},
-                    {text: 'dim7',  value: 11, toneSteps:[3,3,3],lineDist:[2,2,2], maxRange: 9},
-                    {text: 'aug7',   value: 12, toneSteps:[4,4,2],lineDist:[2,2,2], maxRange: 11},
-
-                ],
-                selectedChords: [
-                    {text: 'minor',       value: 0 , toneSteps:[3,4],  lineDist:[2,2],   maxRange: 7},
-                    {text: 'major',       value: 1 , toneSteps:[4,3],  lineDist:[2,2],   maxRange: 7},
-                    {text: 'diminished',  value: 2 , toneSteps:[3,3],  lineDist:[2,2],   maxRange: 6},
-                    {text: 'augmented',   value: 3 , toneSteps:[4,4],  lineDist:[2,2],   maxRange: 8},
+                chords: createChordOptions(),
+                selectedChords: createDefaultSelectedChords(),
+                resultDisplayOptions: [
+                    { label: '0.5s', value: 500 },
+                    { label: '1.0s', value: 1000 },
+                    { label: '1.5s', value: 1500 },
+                    { label: '2.0s', value: 2000 },
+                    { label: '3.0s', value: 3000 }
                 ]
             }
         },
@@ -112,12 +131,28 @@ export default {
                     this.$emit('update:autoplay', value);
                 }
             },
+            localDifficulty: {
+                get() {
+                    return this.difficulty;
+                },
+                set(value) {
+                    this.$emit('update:difficulty', value);
+                }
+            },
             localPlayOrder: {
                 get() {
                     return this.playOrder;
                 },
                 set(value) {
                     this.$emit('update:playOrder', value);
+                }
+            },
+            localResultDisplayMs: {
+                get() {
+                    return this.resultDisplayMs;
+                },
+                set(value) {
+                    this.$emit('update:resultDisplayMs', value);
                 }
             }
         },
@@ -127,6 +162,13 @@ export default {
         },
 
         watch: {
+            difficulty: {
+                immediate: true,
+                handler(value) {
+                    const allowed = chordValuesForDifficulty(value);
+                    this.selectedChords = this.chords.filter((item) => allowed.includes(item.value));
+                }
+            },
             selectedChords: {
                 immediate: true,
                 handler() {
@@ -140,8 +182,13 @@ export default {
 <style scoped>
     .choose-header {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 4px;
+    }
+    .difficulty-toggle :deep(.v-btn) {
+        text-transform: none !important;
+        min-width: 52px;
     }
     .between-slot {
         margin-bottom: 10px;

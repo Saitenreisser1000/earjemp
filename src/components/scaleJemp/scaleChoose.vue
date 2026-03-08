@@ -1,6 +1,18 @@
 <template>
     <div>
         <div class="choose-header">
+            <v-btn-toggle
+                v-model="localDifficulty"
+                class="text-white difficulty-toggle"
+                density="compact"
+                active-class="primary"
+                background-color="secondary"
+                mandatory
+            >
+                <v-btn value="easy" size="small">easy</v-btn>
+                <v-btn value="advanced" size="small">advanced</v-btn>
+                <v-btn value="expert" size="small">expert</v-btn>
+            </v-btn-toggle>
             <v-menu location="bottom end" :close-on-content-click="false">
                 <template #activator="{ props }">
                     <v-btn
@@ -71,6 +83,8 @@
 
 <script>
     import {mapActions} from "vuex";
+    import { createScaleOptions, createDefaultSelectedScales } from "@/domain/music/definitions";
+    import { scaleValuesForDifficulty } from "@/domain/music/difficulty";
 
 export default {
         name: "scaleChoose",
@@ -83,36 +97,20 @@ export default {
                 type: Boolean,
                 default: true
             },
+            difficulty: {
+                type: String,
+                default: 'easy'
+            },
             playOrder: {
                 type: Array,
                 default: () => ['increase']
             }
         },
-        emits: ['update:autoplay', 'update:offsetFirst', 'update:playOrder'],
+        emits: ['update:autoplay', 'update:offsetFirst', 'update:difficulty', 'update:playOrder'],
         data() {
             return {
-                scales: [
-                    {text: 'major/ionian',          value: 1 , scale: [2,2,1,2,2,2,1],   maxRange: 7},
-                    {text: 'dorian',                value: 2 , scale: [2,1,2,2,2,1,2],   maxRange: 7},
-                    {text: 'phrygian',              value: 3 , scale: [1,2,2,2,1,2,2],   maxRange: 7},
-                    {text: 'lydian',                value: 4 , scale: [2,2,2,1,2,2,1],   maxRange: 7},
-                    {text: 'mixolydian',            value: 5 , scale: [2,2,1,2,2,1,2],   maxRange: 7},
-                    {text: 'natural-minor',         value: 6 , scale: [2,1,2,2,1,2,2],   maxRange: 7},
-                    {text: 'locrian',               value: 7 , scale: [1,2,2,1,2,2,2],   maxRange: 7},
-                    {text: 'melodic-minor',         value: 9 , scale: [2,1,2,2,2,2,1],   maxRange: 7},
-                    {text: 'harmonic-minor',        value:10 , scale: [2,1,2,2,1,3,1],   maxRange: 7},
-                ],
-                selectedScales: [
-                    {text: 'major|ionian',          value: 1 , scale: [2,2,1,2,2,2,1],   maxRange: 7},
-                    {text: 'dorian',                value: 2 , scale: [2,1,2,2,2,1,2],   maxRange: 7},
-                    {text: 'phrygian',              value: 3 , scale: [1,2,2,2,1,2,2],   maxRange: 7},
-                    {text: 'lydian',                value: 4 , scale: [2,2,2,1,2,2,1],   maxRange: 7},
-                    {text: 'mixolydian',            value: 5 , scale: [2,2,1,2,2,1,2],   maxRange: 7},
-                    {text: 'minor|aeolian',         value: 6 , scale: [2,1,2,2,1,2,2],   maxRange: 7},
-                    {text: 'locrian',               value: 7 , scale: [1,2,2,1,2,2,2],   maxRange: 7},
-                    {text: 'melodic-minor',         value: 9 , scale: [2,1,2,2,2,2,1],   maxRange: 7},
-                    {text: 'harmonic-minor',        value:10 , scale: [2,1,2,2,1,3,1],   maxRange: 7},
-                ]
+                scales: createScaleOptions(),
+                selectedScales: createDefaultSelectedScales()
             }
         },
         computed: {
@@ -132,6 +130,14 @@ export default {
                     this.$emit('update:offsetFirst', value);
                 }
             },
+            localDifficulty: {
+                get() {
+                    return this.difficulty;
+                },
+                set(value) {
+                    this.$emit('update:difficulty', value);
+                }
+            },
             localPlayOrder: {
                 get() {
                     return this.playOrder;
@@ -147,6 +153,13 @@ export default {
         },
 
         watch: {
+          difficulty: {
+            immediate: true,
+            handler(value) {
+              const allowed = scaleValuesForDifficulty(value);
+              this.selectedScales = this.scales.filter((item) => allowed.includes(item.value));
+            }
+          },
           selectedScales: {
             immediate: true,
             handler() {
@@ -160,8 +173,13 @@ export default {
 <style scoped>
     .choose-header {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 4px;
+    }
+    .difficulty-toggle :deep(.v-btn) {
+        text-transform: none !important;
+        min-width: 52px;
     }
     .between-slot {
         margin-bottom: 10px;

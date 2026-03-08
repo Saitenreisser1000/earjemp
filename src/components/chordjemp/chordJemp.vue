@@ -1,7 +1,12 @@
 <template>
         <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
         <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
-            <chordChoose v-model:autoplay="autoplay" v-model:play-order="playOrder">
+            <chordChoose
+                v-model:autoplay="autoplay"
+                v-model:difficulty="difficulty"
+                v-model:play-order="playOrder"
+                v-model:result-display-ms="resultDisplayMs"
+            >
                 <template #between>
                     <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="chord" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
                 </template>
@@ -21,6 +26,7 @@
     import playSounds from "@/components/mixins/playSounds";
     import responseMixin from "@/components/mixins/responseMixin";
     import StaffRenderer from "@/features/notation/components/StaffRenderer";
+    import { chordStartMinIndex } from "@/domain/music/difficulty";
 
     export default {
         name: "chordjemp",
@@ -39,14 +45,19 @@
                 fourthTone: '',
 
                 autoplay: true,
+                difficulty: 'easy',
                 playOrder: ['simultaneous'],
-                randomOrder: 'simultaneous'
+                randomOrder: 'simultaneous',
+                hasAnswered: false,
+                resultDisplayMs: 1500,
+                resultTimer: null
             }
         },
         mixins: [toneCalcService, playSounds, responseMixin],
         computed: {
             ...mapGetters(['getToneChain','getSelectedChords']),
             notationNotes() {
+                if (!this.hasAnswered) return []
                 const tones = [this.firstTone, this.secondTone, this.thirdTone, this.fourthTone]
                 return tones.filter((tone) => tone && tone.name).map((tone) => tone.name)
             },
@@ -77,8 +88,19 @@
             }
         },
         methods: {
+            clearResultTimer() {
+                if (this.resultTimer) {
+                    clearInterval(this.resultTimer)
+                    this.resultTimer = null
+                }
+            },
+            hideResult() {
+                this.hasAnswered = false
+                this.resetResponse()
+            },
 
             playRandom(){
+                this.clearResultTimer()
                 if (!Array.isArray(this.getSelectedChords) || this.getSelectedChords.length === 0) {
                     this.setResult('choose at least one chord');
                     this.resColor = 'indianred';
@@ -98,12 +120,16 @@
                 //set response
                 this.setResult(this.randomChord.text)
                 this.resetResponse()
+                this.hasAnswered = false
 
                 this.calcFirstTone()
             },
 
             calcFirstTone(){
-                this.firstTone = this.reducedList[this.randomRangeInt({min: 15, max: this.reducedList.length})];
+                const max = this.reducedList.length;
+                let min = chordStartMinIndex(max, this.difficulty);
+                min = Math.min(min, Math.max(0, max - 1));
+                this.firstTone = this.reducedList[this.randomRangeInt({min, max})];
                 this.calcChord();
             },
 
@@ -152,17 +178,32 @@
             },
 
             guessResult(guess) {
+                this.clearResultTimer()
+                this.hasAnswered = true
                 if (guess == this.result) {
                     this.resColor = 'green'
                     if (this.autoplay) {
-                        this.setExactTimeout(() => {
+                        this.resultTimer = this.setExactTimeout(() => {
+                            this.resultTimer = null
                             this.playRandom()
-                        },1000, 20)
+                        }, this.resultDisplayMs, 20)
+                    } else {
+                        this.resultTimer = this.setExactTimeout(() => {
+                            this.resultTimer = null
+                            this.hideResult()
+                        }, this.resultDisplayMs, 20)
                     }
                 } else {
                     this.resColor = 'indianred'
+                    this.resultTimer = this.setExactTimeout(() => {
+                        this.resultTimer = null
+                        this.hideResult()
+                    }, this.resultDisplayMs, 20)
                 }
             }
+        },
+        beforeUnmount() {
+            this.clearResultTimer()
         }
     }
 </script>
