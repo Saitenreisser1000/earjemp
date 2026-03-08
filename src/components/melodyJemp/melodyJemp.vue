@@ -67,7 +67,7 @@
                         :optimize-layout="false"
                         :preview-note="hoverNote"
                         :show-insert-marker="targetMelody.length > 0"
-                        :insert-index="enteredMelodyNotes.length"
+                        :insert-index="activeDisplayIndex"
                         :insert-count="melodyLength"
                     />
                     <div
@@ -149,7 +149,8 @@ export default {
             showCheckOverlay: false,
             suppressClickUntil: 0,
             lastTapAt: 0,
-            touchState: null
+            touchState: null,
+            activeDisplayIndex: 0
         }
     },
     computed: {
@@ -176,9 +177,9 @@ export default {
         },
         enteredMelodyNotes() {
             if (this.showFirstToneHint && this.targetMelody.length > 0) {
-                return [this.targetMelody[0].name, ...this.userMelody]
+                return [this.targetMelody[0].name, ...this.userMelody].slice(0, this.melodyLength)
             }
-            return this.userMelody
+            return this.userMelody.slice(0, this.melodyLength)
         },
         notationClef() {
             if (!this.notationNotes.length) return 'treble'
@@ -242,6 +243,8 @@ export default {
                 const idx = this.randomRangeInt({ min: 0, max: pool.length })
                 this.targetMelody.push(pool[idx])
             }
+            this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
+            this.userMelody = Array(this.maxInputLength).fill(null)
             this.playTones()
         },
         playTones() {
@@ -258,10 +261,14 @@ export default {
             }
             this.setExactTimeout(() => { this.setInputlock(false) }, start + 100, 20)
         },
-        addInputNote(noteName) {
-            if (this.userMelody.length >= this.maxInputLength) return
+        addInputNote(noteName, displayIndex = this.activeDisplayIndex) {
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            const clampedDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
+            const userIndex = clampedDisplay - minDisplay
+            if (userIndex < 0 || userIndex >= this.maxInputLength) return
             this.showCheckOverlay = false
-            this.userMelody.push(noteName)
+            this.userMelody.splice(userIndex, 1, noteName)
+            this.activeDisplayIndex = Math.min(this.melodyLength - 1, clampedDisplay + 1)
             this.triggerHaptic()
         },
         handleStaffClick(event) {
@@ -269,7 +276,8 @@ export default {
             if (Date.now() < this.suppressClickUntil) return
             const picked = this.pickNoteFromPointerEvent(event)
             if (!picked || !picked.noteName) return
-            this.addInputNote(picked.noteName)
+            this.activeDisplayIndex = picked.slotIndex
+            this.addInputNote(picked.noteName, picked.slotIndex)
         },
         handleStaffTouchStart(event) {
             if (!this.targetMelody.length) return
@@ -343,7 +351,10 @@ export default {
                 clientX: touch.clientX,
                 clientY: touch.clientY
             })
-            if (picked?.noteName) this.addInputNote(picked.noteName)
+            if (picked?.noteName) {
+                this.activeDisplayIndex = picked.slotIndex
+                this.addInputNote(picked.noteName, picked.slotIndex)
+            }
             this.touchState = null
             this.clearStaffHover()
         },
@@ -352,21 +363,28 @@ export default {
             this.clearStaffHover()
         },
         adjustLastInput(step) {
-            if (!Number.isFinite(step) || step === 0 || !this.userMelody.length) return
-            const current = this.userMelody[this.userMelody.length - 1]
+            if (!Number.isFinite(step) || step === 0 || !this.maxInputLength) return
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            const displayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, this.activeDisplayIndex))
+            const userIndex = displayIndex - minDisplay
+            const current = this.userMelody[userIndex]
+            if (!current) return
             // Sort by pitch for deterministic stepping.
             const pitchSorted = [...new Set(this.notePalette.map((tone) => tone.name))]
                 .sort((a, b) => (this.toneIdByName[a] || 0) - (this.toneIdByName[b] || 0))
             const index = pitchSorted.indexOf(current)
             if (index < 0) return
             const nextIndex = Math.max(0, Math.min(pitchSorted.length - 1, index + step))
-            this.userMelody.splice(this.userMelody.length - 1, 1, pitchSorted[nextIndex])
+            this.userMelody.splice(userIndex, 1, pitchSorted[nextIndex])
             this.showCheckOverlay = false
             this.triggerHaptic()
         },
         toggleLastAccidental() {
-            if (!this.userMelody.length) return
-            const current = this.userMelody[this.userMelody.length - 1]
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            const displayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, this.activeDisplayIndex))
+            const userIndex = displayIndex - minDisplay
+            const current = this.userMelody[userIndex]
+            if (!current) return
             const currentTone = this.notePalette.find((tone) => tone.name === current)
             if (!currentTone || !Array.isArray(currentTone.enh)) return
             const candidates = currentTone.enh
@@ -375,7 +393,7 @@ export default {
             if (!candidates.length) return
             const currentIdx = candidates.findIndex((tone) => tone.name === current)
             const next = candidates[(currentIdx + 1 + candidates.length) % candidates.length] || candidates[0]
-            this.userMelody.splice(this.userMelody.length - 1, 1, next.name)
+            this.userMelody.splice(userIndex, 1, next.name)
             this.showCheckOverlay = false
             this.triggerHaptic()
         },
@@ -402,13 +420,21 @@ export default {
             const wrapRect = wrap.getBoundingClientRect()
             const svgRect = svg.getBoundingClientRect()
             const xInWrap = event.clientX - wrapRect.left
+            const xInSvg = event.clientX - svgRect.left
             const yInSvg = event.clientY - svgRect.top
             const clampedYInSvg = Math.max(0, Math.min(svgRect.height, yInSvg))
             const noteName = this.mapYToNoteName(clampedYInSvg)
             const snappedYInSvg = this.noteYForClef(noteName, this.notationClef)
             const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
+            const leftPadding = 90
+            const rightPadding = 22
+            const slots = Math.max(1, this.melodyLength)
+            const usable = Math.max(20, svgRect.width - leftPadding - rightPadding)
+            const normalized = Math.max(0, Math.min(usable, xInSvg - leftPadding))
+            const slotIndexRaw = Math.floor((normalized / usable) * slots)
+            const slotIndex = Math.max(0, Math.min(slots - 1, slotIndexRaw))
 
-            return { noteName, xInWrap, snappedYInWrap }
+            return { noteName, xInWrap, snappedYInWrap, slotIndex }
         },
         mapYToNoteName(y) {
             const candidates = this.notePalette.map((tone) => tone.name)
@@ -448,7 +474,8 @@ export default {
         },
         clearInput() {
             this.showCheckOverlay = false
-            this.userMelody = []
+            this.userMelody = Array(this.maxInputLength).fill(null)
+            this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
         },
         checkAnswer() {
             const target = this.targetMelodyNames
@@ -507,7 +534,7 @@ export default {
     position: absolute;
     inset: 0;
     z-index: 2;
-    touch-action: none;
+    touch-action: pan-x;
 }
 .hover-note {
     position: absolute;

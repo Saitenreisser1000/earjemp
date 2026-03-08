@@ -2,10 +2,10 @@
   <div class="staff-frame" :class="feedbackClass">
     <div class="staff-scroll">
       <div ref="staffRoot" class="staff-renderer" :style="staffRendererStyle"></div>
-    </div>
-    <div v-if="showNextZone" class="next-position-zone" :style="nextZoneStyle"></div>
-    <div v-if="showNextMarker" class="next-position-arrow" :style="nextMarkerStyle">
-      <v-icon size="18">mdi-arrow-down-bold</v-icon>
+      <div v-if="showNextZone" class="next-position-zone" :style="nextZoneStyle"></div>
+      <div v-if="showNextMarker" class="next-position-arrow" :style="nextMarkerStyle">
+        <v-icon size="18">mdi-arrow-down-bold</v-icon>
+      </div>
     </div>
     <v-icon v-if="feedbackState === 'success'" class="feedback-icon success">mdi-check-circle</v-icon>
     <v-icon v-if="feedbackState === 'error'" class="feedback-icon error">mdi-close-circle</v-icon>
@@ -204,10 +204,17 @@ export default {
     },
     buildMelodySpec(tokens, beats) {
       const spec = []
+      const placeholderIndices = []
       for (let i = 0; i < beats; i++) {
-        spec.push(tokens[i] ? `${tokens[i]}/q` : 'b4/qr')
+        if (tokens[i]) {
+          spec.push(`${tokens[i]}/q`)
+        } else {
+          // Keep horizontal spacing with an invisible ghost note.
+          spec.push('c4/q')
+          placeholderIndices.push(i)
+        }
       }
-      return spec.join(', ')
+      return { spec: spec.join(', '), placeholderIndices }
     },
     updateRenderedSlotXs(noteObjects) {
       const xs = []
@@ -241,8 +248,8 @@ export default {
       const score = vf.EasyScore()
       const system = vf.System({ x: 10, y: 15, width: width - 20 })
 
-      const parsed = this.notes.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset)).filter(Boolean)
-      const parsedComparison = this.comparisonNotes.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset)).filter(Boolean)
+      const parsed = this.notes.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset))
+      const parsedComparison = this.comparisonNotes.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset))
       const parsedPreview = this.mode === 'melody'
         ? this.toVexflowToken(this.previewNote, this.renderedOctaveOffset)
         : null
@@ -259,9 +266,9 @@ export default {
         const beats = Math.max(parsed.length, parsedComparison.length)
         const mainSpec = this.buildMelodySpec(parsed, beats)
         const comparisonSpec = this.buildMelodySpec(parsedComparison, beats)
-        const mainNotes = score.notes(mainSpec, { clef: this.renderedClef })
+        const mainNotes = score.notes(mainSpec.spec, { clef: this.renderedClef })
         const comparisonVoice = score.voice(
-          score.notes(comparisonSpec, { clef: this.renderedClef }),
+          score.notes(comparisonSpec.spec, { clef: this.renderedClef }),
           { time: `${beats}/4` }
         )
         const mainVoice = score.voice(mainNotes, { time: `${beats}/4` })
@@ -273,6 +280,14 @@ export default {
             mainNotes[i].setStyle({
               fillStyle: 'rgba(198,40,40,1)',
               strokeStyle: 'rgba(198,40,40,1)'
+            })
+          }
+        }
+        for (const i of mainSpec.placeholderIndices) {
+          if (mainNotes[i]) {
+            mainNotes[i].setStyle({
+              fillStyle: 'rgba(0,0,0,0)',
+              strokeStyle: 'rgba(0,0,0,0)'
             })
           }
         }
@@ -288,11 +303,21 @@ export default {
       const melodyTokens = parsedPreview ? parsed.concat(parsedPreview) : parsed
       const melodyBeats = Math.max(melodyTokens.length, this.insertCount || 0)
       const notesSpec = this.mode === 'chord'
-        ? `(${parsed.join(' ')})/q`
+        ? `(${parsed.filter(Boolean).join(' ')})/q`
         : this.buildMelodySpec(melodyTokens, melodyBeats)
 
       const beats = this.mode === 'chord' ? 1 : melodyBeats
-      const notes = score.notes(notesSpec, { clef: this.renderedClef })
+      const notes = score.notes(this.mode === 'chord' ? notesSpec : notesSpec.spec, { clef: this.renderedClef })
+      if (this.mode === 'melody') {
+        for (const i of notesSpec.placeholderIndices || []) {
+          if (notes[i]) {
+            notes[i].setStyle({
+              fillStyle: 'rgba(0,0,0,0)',
+              strokeStyle: 'rgba(0,0,0,0)'
+            })
+          }
+        }
+      }
       if (this.mode === 'melody' && parsedPreview && notes.length > 0) {
         const previewIndex = Math.max(0, melodyTokens.length - 1)
         notes[previewIndex].setStyle({
@@ -409,6 +434,7 @@ export default {
 }
 
 .staff-scroll {
+  position: relative;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
