@@ -79,7 +79,7 @@
                         {{ hoverNote }}
                     </div>
                 </div>
-                <div class="text-caption input-hint">click in staff to draw notes</div>
+                <div class="text-caption input-hint">{{ inputHint }}</div>
             </div>
 
             <v-select
@@ -107,6 +107,26 @@
                 <v-btn color="primary" size="small" @click="checkAnswer">check</v-btn>
             </div>
         </v-card>
+
+        <v-bottom-sheet v-model="mobilePickerOpen" inset>
+            <v-card class="pa-3">
+                <div class="text-subtitle-1 mb-2">set next note</div>
+                <div class="d-flex flex-wrap ga-2 mb-2">
+                    <v-btn
+                        v-for="note in mobileToneChoices"
+                        :key="`mobile-tone-${note}`"
+                        size="small"
+                        variant="tonal"
+                        @click="chooseMobileNote(note)"
+                    >
+                        {{ note }}
+                    </v-btn>
+                </div>
+                <div class="d-flex justify-end">
+                    <v-btn variant="text" @click="mobilePickerOpen = false">close</v-btn>
+                </div>
+            </v-card>
+        </v-bottom-sheet>
     </v-card>
 </template>
 
@@ -138,11 +158,17 @@ export default {
             hoverNote: '',
             hoverLeft: 0,
             hoverTop: 0,
-            showCheckOverlay: false
+            showCheckOverlay: false,
+            mobilePickerOpen: false,
+            mobileSuggestedNote: '',
+            mobileToneChoices: []
         }
     },
     computed: {
         ...mapGetters(['getToneChain']),
+        inputHint() {
+            return this.isMobileInputMode() ? 'tap staff, then choose note below' : 'click in staff to draw notes'
+        },
         lengthOptions() {
             return MELODY_LENGTH_OPTIONS
         },
@@ -189,9 +215,41 @@ export default {
                 if (target[i] !== entered[i]) mismatches.push(i)
             }
             return mismatches
+        },
+        toneIdByName() {
+            const map = {}
+            for (const tone of this.getToneChain) map[tone.name] = tone.toneID
+            return map
         }
     },
     methods: {
+        isMobileInputMode() {
+            if (typeof window === 'undefined') return false
+            return window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 900
+        },
+        noteDistance(a, b) {
+            const ta = this.toneIdByName[a]
+            const tb = this.toneIdByName[b]
+            if (Number.isFinite(ta) && Number.isFinite(tb)) return Math.abs(ta - tb)
+            return Math.abs(this.diatonicIndex(a) - this.diatonicIndex(b))
+        },
+        buildMobileToneChoices(suggested) {
+            const names = [...new Set(this.notePalette.map((tone) => tone.name))]
+            if (!names.length) return []
+            const scored = names
+                .map((name) => ({ name, dist: this.noteDistance(name, suggested) }))
+                .sort((a, b) => a.dist - b.dist)
+            return scored.slice(0, 12).map((item) => item.name)
+        },
+        openMobilePicker(suggestedNote) {
+            this.mobileSuggestedNote = suggestedNote
+            this.mobileToneChoices = this.buildMobileToneChoices(suggestedNote)
+            this.mobilePickerOpen = true
+        },
+        chooseMobileNote(noteName) {
+            this.addInputNote(noteName)
+            this.mobilePickerOpen = false
+        },
         playAgain() {
             if (!this.targetMelody.length) {
                 this.playRandomMelody()
@@ -237,6 +295,10 @@ export default {
             if (!this.targetMelody.length) return
             const picked = this.pickNoteFromPointerEvent(event)
             if (!picked || !picked.noteName) return
+            if (this.isMobileInputMode()) {
+                this.openMobilePicker(picked.noteName)
+                return
+            }
             this.addInputNote(picked.noteName)
         },
         handleStaffHover(event) {
@@ -309,6 +371,7 @@ export default {
         clearInput() {
             this.showCheckOverlay = false
             this.userMelody = []
+            this.mobilePickerOpen = false
         },
         checkAnswer() {
             const target = this.targetMelodyNames
