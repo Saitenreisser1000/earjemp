@@ -70,7 +70,15 @@
                         :insert-index="enteredMelodyNotes.length"
                         :insert-count="melodyLength"
                     />
-                    <div class="staff-input-overlay" @mousemove="handleStaffHover" @mouseleave="clearStaffHover"></div>
+                    <div
+                        class="staff-input-overlay"
+                        @mousemove="handleStaffHover"
+                        @mouseleave="clearStaffHover"
+                        @touchstart.prevent="handleStaffTouchStart"
+                        @touchmove.prevent="handleStaffTouchMove"
+                        @touchend.prevent="handleStaffTouchEnd"
+                        @touchcancel.prevent="handleStaffTouchCancel"
+                    ></div>
                     <div
                         v-if="hoverNote"
                         class="hover-note"
@@ -107,26 +115,6 @@
                 <v-btn color="primary" size="small" @click="checkAnswer">check</v-btn>
             </div>
         </v-card>
-
-        <v-bottom-sheet v-model="mobilePickerOpen" inset>
-            <v-card class="pa-3">
-                <div class="text-subtitle-1 mb-2">set next note</div>
-                <div class="d-flex flex-wrap ga-2 mb-2">
-                    <v-btn
-                        v-for="note in mobileToneChoices"
-                        :key="`mobile-tone-${note}`"
-                        size="small"
-                        variant="tonal"
-                        @click="chooseMobileNote(note)"
-                    >
-                        {{ note }}
-                    </v-btn>
-                </div>
-                <div class="d-flex justify-end">
-                    <v-btn variant="text" @click="mobilePickerOpen = false">close</v-btn>
-                </div>
-            </v-card>
-        </v-bottom-sheet>
     </v-card>
 </template>
 
@@ -159,15 +147,17 @@ export default {
             hoverLeft: 0,
             hoverTop: 0,
             showCheckOverlay: false,
-            mobilePickerOpen: false,
-            mobileSuggestedNote: '',
-            mobileToneChoices: []
+            suppressClickUntil: 0,
+            lastTapAt: 0,
+            touchState: null
         }
     },
     computed: {
         ...mapGetters(['getToneChain']),
         inputHint() {
-            return this.isMobileInputMode() ? 'tap staff, then choose note below' : 'click in staff to draw notes'
+            return this.isMobileInputMode()
+                ? 'tap to set, swipe up/down to adjust, long press to delete'
+                : 'click in staff to draw notes'
         },
         lengthOptions() {
             return MELODY_LENGTH_OPTIONS
@@ -227,28 +217,10 @@ export default {
             if (typeof window === 'undefined') return false
             return window.matchMedia('(pointer: coarse)').matches || window.innerWidth <= 900
         },
-        noteDistance(a, b) {
-            const ta = this.toneIdByName[a]
-            const tb = this.toneIdByName[b]
-            if (Number.isFinite(ta) && Number.isFinite(tb)) return Math.abs(ta - tb)
-            return Math.abs(this.diatonicIndex(a) - this.diatonicIndex(b))
-        },
-        buildMobileToneChoices(suggested) {
-            const names = [...new Set(this.notePalette.map((tone) => tone.name))]
-            if (!names.length) return []
-            const scored = names
-                .map((name) => ({ name, dist: this.noteDistance(name, suggested) }))
-                .sort((a, b) => a.dist - b.dist)
-            return scored.slice(0, 12).map((item) => item.name)
-        },
-        openMobilePicker(suggestedNote) {
-            this.mobileSuggestedNote = suggestedNote
-            this.mobileToneChoices = this.buildMobileToneChoices(suggestedNote)
-            this.mobilePickerOpen = true
-        },
-        chooseMobileNote(noteName) {
-            this.addInputNote(noteName)
-            this.mobilePickerOpen = false
+        triggerHaptic() {
+            if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+                navigator.vibrate(10)
+            }
         },
         playAgain() {
             if (!this.targetMelody.length) {
@@ -290,16 +262,124 @@ export default {
             if (this.userMelody.length >= this.maxInputLength) return
             this.showCheckOverlay = false
             this.userMelody.push(noteName)
+            this.triggerHaptic()
         },
         handleStaffClick(event) {
             if (!this.targetMelody.length) return
+            if (Date.now() < this.suppressClickUntil) return
             const picked = this.pickNoteFromPointerEvent(event)
             if (!picked || !picked.noteName) return
-            if (this.isMobileInputMode()) {
-                this.openMobilePicker(picked.noteName)
+            this.addInputNote(picked.noteName)
+        },
+        handleStaffTouchStart(event) {
+            if (!this.targetMelody.length) return
+            const touch = event.changedTouches?.[0]
+            if (!touch) return
+            const picked = this.pickNoteFromPointerEvent({
+                currentTarget: event.currentTarget,
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            })
+            this.touchState = {
+                startedAt: Date.now(),
+                startX: touch.clientX,
+                startY: touch.clientY
+            }
+            if (picked?.noteName) {
+                this.hoverNote = picked.noteName
+                this.hoverLeft = picked.xInWrap + 10
+                this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+            }
+        },
+        handleStaffTouchMove(event) {
+            const touch = event.changedTouches?.[0]
+            if (!touch || !this.touchState) return
+            const picked = this.pickNoteFromPointerEvent({
+                currentTarget: event.currentTarget,
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            })
+            if (picked?.noteName) {
+                this.hoverNote = picked.noteName
+                this.hoverLeft = picked.xInWrap + 10
+                this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+            }
+        },
+        handleStaffTouchEnd(event) {
+            const touch = event.changedTouches?.[0]
+            if (!touch || !this.touchState) return
+            this.suppressClickUntil = Date.now() + 400
+
+            const elapsed = Date.now() - this.touchState.startedAt
+            const dx = touch.clientX - this.touchState.startX
+            const dy = touch.clientY - this.touchState.startY
+            const distance = Math.hypot(dx, dy)
+            const absDy = Math.abs(dy)
+
+            if (elapsed > 500 && distance < 14) {
+                this.undoInput()
+                this.touchState = null
+                this.clearStaffHover()
                 return
             }
-            this.addInputNote(picked.noteName)
+
+            if (absDy >= 24 && absDy > Math.abs(dx)) {
+                const step = Math.round((-dy) / 24)
+                this.adjustLastInput(step)
+                this.touchState = null
+                this.clearStaffHover()
+                return
+            }
+
+            const isDoubleTap = Date.now() - this.lastTapAt < 320
+            this.lastTapAt = Date.now()
+            if (isDoubleTap) {
+                this.toggleLastAccidental()
+                this.touchState = null
+                this.clearStaffHover()
+                return
+            }
+
+            const picked = this.pickNoteFromPointerEvent({
+                currentTarget: event.currentTarget,
+                clientX: touch.clientX,
+                clientY: touch.clientY
+            })
+            if (picked?.noteName) this.addInputNote(picked.noteName)
+            this.touchState = null
+            this.clearStaffHover()
+        },
+        handleStaffTouchCancel() {
+            this.touchState = null
+            this.clearStaffHover()
+        },
+        adjustLastInput(step) {
+            if (!Number.isFinite(step) || step === 0 || !this.userMelody.length) return
+            const current = this.userMelody[this.userMelody.length - 1]
+            // Sort by pitch for deterministic stepping.
+            const pitchSorted = [...new Set(this.notePalette.map((tone) => tone.name))]
+                .sort((a, b) => (this.toneIdByName[a] || 0) - (this.toneIdByName[b] || 0))
+            const index = pitchSorted.indexOf(current)
+            if (index < 0) return
+            const nextIndex = Math.max(0, Math.min(pitchSorted.length - 1, index + step))
+            this.userMelody.splice(this.userMelody.length - 1, 1, pitchSorted[nextIndex])
+            this.showCheckOverlay = false
+            this.triggerHaptic()
+        },
+        toggleLastAccidental() {
+            if (!this.userMelody.length) return
+            const current = this.userMelody[this.userMelody.length - 1]
+            const currentTone = this.notePalette.find((tone) => tone.name === current)
+            if (!currentTone || !Array.isArray(currentTone.enh)) return
+            const candidates = currentTone.enh
+                .map((id) => this.getToneChain[id])
+                .filter((tone) => tone && this.notePalette.some((p) => p.name === tone.name))
+            if (!candidates.length) return
+            const currentIdx = candidates.findIndex((tone) => tone.name === current)
+            const next = candidates[(currentIdx + 1 + candidates.length) % candidates.length] || candidates[0]
+            this.userMelody.splice(this.userMelody.length - 1, 1, next.name)
+            this.showCheckOverlay = false
+            this.triggerHaptic()
         },
         handleStaffHover(event) {
             const picked = this.pickNoteFromPointerEvent(event)
@@ -371,7 +451,6 @@ export default {
         clearInput() {
             this.showCheckOverlay = false
             this.userMelody = []
-            this.mobilePickerOpen = false
         },
         checkAnswer() {
             const target = this.targetMelodyNames
@@ -430,6 +509,7 @@ export default {
     position: absolute;
     inset: 0;
     z-index: 2;
+    touch-action: none;
 }
 .hover-note {
     position: absolute;
