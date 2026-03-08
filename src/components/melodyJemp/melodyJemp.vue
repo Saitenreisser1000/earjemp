@@ -390,6 +390,7 @@ export default {
                 this.hoverNote = picked.noteName
                 this.hoverLeft = picked.xInWrap + 10
                 this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+                this.showLoupe(picked.noteName, picked)
             }
         },
         handleStaffTouchEnd(event) {
