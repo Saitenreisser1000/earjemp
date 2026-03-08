@@ -85,7 +85,7 @@
                         class="hover-note"
                         :style="{ left: `${hoverLeft}px`, top: `${hoverTop}px` }"
                     >
-                        {{ hoverNote }}
+                        {{ formatDisplayNoteName(hoverNote) }}
                     </div>
                     <div
                         v-if="loupeVisible"
@@ -98,9 +98,15 @@
                                 :key="`loupe-line-${n}`"
                                 class="loupe-line"
                             ></span>
+                            <span
+                                v-for="(y, idx) in loupeLedgerTops"
+                                :key="`loupe-ledger-${idx}`"
+                                class="loupe-ledger"
+                                :style="{ top: `${y}px` }"
+                            ></span>
                             <span class="loupe-note" :style="{ top: `${loupeNoteTop}px` }"></span>
                         </div>
-                        <div class="loupe-label">{{ loupeNote }}</div>
+                        <div class="loupe-label">{{ formatDisplayNoteName(loupeNote) }}</div>
                     </div>
                 </div>
                 <div class="text-caption input-hint">{{ inputHint }}</div>
@@ -172,8 +178,7 @@ export default {
             loupeNote: '',
             loupeLeft: 0,
             loupeTop: 0,
-            loupeNoteTop: 24,
-            loupeTimer: null
+            loupeNoteTop: 24
         }
     },
     computed: {
@@ -234,6 +239,20 @@ export default {
             const map = {}
             for (const tone of this.getToneChain) map[tone.name] = tone.toneID
             return map
+        },
+        loupeLedgerTops() {
+            const tops = []
+            const topLine = 8
+            const bottomLine = 40
+            const step = 8 // one staff line distance in loupe
+            const y = this.loupeNoteTop
+
+            if (y < topLine) {
+                for (let lineY = 0; lineY >= y - 0.1; lineY -= step) tops.push(lineY)
+            } else if (y > bottomLine) {
+                for (let lineY = bottomLine + step; lineY <= y + 0.1; lineY += step) tops.push(lineY)
+            }
+            return tops
         }
     },
     methods: {
@@ -247,21 +266,36 @@ export default {
             }
         },
         showLoupe(noteName, picked) {
-            if (!this.isMobileInputMode() || !picked) return
-            if (this.loupeTimer) {
-                clearTimeout(this.loupeTimer)
-                this.loupeTimer = null
-            }
+            if (!picked) return
             this.loupeNote = noteName
             this.loupeLeft = picked.xInWrap
-            this.loupeTop = Math.max(2, picked.snappedYInWrap - 84)
-            const snapped = Math.max(-10, Math.min(56, picked.snappedYInWrap - 24))
-            this.loupeNoteTop = snapped
+            // Keep enough vertical distance so higher expert-range notes stay inside the loupe.
+            this.loupeTop = Math.max(-28, picked.snappedYInWrap - 170)
+            this.loupeNoteTop = this.loupeNoteTopFor(noteName)
             this.loupeVisible = true
-            this.loupeTimer = setTimeout(() => {
-                this.loupeVisible = false
-                this.loupeTimer = null
-            }, 700)
+        },
+        loupeNoteTopFor(noteName) {
+            const clef = this.notationClef
+            const bottomIndex = clef === 'bass' ? 18 : 30 // same base as staff renderer
+            const idx = this.diatonicIndex(noteName, this.notationOctaveOffset)
+            const bottomY = 40 // bottom staff line in loupe
+            const stepPx = 4    // one diatonic step in loupe
+            const y = bottomY - ((idx - bottomIndex) * stepPx)
+            return Math.max(-8, Math.min(52, y))
+        },
+        formatDisplayNoteName(noteName) {
+            const match = /^([A-Ga-g])([^0-9]*)(\d)$/.exec(noteName || '')
+            if (!match) return noteName || ''
+
+            const letter = match[1]
+            const accidental = match[2] || ''
+            const internalOctave = Number(match[3])
+            const displayOctave = internalOctave - 2
+
+            if (displayOctave <= 0) {
+                return `${letter.toLowerCase()}${accidental.toLowerCase()}`
+            }
+            return `${letter.toUpperCase()}${accidental}${displayOctave}`
         },
         handleSlotPositions(xs) {
             this.staffSlotXs = Array.isArray(xs) ? xs : []
@@ -304,7 +338,7 @@ export default {
             }
             this.setExactTimeout(() => { this.setInputlock(false) }, start + 100, 20)
         },
-        addInputNote(noteName, displayIndex = this.activeDisplayIndex, picked = null) {
+        addInputNote(noteName, displayIndex = this.activeDisplayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
             const clampedDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
             const userIndex = clampedDisplay - minDisplay
@@ -312,7 +346,6 @@ export default {
             this.showCheckOverlay = false
             this.userMelody.splice(userIndex, 1, noteName)
             this.activeDisplayIndex = Math.min(this.melodyLength - 1, clampedDisplay + 1)
-            this.showLoupe(noteName, picked)
             this.triggerHaptic()
         },
         handleStaffClick(event) {
@@ -321,7 +354,7 @@ export default {
             const picked = this.pickNoteFromPointerEvent(event)
             if (!picked || !picked.noteName) return
             this.activeDisplayIndex = picked.slotIndex
-            this.addInputNote(picked.noteName, picked.slotIndex, picked)
+            this.addInputNote(picked.noteName, picked.slotIndex)
         },
         handleStaffTouchStart(event) {
             if (!this.targetMelody.length) return
@@ -342,6 +375,7 @@ export default {
                 this.hoverNote = picked.noteName
                 this.hoverLeft = picked.xInWrap + 10
                 this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+                this.showLoupe(picked.noteName, picked)
             }
         },
         handleStaffTouchMove(event) {
@@ -398,7 +432,7 @@ export default {
             })
             if (picked?.noteName) {
                 this.activeDisplayIndex = picked.slotIndex
-                this.addInputNote(picked.noteName, picked.slotIndex, picked)
+                this.addInputNote(picked.noteName, picked.slotIndex)
             }
             this.touchState = null
             this.clearStaffHover()
@@ -453,9 +487,11 @@ export default {
             this.hoverNote = picked.noteName
             this.hoverLeft = picked.xInWrap + 10
             this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+            this.showLoupe(picked.noteName, picked)
         },
         clearStaffHover() {
             this.hoverNote = ''
+            this.loupeVisible = false
         },
         pickNoteFromPointerEvent(event) {
             const overlay = event.currentTarget
@@ -560,9 +596,6 @@ export default {
             this.resetResponse()
             this.showCheckOverlay = false
         }
-    },
-    beforeUnmount() {
-        if (this.loupeTimer) clearTimeout(this.loupeTimer)
     }
 }
 </script>
@@ -590,15 +623,21 @@ export default {
     flex: 0 0 auto !important;
 }
 .between-slot {
-    margin-bottom: 10px;
+    margin-top: 14px;
+    margin-bottom: 18px;
 }
 .staff-input-wrap {
     position: relative;
     cursor: crosshair;
+    padding-top: 28px;
+    padding-bottom: 18px;
 }
 .staff-input-overlay {
     position: absolute;
-    inset: 0;
+    top: 28px;
+    right: 0;
+    bottom: 18px;
+    left: 0;
     z-index: 2;
     touch-action: pan-x;
 }
@@ -649,6 +688,13 @@ export default {
     border-radius: 50%;
     background: #111;
     transform: translateY(-50%);
+}
+.loupe-ledger {
+    position: absolute;
+    left: 20px;
+    width: 20px;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.7);
 }
 .loupe-label {
     margin-top: 2px;
