@@ -31,6 +31,7 @@ const LAYOUT_CANDIDATES = [
 
 export default {
   name: 'StaffRenderer',
+  emits: ['slot-positions'],
   data() {
     return {
       renderWidth: 320,
@@ -225,10 +226,13 @@ export default {
         }
       }
       this.renderedSlotXs = xs
+      this.$emit('slot-positions', xs)
     },
     renderStaff() {
       const root = this.$refs.staffRoot
       if (!root) return
+      const scrollContainer = root.parentElement
+      const prevScrollLeft = scrollContainer ? scrollContainer.scrollLeft : 0
       root.innerHTML = ''
       this.renderedSlotXs = []
 
@@ -259,6 +263,7 @@ export default {
         if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
         else stave.addClef(this.renderedClef)
         vf.draw()
+        if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
         return
       }
 
@@ -297,10 +302,19 @@ export default {
         else stave.addClef(this.renderedClef)
         vf.draw()
         this.updateRenderedSlotXs(mainNotes)
+        if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
         return
       }
 
-      const melodyTokens = parsedPreview ? parsed.concat(parsedPreview) : parsed
+      const melodyTokens = parsed.slice()
+      let previewIndex = -1
+      if (this.mode === 'melody' && parsedPreview) {
+        previewIndex = Math.max(0, Math.min(
+          Math.max(0, (this.insertCount || melodyTokens.length || 1) - 1),
+          this.insertIndex >= 0 ? this.insertIndex : melodyTokens.length
+        ))
+        melodyTokens[previewIndex] = parsedPreview
+      }
       const melodyBeats = Math.max(melodyTokens.length, this.insertCount || 0)
       const notesSpec = this.mode === 'chord'
         ? `(${parsed.filter(Boolean).join(' ')})/q`
@@ -318,8 +332,7 @@ export default {
           }
         }
       }
-      if (this.mode === 'melody' && parsedPreview && notes.length > 0) {
-        const previewIndex = Math.max(0, melodyTokens.length - 1)
+      if (this.mode === 'melody' && parsedPreview && notes.length > 0 && previewIndex >= 0) {
         notes[previewIndex].setStyle({
           fillStyle: 'rgba(0,0,0,0.5)',
           strokeStyle: 'rgba(0,0,0,0.5)'
@@ -335,6 +348,7 @@ export default {
       else stave.addClef(this.renderedClef)
       vf.draw()
       this.updateRenderedSlotXs(notes)
+      if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
     }
   },
   computed: {

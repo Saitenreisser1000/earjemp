@@ -69,6 +69,7 @@
                         :show-insert-marker="targetMelody.length > 0"
                         :insert-index="activeDisplayIndex"
                         :insert-count="melodyLength"
+                        @slot-positions="handleSlotPositions"
                     />
                     <div
                         class="staff-input-overlay"
@@ -150,7 +151,8 @@ export default {
             suppressClickUntil: 0,
             lastTapAt: 0,
             touchState: null,
-            activeDisplayIndex: 0
+            activeDisplayIndex: 0,
+            staffSlotXs: []
         }
     },
     computed: {
@@ -222,6 +224,9 @@ export default {
             if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
                 navigator.vibrate(10)
             }
+        },
+        handleSlotPositions(xs) {
+            this.staffSlotXs = Array.isArray(xs) ? xs : []
         },
         playAgain() {
             if (!this.targetMelody.length) {
@@ -429,13 +434,28 @@ export default {
             const noteName = this.mapYToNoteName(clampedYInSvg)
             const snappedYInSvg = this.noteYForClef(noteName, this.notationClef)
             const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
-            const leftPadding = 90
-            const rightPadding = 22
-            const slots = Math.max(1, this.melodyLength)
-            const usable = Math.max(20, svgRect.width - leftPadding - rightPadding)
-            const normalized = Math.max(0, Math.min(usable, xInSvg - leftPadding))
-            const slotIndexRaw = Math.floor((normalized / usable) * slots)
-            const slotIndex = Math.max(0, Math.min(slots - 1, slotIndexRaw))
+            let slotIndex = 0
+            if (this.staffSlotXs.length > 0) {
+                let best = 0
+                let bestDist = Number.POSITIVE_INFINITY
+                const max = Math.min(this.melodyLength, this.staffSlotXs.length)
+                for (let i = 0; i < max; i++) {
+                    const dist = Math.abs(this.staffSlotXs[i] - xInSvg)
+                    if (dist < bestDist) {
+                        best = i
+                        bestDist = dist
+                    }
+                }
+                slotIndex = best
+            } else {
+                const leftPadding = 90
+                const rightPadding = 22
+                const slots = Math.max(1, this.melodyLength)
+                const usable = Math.max(20, svgRect.width - leftPadding - rightPadding)
+                const normalized = Math.max(0, Math.min(usable, xInSvg - leftPadding))
+                const slotIndexRaw = Math.floor((normalized / usable) * slots)
+                slotIndex = Math.max(0, Math.min(slots - 1, slotIndexRaw))
+            }
 
             return { noteName, xInWrap, snappedYInWrap, slotIndex }
         },
