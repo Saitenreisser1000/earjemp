@@ -286,14 +286,16 @@ export default {
       }
 
       const melodyTokens = parsedPreview ? parsed.concat(parsedPreview) : parsed
+      const melodyBeats = Math.max(melodyTokens.length, this.insertCount || 0)
       const notesSpec = this.mode === 'chord'
         ? `(${parsed.join(' ')})/q`
-        : melodyTokens.map((n) => `${n}/q`).join(', ')
+        : this.buildMelodySpec(melodyTokens, melodyBeats)
 
-      const beats = this.mode === 'chord' ? 1 : melodyTokens.length
+      const beats = this.mode === 'chord' ? 1 : melodyBeats
       const notes = score.notes(notesSpec, { clef: this.renderedClef })
       if (this.mode === 'melody' && parsedPreview && notes.length > 0) {
-        notes[notes.length - 1].setStyle({
+        const previewIndex = Math.max(0, melodyTokens.length - 1)
+        notes[previewIndex].setStyle({
           fillStyle: 'rgba(0,0,0,0.5)',
           strokeStyle: 'rgba(0,0,0,0.5)'
         })
