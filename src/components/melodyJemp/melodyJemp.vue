@@ -156,7 +156,7 @@ export default {
         ...mapGetters(['getToneChain']),
         inputHint() {
             return this.isMobileInputMode()
-                ? 'tap to set, swipe up/down to adjust, long press to delete'
+                ? 'tap to set, swipe up/down to adjust, double tap to switch accidental'
                 : 'click in staff to draw notes'
         },
         lengthOptions() {
@@ -315,9 +315,7 @@ export default {
             const dy = touch.clientY - this.touchState.startY
             const distance = Math.hypot(dx, dy)
             const absDy = Math.abs(dy)
-
-            if (elapsed > 500 && distance < 14) {
-                this.undoInput()
+            if (elapsed > 650 && distance < 8) {
                 this.touchState = null
                 this.clearStaffHover()
                 return

@@ -1,6 +1,9 @@
 <template>
   <div class="staff-frame" :class="feedbackClass">
-    <div ref="staffRoot" class="staff-renderer"></div>
+    <div class="staff-scroll">
+      <div ref="staffRoot" class="staff-renderer" :style="staffRendererStyle"></div>
+    </div>
+    <div v-if="showNextZone" class="next-position-zone" :style="nextZoneStyle"></div>
     <div v-if="showNextMarker" class="next-position-arrow" :style="nextMarkerStyle">
       <v-icon size="18">mdi-arrow-down-bold</v-icon>
     </div>
@@ -222,7 +225,15 @@ export default {
       root.innerHTML = ''
       this.renderedSlotXs = []
 
-      const width = Math.max(300, root.clientWidth || 320)
+      const baseWidth = Math.max(300, root.parentElement?.clientWidth || root.clientWidth || 320)
+      const noteCountForWidth = Math.max(
+        this.notes.length,
+        this.comparisonNotes.length,
+        this.insertCount,
+        this.mode === 'melody' && this.previewNote ? this.notes.length + 1 : this.notes.length
+      )
+      const extendedWidth = noteCountForWidth > 6 ? 100 + (noteCountForWidth * 52) : baseWidth
+      const width = Math.max(baseWidth, extendedWidth)
       this.renderWidth = width
       const vf = new Factory({
         renderer: { elementId: root, width, height: 130 }
@@ -300,12 +311,18 @@ export default {
     }
   },
   computed: {
+    staffRendererStyle() {
+      return { width: `${Math.round(this.renderWidth)}px` }
+    },
     showNextMarker() {
       if (!this.showInsertMarker) return false
       if (this.insertIndex < 0 || this.insertCount <= 0) return false
       return this.insertIndex < this.insertCount
     },
-    nextMarkerStyle() {
+    showNextZone() {
+      return this.showNextMarker
+    },
+    nextSlotX() {
       let x = null
       if (this.renderedSlotXs.length > 0) {
         if (this.insertIndex < this.renderedSlotXs.length) {
@@ -327,8 +344,27 @@ export default {
         const usable = Math.max(20, width - leftPadding - rightPadding)
         x = leftPadding + ((this.insertIndex + 0.5) * usable) / slots
       }
+      return Math.round(x)
+    },
+    nextMarkerStyle() {
       return {
-        left: `${Math.round(x)}px`,
+        left: `${this.nextSlotX}px`,
+        transform: 'translateX(-50%)'
+      }
+    },
+    nextZoneStyle() {
+      let slotWidth = 36
+      if (this.renderedSlotXs.length >= 2) {
+        const idx = Math.min(this.insertIndex, this.renderedSlotXs.length - 1)
+        const prev = this.renderedSlotXs[Math.max(0, idx - 1)]
+        const curr = this.renderedSlotXs[idx]
+        slotWidth = Math.max(28, Math.abs(curr - prev) * 0.85)
+      } else if (this.insertCount > 0) {
+        slotWidth = Math.max(28, (this.renderWidth - 112) / this.insertCount)
+      }
+      return {
+        left: `${this.nextSlotX}px`,
+        width: `${Math.round(slotWidth)}px`,
         transform: 'translateX(-50%)'
       }
     },
@@ -366,8 +402,23 @@ export default {
 }
 
 .staff-renderer {
-  width: 100%;
+  min-width: 100%;
   min-height: 120px;
+}
+
+.staff-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.next-position-zone {
+  position: absolute;
+  top: 18px;
+  height: 84px;
+  border-radius: 8px;
+  background: rgba(33, 150, 243, 0.16);
+  pointer-events: none;
 }
 
 .staff-frame.is-success {
