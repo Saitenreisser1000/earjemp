@@ -291,7 +291,8 @@ export default {
             this.touchState = {
                 startedAt: Date.now(),
                 startX: touch.clientX,
-                startY: touch.clientY
+                startY: touch.clientY,
+                slotIndex: picked?.slotIndex ?? this.activeDisplayIndex
             }
             if (picked?.noteName) {
                 this.hoverNote = picked.noteName
@@ -331,7 +332,7 @@ export default {
 
             if (absDy >= 24 && absDy > Math.abs(dx)) {
                 const step = Math.round((-dy) / 24)
-                this.adjustLastInput(step)
+                this.adjustInputAt(step, this.touchState.slotIndex)
                 this.touchState = null
                 this.clearStaffHover()
                 return
@@ -340,7 +341,7 @@ export default {
             const isDoubleTap = Date.now() - this.lastTapAt < 320
             this.lastTapAt = Date.now()
             if (isDoubleTap) {
-                this.toggleLastAccidental()
+                this.toggleAccidentalAt(this.touchState.slotIndex)
                 this.touchState = null
                 this.clearStaffHover()
                 return
@@ -362,11 +363,11 @@ export default {
             this.touchState = null
             this.clearStaffHover()
         },
-        adjustLastInput(step) {
+        adjustInputAt(step, displayIndex) {
             if (!Number.isFinite(step) || step === 0 || !this.maxInputLength) return
             const minDisplay = this.showFirstToneHint ? 1 : 0
-            const displayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, this.activeDisplayIndex))
-            const userIndex = displayIndex - minDisplay
+            const targetDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
+            const userIndex = targetDisplay - minDisplay
             const current = this.userMelody[userIndex]
             if (!current) return
             // Sort by pitch for deterministic stepping.
@@ -377,12 +378,13 @@ export default {
             const nextIndex = Math.max(0, Math.min(pitchSorted.length - 1, index + step))
             this.userMelody.splice(userIndex, 1, pitchSorted[nextIndex])
             this.showCheckOverlay = false
+            this.activeDisplayIndex = targetDisplay
             this.triggerHaptic()
         },
-        toggleLastAccidental() {
+        toggleAccidentalAt(displayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
-            const displayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, this.activeDisplayIndex))
-            const userIndex = displayIndex - minDisplay
+            const targetDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
+            const userIndex = targetDisplay - minDisplay
             const current = this.userMelody[userIndex]
             if (!current) return
             const currentTone = this.notePalette.find((tone) => tone.name === current)
@@ -395,6 +397,7 @@ export default {
             const next = candidates[(currentIdx + 1 + candidates.length) % candidates.length] || candidates[0]
             this.userMelody.splice(userIndex, 1, next.name)
             this.showCheckOverlay = false
+            this.activeDisplayIndex = targetDisplay
             this.triggerHaptic()
         },
         handleStaffHover(event) {
