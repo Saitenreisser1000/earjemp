@@ -87,6 +87,21 @@
                     >
                         {{ hoverNote }}
                     </div>
+                    <div
+                        v-if="loupeVisible"
+                        class="note-loupe"
+                        :style="{ left: `${loupeLeft}px`, top: `${loupeTop}px` }"
+                    >
+                        <div class="loupe-staff">
+                            <span
+                                v-for="n in 5"
+                                :key="`loupe-line-${n}`"
+                                class="loupe-line"
+                            ></span>
+                            <span class="loupe-note" :style="{ top: `${loupeNoteTop}px` }"></span>
+                        </div>
+                        <div class="loupe-label">{{ loupeNote }}</div>
+                    </div>
                 </div>
                 <div class="text-caption input-hint">{{ inputHint }}</div>
             </div>
@@ -152,7 +167,13 @@ export default {
             lastTapAt: 0,
             touchState: null,
             activeDisplayIndex: 0,
-            staffSlotXs: []
+            staffSlotXs: [],
+            loupeVisible: false,
+            loupeNote: '',
+            loupeLeft: 0,
+            loupeTop: 0,
+            loupeNoteTop: 24,
+            loupeTimer: null
         }
     },
     computed: {
@@ -225,6 +246,23 @@ export default {
                 navigator.vibrate(10)
             }
         },
+        showLoupe(noteName, picked) {
+            if (!this.isMobileInputMode() || !picked) return
+            if (this.loupeTimer) {
+                clearTimeout(this.loupeTimer)
+                this.loupeTimer = null
+            }
+            this.loupeNote = noteName
+            this.loupeLeft = picked.xInWrap
+            this.loupeTop = Math.max(2, picked.snappedYInWrap - 84)
+            const snapped = Math.max(-10, Math.min(56, picked.snappedYInWrap - 24))
+            this.loupeNoteTop = snapped
+            this.loupeVisible = true
+            this.loupeTimer = setTimeout(() => {
+                this.loupeVisible = false
+                this.loupeTimer = null
+            }, 700)
+        },
         handleSlotPositions(xs) {
             this.staffSlotXs = Array.isArray(xs) ? xs : []
         },
@@ -266,7 +304,7 @@ export default {
             }
             this.setExactTimeout(() => { this.setInputlock(false) }, start + 100, 20)
         },
-        addInputNote(noteName, displayIndex = this.activeDisplayIndex) {
+        addInputNote(noteName, displayIndex = this.activeDisplayIndex, picked = null) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
             const clampedDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
             const userIndex = clampedDisplay - minDisplay
@@ -274,6 +312,7 @@ export default {
             this.showCheckOverlay = false
             this.userMelody.splice(userIndex, 1, noteName)
             this.activeDisplayIndex = Math.min(this.melodyLength - 1, clampedDisplay + 1)
+            this.showLoupe(noteName, picked)
             this.triggerHaptic()
         },
         handleStaffClick(event) {
@@ -282,7 +321,7 @@ export default {
             const picked = this.pickNoteFromPointerEvent(event)
             if (!picked || !picked.noteName) return
             this.activeDisplayIndex = picked.slotIndex
-            this.addInputNote(picked.noteName, picked.slotIndex)
+            this.addInputNote(picked.noteName, picked.slotIndex, picked)
         },
         handleStaffTouchStart(event) {
             if (!this.targetMelody.length) return
@@ -359,7 +398,7 @@ export default {
             })
             if (picked?.noteName) {
                 this.activeDisplayIndex = picked.slotIndex
-                this.addInputNote(picked.noteName, picked.slotIndex)
+                this.addInputNote(picked.noteName, picked.slotIndex, picked)
             }
             this.touchState = null
             this.clearStaffHover()
@@ -499,6 +538,7 @@ export default {
             this.showCheckOverlay = false
             this.userMelody = Array(this.maxInputLength).fill(null)
             this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
+            this.loupeVisible = false
         },
         checkAnswer() {
             const target = this.targetMelodyNames
@@ -520,6 +560,9 @@ export default {
             this.resetResponse()
             this.showCheckOverlay = false
         }
+    },
+    beforeUnmount() {
+        if (this.loupeTimer) clearTimeout(this.loupeTimer)
     }
 }
 </script>
@@ -569,6 +612,50 @@ export default {
     font-size: 12px;
     line-height: 1.1;
     pointer-events: none;
+}
+.note-loupe {
+    position: absolute;
+    z-index: 4;
+    transform: translateX(-50%);
+    min-width: 72px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+}
+.loupe-staff {
+    position: relative;
+    width: 60px;
+    height: 48px;
+}
+.loupe-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.48);
+}
+.loupe-line:nth-child(1) { top: 8px; }
+.loupe-line:nth-child(2) { top: 16px; }
+.loupe-line:nth-child(3) { top: 24px; }
+.loupe-line:nth-child(4) { top: 32px; }
+.loupe-line:nth-child(5) { top: 40px; }
+.loupe-note {
+    position: absolute;
+    left: 24px;
+    width: 12px;
+    height: 9px;
+    border-radius: 50%;
+    background: #111;
+    transform: translateY(-50%);
+}
+.loupe-label {
+    margin-top: 2px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #111;
 }
 .input-hint {
     margin-top: 2px;
