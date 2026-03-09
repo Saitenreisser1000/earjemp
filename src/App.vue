@@ -67,7 +67,7 @@
                 height="5vh"
                 class="px-4 d-flex align-center app-footer"
         >
-            <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="text-white">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2020</span>
+            <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="text-white">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2026</span>
             <v-spacer></v-spacer>
             <span class="mr-2">v.1.1</span>
         </v-footer>

@@ -56,7 +56,7 @@
         </div>
 
             <div class="between-slot">
-                <div class="staff-input-wrap" @click="handleStaffClick">
+                <div class="staff-input-wrap">
                     <staff-renderer
                         :notes="notationNotes"
                         :comparison-notes="showCheckOverlay ? mismatchSolutionNotes : []"
@@ -80,6 +80,7 @@
                     />
                     <div
                         class="staff-input-overlay"
+                        @click="handleStaffClick"
                         @mousemove="handleStaffHover"
                         @mouseleave="clearStaffHover"
                         @touchstart.prevent="handleStaffTouchStart"
