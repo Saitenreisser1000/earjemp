@@ -62,7 +62,7 @@
                         :comparison-notes="showCheckOverlay ? mismatchSolutionNotes : []"
                         :mismatch-indices="showCheckOverlay ? mismatchIndices : []"
                         :correct-indices="showCheckOverlay ? correctIndices : []"
-                        :show-position-numbers="showCheckOverlay"
+                        :show-position-numbers="true"
                         :position-number-states="showCheckOverlay ? resultNumberStates : []"
                         :position-number-count="melodyLength"
                         :strike-mismatch-notes="true"
