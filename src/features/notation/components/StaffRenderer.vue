@@ -8,12 +8,13 @@
       </div>
     </div>
     <div
-      v-if="showPersistentScrollbar && isScrollable"
+      v-if="showPersistentScrollbar"
       ref="persistentTrack"
       class="persistent-scrollbar"
+      :class="{ 'is-disabled': !isScrollable }"
       @click="onPersistentTrackClick"
     >
-      <div class="persistent-scrollbar-thumb" :style="persistentThumbStyle"></div>
+      <div v-show="isScrollable" class="persistent-scrollbar-thumb" :style="persistentThumbStyle"></div>
     </div>
     <v-icon v-if="feedbackState === 'success'" class="feedback-icon success">mdi-check-circle</v-icon>
     <v-icon v-if="feedbackState === 'error'" class="feedback-icon error">mdi-close-circle</v-icon>
@@ -370,7 +371,7 @@ export default {
     updatePersistentScrollbar() {
       const sc = this.$refs.staffScroll
       const track = this.$refs.persistentTrack
-      if (!sc || !track) {
+      if (!sc) {
         this.isScrollable = false
         this.persistentThumbLeftPx = 0
         this.persistentThumbWidthPx = 0
@@ -378,7 +379,7 @@ export default {
       }
       const maxScroll = Math.max(0, sc.scrollWidth - sc.clientWidth)
       this.isScrollable = maxScroll > 1
-      if (!this.isScrollable) {
+      if (!this.isScrollable || !track) {
         this.persistentThumbLeftPx = 0
         this.persistentThumbWidthPx = 0
         return
@@ -722,6 +723,7 @@ export default {
   background: rgba(0, 0, 0, 0.14);
   position: relative;
   cursor: pointer;
+  transition: opacity 120ms ease;
 }
 
 .persistent-scrollbar-thumb {
@@ -731,6 +733,11 @@ export default {
   height: 10px;
   border-radius: 999px;
   background: rgba(33, 150, 243, 0.88);
+}
+
+.persistent-scrollbar.is-disabled {
+  opacity: 0.25;
+  pointer-events: none;
 }
 
 .next-position-zone {
