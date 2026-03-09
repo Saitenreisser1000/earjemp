@@ -217,6 +217,9 @@ export default {
       }
       return { spec: spec.join(', '), placeholderIndices }
     },
+    buildAnchorSpec(beats) {
+      return Array.from({ length: Math.max(1, beats) }, () => 'c4/q').join(', ')
+    },
     updateRenderedSlotXs(noteObjects) {
       const xs = []
       for (const note of noteObjects || []) {
@@ -271,14 +274,23 @@ export default {
         const beats = Math.max(parsed.length, parsedComparison.length)
         const mainSpec = this.buildMelodySpec(parsed, beats)
         const comparisonSpec = this.buildMelodySpec(parsedComparison, beats)
+        const anchorNotes = score.notes(this.buildAnchorSpec(beats), { clef: this.renderedClef })
+        const anchorVoice = score.voice(anchorNotes, { time: `${beats}/4` })
         const mainNotes = score.notes(mainSpec.spec, { clef: this.renderedClef })
         const comparisonVoice = score.voice(
           score.notes(comparisonSpec.spec, { clef: this.renderedClef }),
           { time: `${beats}/4` }
         )
         const mainVoice = score.voice(mainNotes, { time: `${beats}/4` })
+        anchorVoice.setStrict(false)
         comparisonVoice.setStrict(false)
         mainVoice.setStrict(false)
+        for (const note of anchorNotes) {
+          note.setStyle({
+            fillStyle: 'rgba(0,0,0,0)',
+            strokeStyle: 'rgba(0,0,0,0)'
+          })
+        }
 
         for (const i of this.mismatchIndices) {
           if (mainNotes[i] && parsed[i]) {
@@ -297,11 +309,11 @@ export default {
           }
         }
 
-        const stave = system.addStave({ voices: [comparisonVoice, mainVoice] })
+        const stave = system.addStave({ voices: [anchorVoice, comparisonVoice, mainVoice] })
         if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
         else stave.addClef(this.renderedClef)
         vf.draw()
-        this.updateRenderedSlotXs(mainNotes)
+        this.updateRenderedSlotXs(anchorNotes)
         if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
         return
       }
@@ -342,12 +354,28 @@ export default {
         notes,
         { time: `${beats}/4` }
       )
+      const anchorNotes = this.mode === 'melody'
+        ? score.notes(this.buildAnchorSpec(beats), { clef: this.renderedClef })
+        : []
+      const anchorVoice = this.mode === 'melody'
+        ? score.voice(anchorNotes, { time: `${beats}/4` })
+        : null
+      if (anchorVoice) {
+        anchorVoice.setStrict(false)
+        for (const note of anchorNotes) {
+          note.setStyle({
+            fillStyle: 'rgba(0,0,0,0)',
+            strokeStyle: 'rgba(0,0,0,0)'
+          })
+        }
+      }
       voice.setStrict(false)
-      const stave = system.addStave({ voices: [voice] })
+      const staveVoices = anchorVoice ? [anchorVoice, voice] : [voice]
+      const stave = system.addStave({ voices: staveVoices })
       if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
       else stave.addClef(this.renderedClef)
       vf.draw()
-      this.updateRenderedSlotXs(notes)
+      this.updateRenderedSlotXs(anchorVoice ? anchorNotes : notes)
       if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
     }
   },
@@ -366,16 +394,9 @@ export default {
     nextSlotX() {
       let x = null
       if (this.renderedSlotXs.length > 0) {
-        if (this.insertIndex < this.renderedSlotXs.length) {
-          x = this.renderedSlotXs[this.insertIndex]
-        } else if (this.renderedSlotXs.length >= 2) {
-          const last = this.renderedSlotXs[this.renderedSlotXs.length - 1]
-          const prev = this.renderedSlotXs[this.renderedSlotXs.length - 2]
-          const step = last - prev
-          x = last + step * (this.insertIndex - (this.renderedSlotXs.length - 1))
-        } else {
-          x = this.renderedSlotXs[0]
-        }
+        const slots = Math.max(1, this.insertCount)
+        const idx = Math.max(0, Math.min(slots - 1, this.insertIndex))
+        x = this.renderedSlotXs[Math.min(idx, this.renderedSlotXs.length - 1)]
       }
       if (x == null) {
         const width = this.renderWidth || 320
@@ -383,7 +404,8 @@ export default {
         const rightPadding = 22
         const slots = Math.max(1, this.insertCount)
         const usable = Math.max(20, width - leftPadding - rightPadding)
-        x = leftPadding + ((this.insertIndex + 0.5) * usable) / slots
+        const clampedIndex = Math.max(0, Math.min(slots - 1, this.insertIndex))
+        x = leftPadding + ((clampedIndex + 0.5) * usable) / slots
       }
       return Math.round(x)
     },
@@ -394,14 +416,12 @@ export default {
       }
     },
     nextZoneStyle() {
-      let slotWidth = 36
+      let slotWidth = this.insertCount > 0
+        ? Math.max(28, (this.renderWidth - 112) / this.insertCount)
+        : 36
       if (this.renderedSlotXs.length >= 2) {
-        const idx = Math.min(this.insertIndex, this.renderedSlotXs.length - 1)
-        const prev = this.renderedSlotXs[Math.max(0, idx - 1)]
-        const curr = this.renderedSlotXs[idx]
-        slotWidth = Math.max(28, Math.abs(curr - prev) * 0.85)
-      } else if (this.insertCount > 0) {
-        slotWidth = Math.max(28, (this.renderWidth - 112) / this.insertCount)
+        const idx = Math.max(1, Math.min(this.renderedSlotXs.length - 1, this.insertIndex))
+        slotWidth = Math.max(28, Math.abs(this.renderedSlotXs[idx] - this.renderedSlotXs[idx - 1]) * 0.85)
       }
       return {
         left: `${this.nextSlotX}px`,

@@ -511,26 +511,26 @@ export default {
             const snappedYInSvg = this.noteYForClef(noteName, this.notationClef)
             const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
             let slotIndex = 0
-            if (this.staffSlotXs.length > 0) {
-                let best = 0
-                let bestDist = Number.POSITIVE_INFINITY
-                const max = Math.min(this.melodyLength, this.staffSlotXs.length)
-                for (let i = 0; i < max; i++) {
-                    const dist = Math.abs(this.staffSlotXs[i] - xInSvg)
-                    if (dist < bestDist) {
-                        best = i
-                        bestDist = dist
+            const maxSlots = Math.max(1, this.melodyLength)
+            if (this.staffSlotXs.length >= 2) {
+                const centers = this.staffSlotXs.slice(0, maxSlots)
+                // Use midpoint boundaries between real rendered slot centers.
+                let chosen = centers.length - 1
+                for (let i = 0; i < centers.length - 1; i++) {
+                    const boundary = (centers[i] + centers[i + 1]) / 2
+                    if (xInSvg < boundary) {
+                        chosen = i
+                        break
                     }
                 }
-                slotIndex = best
+                slotIndex = Math.max(0, Math.min(maxSlots - 1, chosen))
             } else {
                 const leftPadding = 90
                 const rightPadding = 22
-                const slots = Math.max(1, this.melodyLength)
                 const usable = Math.max(20, svgRect.width - leftPadding - rightPadding)
                 const normalized = Math.max(0, Math.min(usable, xInSvg - leftPadding))
-                const slotIndexRaw = Math.floor((normalized / usable) * slots)
-                slotIndex = Math.max(0, Math.min(slots - 1, slotIndexRaw))
+                const slotIndexRaw = Math.floor((normalized / usable) * maxSlots)
+                slotIndex = Math.max(0, Math.min(maxSlots - 1, slotIndexRaw))
             }
 
             return { noteName, xInWrap, snappedYInWrap, slotIndex }
