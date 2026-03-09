@@ -49,37 +49,41 @@
         <div class="between-slot">
             <slot name="between"></slot>
         </div>
-        <v-select
-                v-model="selectedChords"
-                :items="chords"
-                item-title="text"
-                item-value="value"
-                return-object
-                label="Select Chords"
-                multiple
-                hide-details
-        >
-            <template #selection></template>
-        </v-select>
-        <v-btn-toggle
-                v-model="localPlayOrder"
-                class="text-white mt-2"
-                dense
-                active-class="primary"
-                background-color="secondary"
-                multiple
-                mandatory
-        >
-            <v-btn value="increase">
-                <span>up</span>
-            </v-btn>
-            <v-btn value="decrease">
-                <span>down</span>
-            </v-btn>
-            <v-btn value="simultaneous">
-                <span>=</span>
-            </v-btn>
-        </v-btn-toggle>
+        <div class="controls-row mt-2">
+            <v-btn-toggle
+                    v-model="localPlayOrder"
+                    class="text-white play-order-toggle"
+                    dense
+                    active-class="primary"
+                    background-color="secondary"
+                    multiple
+                    mandatory
+            >
+                <v-btn value="increase">
+                    <span>up</span>
+                </v-btn>
+                <v-btn value="decrease">
+                    <span>down</span>
+                </v-btn>
+                <v-btn value="simultaneous">
+                    <span>=</span>
+                </v-btn>
+            </v-btn-toggle>
+            <v-select
+                    v-model="selectedChords"
+                    :items="chords"
+                    item-title="text"
+                    item-value="value"
+                    return-object
+                    label="Select Chords"
+                    multiple
+                    density="compact"
+                    hide-details
+                    class="chord-inline-select"
+            >
+                <template #selection></template>
+            </v-select>
+        </div>
     </div>
 </template>
 
@@ -192,6 +196,28 @@ export default {
     }
     .between-slot {
         margin-bottom: 10px;
+    }
+    .controls-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .play-order-toggle {
+        width: 170px;
+        min-width: 170px;
+    }
+    .play-order-toggle :deep(.v-btn) {
+        flex: 1 1 0;
+        min-width: 0 !important;
+        text-align: center;
+    }
+    .chord-inline-select {
+        min-width: 136px;
+        max-width: 160px;
+        flex: 0 1 160px;
+    }
+    .chord-inline-select :deep(.v-field) {
+        min-height: 38px !important;
     }
     .v-btn{
         text-transform: none !important;

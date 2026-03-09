@@ -71,6 +71,26 @@ export default {
       type: Array,
       default: () => []
     },
+    correctIndices: {
+      type: Array,
+      default: () => []
+    },
+    showPositionNumbers: {
+      type: Boolean,
+      default: false
+    },
+    positionNumberStates: {
+      type: Array,
+      default: () => []
+    },
+    positionNumberCount: {
+      type: Number,
+      default: 0
+    },
+    strikeMismatchNotes: {
+      type: Boolean,
+      default: false
+    },
     showInsertMarker: {
       type: Boolean,
       default: false
@@ -131,6 +151,93 @@ export default {
     }
   },
   methods: {
+    drawMismatchStrikes(vf, noteObjects, mismatchIndices) {
+      if (!this.strikeMismatchNotes) return
+      if (!vf || !Array.isArray(noteObjects) || !Array.isArray(mismatchIndices)) return
+      const ctx = vf.getContext()
+      if (!ctx) return
+
+      ctx.save()
+      ctx.setStrokeStyle('rgba(0,0,0,0.95)')
+      ctx.setLineWidth(2)
+      for (const i of mismatchIndices) {
+        const note = noteObjects[i]
+        if (!note || typeof note.getYs !== 'function') continue
+        const ys = note.getYs()
+        if (!ys || !ys.length) continue
+        const y = ys[0]
+        const x1 = typeof note.getNoteHeadBeginX === 'function'
+          ? note.getNoteHeadBeginX() - 1
+          : (typeof note.getAbsoluteX === 'function' ? note.getAbsoluteX() + 2 : 0)
+        const x2 = typeof note.getNoteHeadEndX === 'function'
+          ? note.getNoteHeadEndX() + 1
+          : x1 + 12
+        if (!Number.isFinite(x1) || !Number.isFinite(x2) || !Number.isFinite(y)) continue
+        ctx.beginPath()
+        ctx.moveTo(x1, y + 5)
+        ctx.lineTo(x2, y - 5)
+        ctx.moveTo(x1, y - 5)
+        ctx.lineTo(x2, y + 5)
+        ctx.stroke()
+      }
+      ctx.restore()
+    },
+    drawCorrectChecks(vf, noteObjects, correctIndices) {
+      if (!Array.isArray(noteObjects) || !Array.isArray(correctIndices)) return
+      if (!correctIndices.length) return
+      const ctx = vf?.getContext?.()
+      if (!ctx) return
+
+      ctx.save()
+      ctx.setStrokeStyle('rgba(46,125,50,0.98)')
+      ctx.setLineWidth(2)
+      for (const i of correctIndices) {
+        const note = noteObjects[i]
+        if (!note || typeof note.getYs !== 'function') continue
+        const ys = note.getYs()
+        if (!ys || !ys.length) continue
+        const y = ys[0]
+        const xBase = typeof note.getNoteHeadEndX === 'function'
+          ? note.getNoteHeadEndX() + 4
+          : (typeof note.getAbsoluteX === 'function' ? note.getAbsoluteX() + 12 : 0)
+        if (!Number.isFinite(xBase) || !Number.isFinite(y)) continue
+
+        ctx.beginPath()
+        ctx.moveTo(xBase, y + 1)
+        ctx.lineTo(xBase + 3, y + 4)
+        ctx.lineTo(xBase + 9, y - 4)
+        ctx.stroke()
+      }
+      ctx.restore()
+    },
+    drawPositionNumbers(vf, noteObjects) {
+      if (!this.showPositionNumbers) return
+      if (!vf || !Array.isArray(noteObjects) || !noteObjects.length) return
+      const ctx = vf.getContext()
+      if (!ctx) return
+
+      const count = this.positionNumberCount > 0
+        ? Math.min(this.positionNumberCount, noteObjects.length)
+        : noteObjects.length
+      const y = 14
+      ctx.save()
+      ctx.setFont('600 12px Arial, sans-serif')
+      for (let i = 0; i < count; i++) {
+        const note = noteObjects[i]
+        if (!note || typeof note.getAbsoluteX !== 'function') continue
+        const x = note.getAbsoluteX() + 2
+        if (!Number.isFinite(x)) continue
+        const state = this.positionNumberStates[i]
+        const color = state === 'correct'
+          ? 'rgba(46,125,50,0.98)'
+          : state === 'wrong'
+            ? 'rgba(198,40,40,0.98)'
+            : 'rgba(0,0,0,0.86)'
+        ctx.setFillStyle(color)
+        ctx.fillText(String(i + 1), x, y)
+      }
+      ctx.restore()
+    },
     parseNote(noteName) {
       const match = /^([A-Ga-g])([#bxs]{1,2}|bb|##)?(\d)$/.exec(noteName || '')
       if (!match) return null
@@ -306,6 +413,14 @@ export default {
             })
           }
         }
+        for (const i of comparisonSpec.placeholderIndices) {
+          if (comparisonVoice.getTickables()[i]) {
+            comparisonVoice.getTickables()[i].setStyle({
+              fillStyle: 'rgba(0,0,0,0)',
+              strokeStyle: 'rgba(0,0,0,0)'
+            })
+          }
+        }
         for (const i of mainSpec.placeholderIndices) {
           if (mainNotes[i]) {
             mainNotes[i].setStyle({
@@ -319,6 +434,9 @@ export default {
         if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
         else stave.addClef(this.renderedClef)
         vf.draw()
+        this.drawMismatchStrikes(vf, mainNotes, this.mismatchIndices)
+        this.drawCorrectChecks(vf, mainNotes, this.correctIndices)
+        this.drawPositionNumbers(vf, anchorNotes)
         this.updateRenderedSlotXs(anchorNotes)
         if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
         return
@@ -341,6 +459,14 @@ export default {
       const beats = this.mode === 'chord' ? 1 : melodyBeats
       const notes = score.notes(this.mode === 'chord' ? notesSpec : notesSpec.spec, { clef: this.renderedClef })
       if (this.mode === 'melody') {
+        for (const i of this.mismatchIndices || []) {
+          if (notes[i] && parsed[i]) {
+            notes[i].setStyle({
+              fillStyle: 'rgba(198,40,40,1)',
+              strokeStyle: 'rgba(198,40,40,1)'
+            })
+          }
+        }
         for (const i of notesSpec.placeholderIndices || []) {
           if (notes[i]) {
             notes[i].setStyle({
@@ -381,6 +507,9 @@ export default {
       if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
       else stave.addClef(this.renderedClef)
       vf.draw()
+      this.drawMismatchStrikes(vf, notes, this.mismatchIndices)
+      this.drawCorrectChecks(vf, notes, this.correctIndices)
+      this.drawPositionNumbers(vf, anchorVoice ? anchorNotes : notes)
       this.updateRenderedSlotXs(anchorVoice ? anchorNotes : notes)
       if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
     }

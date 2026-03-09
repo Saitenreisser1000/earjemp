@@ -59,8 +59,13 @@
                 <div class="staff-input-wrap" @click="handleStaffClick">
                     <staff-renderer
                         :notes="notationNotes"
-                        :comparison-notes="showCheckOverlay ? targetMelodyNames : []"
+                        :comparison-notes="showCheckOverlay ? mismatchSolutionNotes : []"
                         :mismatch-indices="showCheckOverlay ? mismatchIndices : []"
+                        :correct-indices="showCheckOverlay ? correctIndices : []"
+                        :show-position-numbers="showCheckOverlay"
+                        :position-number-states="showCheckOverlay ? resultNumberStates : []"
+                        :position-number-count="melodyLength"
+                        :strike-mismatch-notes="true"
                         :clef="notationClef"
                         :feedback-state="notationFeedbackState"
                         :octave-offset="notationOctaveOffset"
@@ -234,6 +239,35 @@ export default {
                 if (target[i] !== entered[i]) mismatches.push(i)
             }
             return mismatches
+        },
+        correctIndices() {
+            const target = this.targetMelodyNames
+            const entered = this.enteredMelodyNotes
+            const length = Math.min(target.length, entered.length)
+            const correct = []
+            for (let i = 0; i < length; i++) {
+                if (target[i] === entered[i]) correct.push(i)
+            }
+            return correct
+        },
+        mismatchSolutionNotes() {
+            const target = this.targetMelodyNames
+            const entered = this.enteredMelodyNotes
+            const length = Math.max(target.length, entered.length)
+            const notes = []
+            for (let i = 0; i < length; i++) {
+                notes.push(target[i] !== entered[i] ? target[i] : null)
+            }
+            return notes
+        },
+        resultNumberStates() {
+            const target = this.targetMelodyNames
+            const entered = this.enteredMelodyNotes
+            const states = []
+            for (let i = 0; i < this.melodyLength; i++) {
+                states.push(target[i] === entered[i] ? 'correct' : 'wrong')
+            }
+            return states
         },
         toneIdByName() {
             const map = {}
