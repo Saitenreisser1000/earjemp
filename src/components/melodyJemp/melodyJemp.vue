@@ -116,7 +116,6 @@
                         <div class="loupe-label">{{ formatDisplayNoteName(loupeNote) }}</div>
                     </div>
                 </div>
-                <div class="text-caption input-hint">{{ inputHint }}</div>
             </div>
 
             <v-select
@@ -190,11 +189,6 @@ export default {
     },
     computed: {
         ...mapGetters(['getToneChain']),
-        inputHint() {
-            return this.isMobileInputMode()
-                ? 'tap to set, swipe up/down to adjust, double tap to switch accidental'
-                : 'click in staff to draw notes'
-        },
         lengthOptions() {
             return MELODY_LENGTH_OPTIONS
         },
@@ -682,13 +676,13 @@ export default {
     position: relative;
     cursor: crosshair;
     padding-top: 28px;
-    padding-bottom: 18px;
+    padding-bottom: 34px;
 }
 .staff-input-overlay {
     position: absolute;
     top: 28px;
     right: 0;
-    bottom: 18px;
+    bottom: 34px;
     left: 0;
     z-index: 2;
     touch-action: pan-x;
@@ -754,9 +748,6 @@ export default {
     font-size: 11px;
     font-weight: 600;
     color: #111;
-}
-.input-hint {
-    margin-top: 2px;
 }
 .container{
     padding: 0;

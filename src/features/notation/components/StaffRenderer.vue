@@ -1,6 +1,11 @@
 <template>
   <div class="staff-frame" :class="feedbackClass">
-    <div ref="staffScroll" class="staff-scroll" @scroll="onStaffScroll">
+    <div
+      ref="staffScroll"
+      class="staff-scroll"
+      :class="{ 'with-persistent-scrollbar': showPersistentScrollbar }"
+      @scroll="onStaffScroll"
+    >
       <div ref="staffRoot" class="staff-renderer" :style="staffRendererStyle"></div>
       <div v-if="showNextZone" class="next-position-zone" :style="nextZoneStyle"></div>
       <div v-if="showNextMarker" class="next-position-arrow" :style="nextMarkerStyle">
@@ -716,12 +721,21 @@ export default {
   background: rgba(33, 150, 243, 0.9);
 }
 
+.staff-scroll.with-persistent-scrollbar {
+  scrollbar-width: none;
+}
+
+.staff-scroll.with-persistent-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .persistent-scrollbar {
   height: 12px;
-  margin-top: 4px;
+  margin-top: 12px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.14);
   position: relative;
+  z-index: 5;
   cursor: pointer;
   transition: opacity 120ms ease;
 }
