@@ -66,6 +66,7 @@
                         :position-number-states="showCheckOverlay ? resultNumberStates : []"
                         :position-number-count="melodyLength"
                         :strike-mismatch-notes="true"
+                        :auto-follow-insert-marker="true"
                         :clef="notationClef"
                         :feedback-state="notationFeedbackState"
                         :octave-offset="notationOctaveOffset"

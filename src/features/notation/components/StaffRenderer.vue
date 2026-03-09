@@ -35,7 +35,8 @@ export default {
   data() {
     return {
       renderWidth: 320,
-      renderedSlotXs: []
+      renderedSlotXs: [],
+      lastAutoScrolledInsertIndex: -1
     }
   },
   props: {
@@ -92,6 +93,10 @@ export default {
       default: false
     },
     showInsertMarker: {
+      type: Boolean,
+      default: false
+    },
+    autoFollowInsertMarker: {
       type: Boolean,
       default: false
     },
@@ -344,6 +349,39 @@ export default {
       this.renderedSlotXs = xs
       this.$emit('slot-positions', xs)
     },
+    resolveSlotX() {
+      if (this.renderedSlotXs.length > 0) {
+        const slots = Math.max(1, this.insertCount)
+        const idx = Math.max(0, Math.min(slots - 1, this.insertIndex))
+        return this.renderedSlotXs[Math.min(idx, this.renderedSlotXs.length - 1)]
+      }
+      const width = this.renderWidth || 320
+      const leftPadding = 90
+      const rightPadding = 22
+      const slots = Math.max(1, this.insertCount)
+      const usable = Math.max(20, width - leftPadding - rightPadding)
+      const clampedIndex = Math.max(0, Math.min(slots - 1, this.insertIndex))
+      return leftPadding + ((clampedIndex + 0.5) * usable) / slots
+    },
+    maybeAutoScrollToInsertMarker(scrollContainer) {
+      if (!this.autoFollowInsertMarker || !this.showNextMarker) return
+      if (!scrollContainer) return
+      if (this.lastAutoScrolledInsertIndex === this.insertIndex) return
+      this.lastAutoScrolledInsertIndex = this.insertIndex
+
+      const x = this.resolveSlotX()
+      const leftVisible = scrollContainer.scrollLeft
+      const rightVisible = leftVisible + scrollContainer.clientWidth
+      const margin = 40
+      if (x < leftVisible + margin) {
+        scrollContainer.scrollLeft = Math.max(0, x - margin)
+        return
+      }
+      if (x > rightVisible - margin) {
+        const maxScroll = Math.max(0, scrollContainer.scrollWidth - scrollContainer.clientWidth)
+        scrollContainer.scrollLeft = Math.min(maxScroll, x - scrollContainer.clientWidth + margin)
+      }
+    },
     renderStaff() {
       const root = this.$refs.staffRoot
       if (!root) return
@@ -439,6 +477,7 @@ export default {
         this.drawPositionNumbers(vf, anchorNotes)
         this.updateRenderedSlotXs(anchorNotes)
         if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
+        this.maybeAutoScrollToInsertMarker(scrollContainer)
         return
       }
 
@@ -512,6 +551,7 @@ export default {
       this.drawPositionNumbers(vf, anchorVoice ? anchorNotes : notes)
       this.updateRenderedSlotXs(anchorVoice ? anchorNotes : notes)
       if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
+      this.maybeAutoScrollToInsertMarker(scrollContainer)
     }
   },
   computed: {
@@ -527,22 +567,7 @@ export default {
       return this.showNextMarker
     },
     nextSlotX() {
-      let x = null
-      if (this.renderedSlotXs.length > 0) {
-        const slots = Math.max(1, this.insertCount)
-        const idx = Math.max(0, Math.min(slots - 1, this.insertIndex))
-        x = this.renderedSlotXs[Math.min(idx, this.renderedSlotXs.length - 1)]
-      }
-      if (x == null) {
-        const width = this.renderWidth || 320
-        const leftPadding = 90
-        const rightPadding = 22
-        const slots = Math.max(1, this.insertCount)
-        const usable = Math.max(20, width - leftPadding - rightPadding)
-        const clampedIndex = Math.max(0, Math.min(slots - 1, this.insertIndex))
-        x = leftPadding + ((clampedIndex + 0.5) * usable) / slots
-      }
-      return Math.round(x)
+      return Math.round(this.resolveSlotX())
     },
     nextMarkerStyle() {
       return {
@@ -605,8 +630,28 @@ export default {
 .staff-scroll {
   position: relative;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: scroll;
   overflow-y: hidden;
+  scrollbar-gutter: stable both-edges;
+  padding-bottom: 4px;
+}
+
+.staff-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.staff-scroll::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+}
+
+.staff-scroll::-webkit-scrollbar-thumb {
+  background: rgba(33, 150, 243, 0.72);
+  border-radius: 999px;
+}
+
+.staff-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(33, 150, 243, 0.9);
 }
 
 .next-position-zone {
