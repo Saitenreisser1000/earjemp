@@ -300,6 +300,20 @@ export default {
         handleSlotPositions(xs) {
             this.staffSlotXs = Array.isArray(xs) ? xs : []
         },
+        nextFreeDisplayIndex() {
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            for (let i = 0; i < this.maxInputLength; i++) {
+                if (!this.userMelody[i]) return minDisplay + i
+            }
+            return this.melodyLength
+        },
+        displayIndexToUserIndex(displayIndex) {
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            return displayIndex - minDisplay
+        },
+        restoreInsertMarker() {
+            this.activeDisplayIndex = this.nextFreeDisplayIndex()
+        },
         playAgain() {
             if (!this.targetMelody.length) {
                 this.playRandomMelody()
@@ -320,8 +334,8 @@ export default {
                 const idx = this.randomRangeInt({ min: 0, max: pool.length })
                 this.targetMelody.push(pool[idx])
             }
-            this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
             this.userMelody = Array(this.maxInputLength).fill(null)
+            this.restoreInsertMarker()
             this.playTones()
         },
         playTones() {
@@ -341,11 +355,11 @@ export default {
         addInputNote(noteName, displayIndex = this.activeDisplayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
             const clampedDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
-            const userIndex = clampedDisplay - minDisplay
+            const userIndex = this.displayIndexToUserIndex(clampedDisplay)
             if (userIndex < 0 || userIndex >= this.maxInputLength) return
             this.showCheckOverlay = false
             this.userMelody.splice(userIndex, 1, noteName)
-            this.activeDisplayIndex = Math.min(this.melodyLength - 1, clampedDisplay + 1)
+            this.restoreInsertMarker()
             this.triggerHaptic()
         },
         handleStaffClick(event) {
@@ -370,6 +384,10 @@ export default {
                 startX: touch.clientX,
                 startY: touch.clientY,
                 slotIndex: picked?.slotIndex ?? this.activeDisplayIndex
+            }
+            if (picked && Number.isFinite(picked.slotIndex)) {
+                const minDisplay = this.showFirstToneHint ? 1 : 0
+                this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
             }
             if (picked?.noteName) {
                 this.hoverNote = picked.noteName
@@ -407,6 +425,7 @@ export default {
                 this.adjustInputAt(step, this.touchState.slotIndex)
                 this.touchState = null
                 this.clearStaffHover()
+                this.restoreInsertMarker()
                 return
             }
 
@@ -416,6 +435,7 @@ export default {
                 this.toggleAccidentalAt(this.touchState.slotIndex)
                 this.touchState = null
                 this.clearStaffHover()
+                this.restoreInsertMarker()
                 return
             }
 
@@ -430,16 +450,18 @@ export default {
             }
             this.touchState = null
             this.clearStaffHover()
+            this.restoreInsertMarker()
         },
         handleStaffTouchCancel() {
             this.touchState = null
             this.clearStaffHover()
+            this.restoreInsertMarker()
         },
         adjustInputAt(step, displayIndex) {
             if (!Number.isFinite(step) || step === 0 || !this.maxInputLength) return
             const minDisplay = this.showFirstToneHint ? 1 : 0
             const targetDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
-            const userIndex = targetDisplay - minDisplay
+            const userIndex = this.displayIndexToUserIndex(targetDisplay)
             const current = this.userMelody[userIndex]
             if (!current) return
             // Sort by pitch for deterministic stepping.
@@ -456,7 +478,7 @@ export default {
         toggleAccidentalAt(displayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
             const targetDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
-            const userIndex = targetDisplay - minDisplay
+            const userIndex = this.displayIndexToUserIndex(targetDisplay)
             const current = this.userMelody[userIndex]
             if (!current) return
             const currentTone = this.notePalette.find((tone) => tone.name === current)
@@ -567,7 +589,7 @@ export default {
         clearInput() {
             this.showCheckOverlay = false
             this.userMelody = Array(this.maxInputLength).fill(null)
-            this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
+            this.restoreInsertMarker()
             this.loupeVisible = false
         },
         checkAnswer() {
