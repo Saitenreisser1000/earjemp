@@ -8,9 +8,6 @@
     >
       <div ref="staffRoot" class="staff-renderer" :style="staffRendererStyle"></div>
       <div v-if="showNextZone" class="next-position-zone" :style="nextZoneStyle"></div>
-      <div v-if="showNextMarker" class="next-position-arrow" :style="nextMarkerStyle">
-        <v-icon size="18">mdi-arrow-down-bold</v-icon>
-      </div>
     </div>
     <div
       v-if="showPersistentScrollbar"
@@ -847,13 +844,6 @@ export default {
 
 .feedback-icon.error {
   color: #c62828;
-}
-
-.next-position-arrow {
-  position: absolute;
-  top: 4px;
-  color: rgba(0, 0, 0, 0.82);
-  pointer-events: none;
 }
 
 </style>

@@ -134,15 +134,15 @@
                 <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
                     <v-icon>mdi-play</v-icon>
                 </v-btn>
-                <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="playRandomMelody">
-                    <span>next</span>
+                <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="checkAnswer">
+                    <span>check</span>
                 </v-btn>
             </div>
 
             <div class="mb-2">
                 <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">undo</v-btn>
                 <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">clear</v-btn>
-                <v-btn color="primary" size="small" @click="checkAnswer">check</v-btn>
+                <v-btn color="primary" size="small" @click="playRandomMelody">next</v-btn>
             </div>
         </v-card>
     </v-card>
@@ -640,13 +640,27 @@ export default {
         },
         undoInput() {
             this.showCheckOverlay = false
-            this.userMelody.pop()
+            const lastFilled = this.findLastFilledUserIndex()
+            if (lastFilled < 0) {
+                this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
+                return
+            }
+            this.userMelody.splice(lastFilled, 1, null)
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            this.activeDisplayIndex = minDisplay + lastFilled
         },
         clearInput() {
             this.showCheckOverlay = false
             this.userMelody = Array(this.maxInputLength).fill(null)
-            this.restoreInsertMarker()
+            this.activeDisplayIndex = this.showFirstToneHint ? 1 : 0
+            this.scrollResetToken += 1
             this.loupeVisible = false
+        },
+        findLastFilledUserIndex() {
+            for (let i = this.userMelody.length - 1; i >= 0; i--) {
+                if (this.userMelody[i]) return i
+            }
+            return -1
         },
         checkAnswer() {
             const target = this.targetMelodyNames
