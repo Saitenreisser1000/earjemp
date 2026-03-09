@@ -497,8 +497,7 @@ export default {
       const noteCountForWidth = Math.max(
         this.notes.length,
         this.comparisonNotes.length,
-        this.insertCount,
-        this.mode === 'melody' && this.previewNote ? this.notes.length + 1 : this.notes.length
+        this.insertCount
       )
       const extendedWidth = noteCountForWidth > 6 ? 100 + (noteCountForWidth * 52) : baseWidth
       const width = Math.max(baseWidth, extendedWidth)
@@ -775,7 +774,7 @@ export default {
 
 .persistent-scrollbar {
   height: 12px;
-  margin-top: 12px;
+  margin-top: 18px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.14);
   position: relative;

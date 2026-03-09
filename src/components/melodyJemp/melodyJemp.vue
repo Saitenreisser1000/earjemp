@@ -678,13 +678,13 @@ export default {
     position: relative;
     cursor: crosshair;
     padding-top: 28px;
-    padding-bottom: 34px;
+    padding-bottom: 56px;
 }
 .staff-input-overlay {
     position: absolute;
     top: 28px;
     right: 0;
-    bottom: 0;
+    bottom: 44px;
     left: 0;
     z-index: 2;
     touch-action: pan-x;
