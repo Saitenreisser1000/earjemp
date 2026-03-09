@@ -398,16 +398,9 @@ export default {
             if (!touch || !this.touchState) return
             this.suppressClickUntil = Date.now() + 400
 
-            const elapsed = Date.now() - this.touchState.startedAt
             const dx = touch.clientX - this.touchState.startX
             const dy = touch.clientY - this.touchState.startY
-            const distance = Math.hypot(dx, dy)
             const absDy = Math.abs(dy)
-            if (elapsed > 650 && distance < 8) {
-                this.touchState = null
-                this.clearStaffHover()
-                return
-            }
 
             if (absDy >= 24 && absDy > Math.abs(dx)) {
                 const step = Math.round((-dy) / 24)

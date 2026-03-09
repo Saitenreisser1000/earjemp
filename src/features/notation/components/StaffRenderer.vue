@@ -203,22 +203,28 @@ export default {
       }
       return best
     },
+    placeholderToken() {
+      // Keep placeholders inside the stave to avoid visible ledger-line artifacts.
+      return this.renderedClef === 'bass' ? 'd3' : 'b4'
+    },
     buildMelodySpec(tokens, beats) {
       const spec = []
       const placeholderIndices = []
+      const ghost = this.placeholderToken()
       for (let i = 0; i < beats; i++) {
         if (tokens[i]) {
           spec.push(`${tokens[i]}/q`)
         } else {
           // Keep horizontal spacing with an invisible ghost note.
-          spec.push('c4/q')
+          spec.push(`${ghost}/q`)
           placeholderIndices.push(i)
         }
       }
       return { spec: spec.join(', '), placeholderIndices }
     },
     buildAnchorSpec(beats) {
-      return Array.from({ length: Math.max(1, beats) }, () => 'c4/q').join(', ')
+      const anchor = this.placeholderToken()
+      return Array.from({ length: Math.max(1, beats) }, () => `${anchor}/q`).join(', ')
     },
     updateRenderedSlotXs(noteObjects) {
       const xs = []
