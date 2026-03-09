@@ -450,11 +450,13 @@ export default {
             if (!touch || !this.touchState) return
             this.suppressClickUntil = Date.now() + 400
 
+            const elapsed = Date.now() - this.touchState.startedAt
             const dx = touch.clientX - this.touchState.startX
             const dy = touch.clientY - this.touchState.startY
             const absDx = Math.abs(dx)
             const absDy = Math.abs(dy)
             const distance = Math.hypot(dx, dy)
+            const isLongPress = elapsed >= 220
 
             if (absDy >= 24 && absDy > Math.abs(dx)) {
                 const step = Math.round((-dy) / 24)
@@ -466,14 +468,14 @@ export default {
             }
 
             // Horizontal drags on the staff are treated as navigation gestures, not note input.
-            if (absDx >= 12 && absDx > absDy) {
+            if (!isLongPress && absDx >= 12 && absDx > absDy) {
                 this.touchState = null
                 this.clearStaffHover()
                 this.restoreInsertMarker()
                 return
             }
 
-            const isDoubleTap = Date.now() - this.lastTapAt < 320
+            const isDoubleTap = !isLongPress && (Date.now() - this.lastTapAt < 320)
             this.lastTapAt = Date.now()
             if (isDoubleTap) {
                 this.toggleAccidentalAt(this.touchState.slotIndex)
@@ -484,7 +486,8 @@ export default {
             }
 
             // Prevent accidental sets after larger pointer movement.
-            if (distance > 10) {
+            const maxTapDistance = isLongPress ? 26 : 10
+            if (distance > maxTapDistance) {
                 this.touchState = null
                 this.clearStaffHover()
                 this.restoreInsertMarker()
