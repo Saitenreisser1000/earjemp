@@ -1,5 +1,13 @@
 <template>
     <v-app class="app-shell">
+        <div v-if="orientationLocked" class="orientation-lock-screen">
+            <div class="orientation-lock-card">
+                <v-icon size="42" color="primary">mdi-cellphone</v-icon>
+                <div class="text-h6 mt-2">Bitte auf Hochformat drehen</div>
+                <div class="text-body-2 mt-1">earJEMP ist im Portrait-Modus optimiert.</div>
+            </div>
+        </div>
+        <template v-else>
         <nav class="app-nav">
             <v-toolbar
                     height="5vh"
@@ -63,6 +71,7 @@
             <v-spacer></v-spacer>
             <span class="mr-2">v.1.1</span>
         </v-footer>
+        </template>
     </v-app>
 </template>
 
@@ -80,14 +89,40 @@
             ],
             drawer: false,
             soundLoading: false,
-            soundStatus: 'loading sounds...'
+            soundStatus: 'loading sounds...',
+            orientationLocked: false
         }),
+        mounted() {
+            this.updateOrientationLock()
+            window.addEventListener('resize', this.updateOrientationLock, { passive: true })
+            window.addEventListener('orientationchange', this.updateOrientationLock, { passive: true })
+            this.tryLockPortrait()
+        },
+        beforeUnmount() {
+            window.removeEventListener('resize', this.updateOrientationLock)
+            window.removeEventListener('orientationchange', this.updateOrientationLock)
+        },
         methods:{
             setSoundLoaded(loading){
                 this.soundLoading = loading
             },
             setSoundStatus(status){
                 this.soundStatus = status
+            },
+            updateOrientationLock() {
+                if (typeof window === 'undefined') return
+                const isLandscape = window.innerWidth > window.innerHeight
+                const isSmallScreen = window.innerWidth <= 1024
+                this.orientationLocked = isSmallScreen && isLandscape
+            },
+            async tryLockPortrait() {
+                try {
+                    if (screen?.orientation?.lock) {
+                        await screen.orientation.lock('portrait')
+                    }
+                } catch (e) {
+                    // Ignored: many browsers restrict orientation lock.
+                }
             }
         }
     };
@@ -115,5 +150,24 @@
         min-height: 90vh !important;
         box-sizing: border-box;
         padding-top: 10px;
+    }
+    .orientation-lock-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 3000;
+        background: #eceff1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+    }
+    .orientation-lock-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px 18px;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+        max-width: 320px;
+        width: 100%;
     }
 </style>
