@@ -1,11 +1,19 @@
 <template>
   <div class="staff-frame" :class="feedbackClass">
-    <div class="staff-scroll">
+    <div ref="staffScroll" class="staff-scroll" @scroll="onStaffScroll">
       <div ref="staffRoot" class="staff-renderer" :style="staffRendererStyle"></div>
       <div v-if="showNextZone" class="next-position-zone" :style="nextZoneStyle"></div>
       <div v-if="showNextMarker" class="next-position-arrow" :style="nextMarkerStyle">
         <v-icon size="18">mdi-arrow-down-bold</v-icon>
       </div>
+    </div>
+    <div
+      v-if="showPersistentScrollbar && isScrollable"
+      ref="persistentTrack"
+      class="persistent-scrollbar"
+      @click="onPersistentTrackClick"
+    >
+      <div class="persistent-scrollbar-thumb" :style="persistentThumbStyle"></div>
     </div>
     <v-icon v-if="feedbackState === 'success'" class="feedback-icon success">mdi-check-circle</v-icon>
     <v-icon v-if="feedbackState === 'error'" class="feedback-icon error">mdi-close-circle</v-icon>
@@ -36,7 +44,10 @@ export default {
     return {
       renderWidth: 320,
       renderedSlotXs: [],
-      lastAutoScrolledInsertIndex: -1
+      lastAutoScrolledInsertIndex: -1,
+      isScrollable: false,
+      persistentThumbLeftPx: 0,
+      persistentThumbWidthPx: 0
     }
   },
   props: {
@@ -97,6 +108,10 @@ export default {
       default: false
     },
     autoFollowInsertMarker: {
+      type: Boolean,
+      default: false
+    },
+    showPersistentScrollbar: {
       type: Boolean,
       default: false
     },
@@ -349,6 +364,44 @@ export default {
       this.renderedSlotXs = xs
       this.$emit('slot-positions', xs)
     },
+    onStaffScroll() {
+      this.updatePersistentScrollbar()
+    },
+    updatePersistentScrollbar() {
+      const sc = this.$refs.staffScroll
+      const track = this.$refs.persistentTrack
+      if (!sc || !track) {
+        this.isScrollable = false
+        this.persistentThumbLeftPx = 0
+        this.persistentThumbWidthPx = 0
+        return
+      }
+      const maxScroll = Math.max(0, sc.scrollWidth - sc.clientWidth)
+      this.isScrollable = maxScroll > 1
+      if (!this.isScrollable) {
+        this.persistentThumbLeftPx = 0
+        this.persistentThumbWidthPx = 0
+        return
+      }
+      const trackWidth = Math.max(1, track.clientWidth)
+      const minThumb = 28
+      const thumbWidth = Math.max(minThumb, (sc.clientWidth / sc.scrollWidth) * trackWidth)
+      const travel = Math.max(0, trackWidth - thumbWidth)
+      const left = maxScroll > 0 ? (sc.scrollLeft / maxScroll) * travel : 0
+      this.persistentThumbWidthPx = thumbWidth
+      this.persistentThumbLeftPx = left
+    },
+    onPersistentTrackClick(event) {
+      const sc = this.$refs.staffScroll
+      const track = this.$refs.persistentTrack
+      if (!sc || !track || !this.isScrollable) return
+      const rect = track.getBoundingClientRect()
+      const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left))
+      const maxScroll = Math.max(0, sc.scrollWidth - sc.clientWidth)
+      const ratio = rect.width > 0 ? x / rect.width : 0
+      sc.scrollLeft = ratio * maxScroll
+      this.updatePersistentScrollbar()
+    },
     resolveSlotX() {
       if (this.renderedSlotXs.length > 0) {
         const slots = Math.max(1, this.insertCount)
@@ -478,6 +531,7 @@ export default {
         this.updateRenderedSlotXs(anchorNotes)
         if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
         this.maybeAutoScrollToInsertMarker(scrollContainer)
+        this.$nextTick(() => this.updatePersistentScrollbar())
         return
       }
 
@@ -552,6 +606,7 @@ export default {
       this.updateRenderedSlotXs(anchorVoice ? anchorNotes : notes)
       if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
       this.maybeAutoScrollToInsertMarker(scrollContainer)
+      this.$nextTick(() => this.updatePersistentScrollbar())
     }
   },
   computed: {
@@ -608,6 +663,12 @@ export default {
       if (this.feedbackState === 'success') return 'is-success'
       if (this.feedbackState === 'error') return 'is-error'
       return 'is-neutral'
+    },
+    persistentThumbStyle() {
+      return {
+        width: `${Math.round(this.persistentThumbWidthPx)}px`,
+        transform: `translateX(${Math.round(this.persistentThumbLeftPx)}px)`
+      }
     }
   }
 }
@@ -652,6 +713,24 @@ export default {
 
 .staff-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(33, 150, 243, 0.9);
+}
+
+.persistent-scrollbar {
+  height: 12px;
+  margin-top: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.14);
+  position: relative;
+  cursor: pointer;
+}
+
+.persistent-scrollbar-thumb {
+  position: absolute;
+  left: 0;
+  top: 1px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(33, 150, 243, 0.88);
 }
 
 .next-position-zone {
