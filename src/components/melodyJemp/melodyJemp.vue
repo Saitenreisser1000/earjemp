@@ -68,6 +68,7 @@
                         :strike-mismatch-notes="true"
                         :auto-follow-insert-marker="true"
                         :show-persistent-scrollbar="true"
+                        :reset-scroll-token="scrollResetToken"
                         :clef="notationClef"
                         :feedback-state="notationFeedbackState"
                         :octave-offset="notationOctaveOffset"
@@ -185,7 +186,8 @@ export default {
             loupeNote: '',
             loupeLeft: 0,
             loupeTop: 0,
-            loupeNoteTop: 24
+            loupeNoteTop: 24,
+            scrollResetToken: 0
         }
     },
     computed: {
@@ -367,6 +369,7 @@ export default {
             }
             this.userMelody = Array(this.maxInputLength).fill(null)
             this.restoreInsertMarker()
+            this.scrollResetToken += 1
             this.playTones()
         },
         playTones() {
@@ -449,7 +452,9 @@ export default {
 
             const dx = touch.clientX - this.touchState.startX
             const dy = touch.clientY - this.touchState.startY
+            const absDx = Math.abs(dx)
             const absDy = Math.abs(dy)
+            const distance = Math.hypot(dx, dy)
 
             if (absDy >= 24 && absDy > Math.abs(dx)) {
                 const step = Math.round((-dy) / 24)
@@ -460,10 +465,26 @@ export default {
                 return
             }
 
+            // Horizontal drags on the staff are treated as navigation gestures, not note input.
+            if (absDx >= 12 && absDx > absDy) {
+                this.touchState = null
+                this.clearStaffHover()
+                this.restoreInsertMarker()
+                return
+            }
+
             const isDoubleTap = Date.now() - this.lastTapAt < 320
             this.lastTapAt = Date.now()
             if (isDoubleTap) {
                 this.toggleAccidentalAt(this.touchState.slotIndex)
+                this.touchState = null
+                this.clearStaffHover()
+                this.restoreInsertMarker()
+                return
+            }
+
+            // Prevent accidental sets after larger pointer movement.
+            if (distance > 10) {
                 this.touchState = null
                 this.clearStaffHover()
                 this.restoreInsertMarker()

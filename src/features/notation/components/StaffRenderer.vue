@@ -131,6 +131,10 @@ export default {
       type: Boolean,
       default: false
     },
+    resetScrollToken: {
+      type: Number,
+      default: 0
+    },
     insertIndex: {
       type: Number,
       default: -1
@@ -182,11 +186,21 @@ export default {
         this.renderStaff()
       }
     },
+    resetScrollToken() {
+      this.$nextTick(() => this.resetScrollToStart())
+    },
     previewNote() {
       this.renderStaff()
     }
   },
   methods: {
+    resetScrollToStart() {
+      const sc = this.$refs.staffScroll
+      if (!sc) return
+      sc.scrollLeft = 0
+      this.lastAutoScrolledInsertIndex = -1
+      this.updatePersistentScrollbar()
+    },
     drawMismatchStrikes(vf, noteObjects, mismatchIndices) {
       if (!this.strikeMismatchNotes) return
       if (!vf || !Array.isArray(noteObjects) || !Array.isArray(mismatchIndices)) return
@@ -773,21 +787,22 @@ export default {
 }
 
 .persistent-scrollbar {
-  height: 12px;
+  height: 20px;
   margin-top: 18px;
   border-radius: 999px;
   background: rgba(0, 0, 0, 0.14);
   position: relative;
   z-index: 5;
   cursor: pointer;
+  touch-action: pan-x;
   transition: opacity 120ms ease;
 }
 
 .persistent-scrollbar-thumb {
   position: absolute;
   left: 0;
-  top: 1px;
-  height: 10px;
+  top: 3px;
+  height: 14px;
   border-radius: 999px;
   background: rgba(33, 150, 243, 0.88);
 }
