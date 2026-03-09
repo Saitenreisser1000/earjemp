@@ -551,7 +551,8 @@ export default {
             const xInWrap = event.clientX - wrapRect.left
             const xInSvg = event.clientX - svgRect.left
             const yInSvg = event.clientY - svgRect.top
-            const clampedYInSvg = Math.max(0, Math.min(svgRect.height, yInSvg))
+            // Allow a small margin above/below the SVG to better catch edge/ledger note positions.
+            const clampedYInSvg = Math.max(-24, Math.min(svgRect.height + 24, yInSvg))
             const noteName = this.mapYToNoteName(clampedYInSvg)
             const snappedYInSvg = this.noteYForClef(noteName, this.notationClef)
             const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
@@ -682,7 +683,7 @@ export default {
     position: absolute;
     top: 28px;
     right: 0;
-    bottom: 34px;
+    bottom: 0;
     left: 0;
     z-index: 2;
     touch-action: pan-x;

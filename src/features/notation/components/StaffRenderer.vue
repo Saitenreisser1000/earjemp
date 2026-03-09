@@ -18,8 +18,17 @@
       class="persistent-scrollbar"
       :class="{ 'is-disabled': !isScrollable }"
       @click="onPersistentTrackClick"
+      @pointerdown="onPersistentPointerDown"
+      @pointermove="onPersistentPointerMove"
+      @pointerup="onPersistentPointerUp"
+      @pointercancel="onPersistentPointerUp"
     >
-      <div v-show="isScrollable" class="persistent-scrollbar-thumb" :style="persistentThumbStyle"></div>
+      <div
+        v-show="isScrollable"
+        class="persistent-scrollbar-thumb"
+        :style="persistentThumbStyle"
+        @pointerdown.stop.prevent="onPersistentPointerDown"
+      ></div>
     </div>
     <v-icon v-if="feedbackState === 'success'" class="feedback-icon success">mdi-check-circle</v-icon>
     <v-icon v-if="feedbackState === 'error'" class="feedback-icon error">mdi-close-circle</v-icon>
@@ -53,7 +62,8 @@ export default {
       lastAutoScrolledInsertIndex: -1,
       isScrollable: false,
       persistentThumbLeftPx: 0,
-      persistentThumbWidthPx: 0
+      persistentThumbWidthPx: 0,
+      persistentDragActive: false
     }
   },
   props: {
@@ -398,6 +408,7 @@ export default {
       this.persistentThumbLeftPx = left
     },
     onPersistentTrackClick(event) {
+      if (this.persistentDragActive) return
       const sc = this.$refs.staffScroll
       const track = this.$refs.persistentTrack
       if (!sc || !track || !this.isScrollable) return
@@ -407,6 +418,39 @@ export default {
       const ratio = rect.width > 0 ? x / rect.width : 0
       sc.scrollLeft = ratio * maxScroll
       this.updatePersistentScrollbar()
+    },
+    onPersistentPointerDown(event) {
+      const sc = this.$refs.staffScroll
+      const track = this.$refs.persistentTrack
+      if (!sc || !track || !this.isScrollable) return
+      this.persistentDragActive = true
+      if (typeof track.setPointerCapture === 'function') {
+        track.setPointerCapture(event.pointerId)
+      }
+      this.onPersistentPointerMove(event)
+    },
+    onPersistentPointerMove(event) {
+      if (!this.persistentDragActive) return
+      const sc = this.$refs.staffScroll
+      const track = this.$refs.persistentTrack
+      if (!sc || !track || !this.isScrollable) return
+      const rect = track.getBoundingClientRect()
+      const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left))
+      const maxScroll = Math.max(0, sc.scrollWidth - sc.clientWidth)
+      const ratio = rect.width > 0 ? x / rect.width : 0
+      sc.scrollLeft = ratio * maxScroll
+      this.updatePersistentScrollbar()
+    },
+    onPersistentPointerUp(event) {
+      const track = this.$refs.persistentTrack
+      if (track && typeof track.releasePointerCapture === 'function') {
+        try {
+          track.releasePointerCapture(event.pointerId)
+        } catch (e) {
+          // ignore
+        }
+      }
+      this.persistentDragActive = false
     },
     resolveSlotX() {
       if (this.renderedSlotXs.length > 0) {
