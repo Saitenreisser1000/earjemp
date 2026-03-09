@@ -113,5 +113,7 @@
     .app-main {
         height: 90vh !important;
         min-height: 90vh !important;
+        box-sizing: border-box;
+        padding-top: 10px;
     }
 </style>
