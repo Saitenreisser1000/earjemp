@@ -12,6 +12,7 @@ export default defineConfig(({ command }) => ({
     extensions: ['.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json', '.vue']
   },
   test: {
-    environment: 'jsdom'
+    environment: 'jsdom',
+    globals: true
   }
 }))
