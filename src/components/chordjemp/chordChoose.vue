@@ -10,6 +10,7 @@
                 mandatory
             >
                 <v-btn value="easy" size="small">easy</v-btn>
+                <v-btn value="easy+" size="small">easy+</v-btn>
                 <v-btn value="advanced" size="small">advanced</v-btn>
                 <v-btn value="expert" size="small">expert</v-btn>
             </v-btn-toggle>
@@ -75,7 +76,7 @@
                     item-title="text"
                     item-value="value"
                     return-object
-                    label="Select Chords"
+                    :label="chordSelectLabel"
                     multiple
                     density="compact"
                     hide-details
@@ -91,6 +92,7 @@
     import { mapActions } from "vuex";
     import { createChordOptions, createDefaultSelectedChords } from "@/domain/music/definitions";
     import { chordValuesForDifficulty } from "@/domain/music/difficulty";
+    import { createEasyPlusChordOptions, isEasyPlusDifficulty } from "@/domain/music/chordInversions";
 
 export default {
         name: "chordChoose",
@@ -114,8 +116,10 @@ export default {
         },
         emits: ['update:autoplay', 'update:difficulty', 'update:playOrder', 'update:resultDisplayMs'],
         data() {
+            const baseChords = createChordOptions()
             return {
-                chords: createChordOptions(),
+                baseChords,
+                chords: baseChords,
                 selectedChords: createDefaultSelectedChords(),
                 resultDisplayOptions: [
                     { label: '0.5s', value: 500 },
@@ -158,6 +162,10 @@ export default {
                 set(value) {
                     this.$emit('update:resultDisplayMs', value);
                 }
+            },
+            chordSelectLabel() {
+                if (isEasyPlusDifficulty(this.difficulty)) return 'Select Easy+ Triad Inversions'
+                return 'Select Chords'
             }
         },
 
@@ -169,6 +177,12 @@ export default {
             difficulty: {
                 immediate: true,
                 handler(value) {
+                    if (isEasyPlusDifficulty(value)) {
+                        this.chords = createEasyPlusChordOptions(this.baseChords)
+                        this.selectedChords = this.chords.slice()
+                        return
+                    }
+                    this.chords = this.baseChords.slice()
                     const allowed = chordValuesForDifficulty(value);
                     this.selectedChords = this.chords.filter((item) => allowed.includes(item.value));
                 }

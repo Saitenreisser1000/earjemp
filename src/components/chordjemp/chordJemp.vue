@@ -27,6 +27,7 @@
     import responseMixin from "@/components/mixins/responseMixin";
     import StaffRenderer from "@/features/notation/components/StaffRenderer";
     import { chordStartMinIndex } from "@/domain/music/difficulty";
+    import { applyTriadInversion, isEasyPlusDifficulty } from "@/domain/music/chordInversions";
 
     export default {
         name: "chordjemp",
@@ -133,12 +134,32 @@
                 this.calcChord();
             },
 
+            raiseToneByOctave(tone) {
+                if (!tone || tone.next === '') return tone
+                return this.getInterval(tone, 12, 7)
+            },
+
+            applyEasyPlusInversion() {
+                if (!isEasyPlusDifficulty(this.difficulty)) return
+                if (!this.randomChord || !this.randomChord.inversion) return
+
+                const inverted = applyTriadInversion(
+                    [this.firstTone, this.secondTone, this.thirdTone],
+                    this.randomChord.inversion,
+                    this.raiseToneByOctave
+                )
+                ;[this.firstTone, this.secondTone, this.thirdTone] = inverted
+            },
+
             calcChord(){
                 this.secondTone = this.getInterval(this.firstTone, this.randomChord.toneSteps[0], this.randomChord.lineDist[0]);
                 this.thirdTone = this.getInterval(this.secondTone, this.randomChord.toneSteps[1], this.randomChord.lineDist[1]);
+                this.fourthTone = ''
                 if(this.randomChord.toneSteps.length === 3){
                     this.fourthTone = this.getInterval(this.thirdTone, this.randomChord.toneSteps[2], this.randomChord.lineDist[2])
                 }
+
+                this.applyEasyPlusInversion()
                 //this.logger({chord: this.randomChord.text, firstTone: this.firstTone.name, secondTone: this.secondTone.name, thirdTone: this.thirdTone.name});
                 this.playTones();
             },

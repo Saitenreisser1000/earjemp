@@ -54,6 +54,7 @@ export function matchesTonePool(tone, difficulty) {
 
 export function chordStartMinIndex(max, difficulty) {
     if (difficulty === 'easy') return 15
+    if (difficulty === 'easy+') return 15
     if (difficulty === 'advanced') return 10
     return 4
 }
