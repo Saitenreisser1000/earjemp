@@ -1,7 +1,8 @@
 const EASY_PLUS_TRIAD_VALUES = [1, 0, 3, 2]
 const EASY_PLUS_INVERSION_OPTIONS = [
-    { inversion: 1, label: '1st inversion' },
-    { inversion: 2, label: '2nd inversion' }
+    { inversion: 0 },
+    { inversion: 1 },
+    { inversion: 2 }
 ]
 
 function maxRangeForEasyPlusInversion(chord, inversion) {
@@ -12,6 +13,22 @@ function maxRangeForEasyPlusInversion(chord, inversion) {
 
 export function isEasyPlusDifficulty(difficulty) {
     return difficulty === 'easy+'
+}
+
+function normalizeChordQuality(text = '') {
+    const normalized = String(text).trim().toLowerCase()
+    if (normalized === 'major') return 'Major'
+    if (normalized === 'minor') return 'Minor'
+    if (normalized === 'augmented') return 'Augmented'
+    if (normalized === 'diminished') return 'Diminished'
+    return String(text)
+}
+
+export function easyPlusChordLabel(chord, inversion) {
+    const quality = normalizeChordQuality(chord?.text)
+    if (inversion === 1) return `${quality} 6`
+    if (inversion === 2) return `${quality} 4 6`
+    return `${quality} root`
 }
 
 export function createEasyPlusChordOptions(chordOptions = []) {
@@ -27,7 +44,7 @@ export function createEasyPlusChordOptions(chordOptions = []) {
         baseText: chord.text,
         inversion: option.inversion,
         value: `easyplus-${chord.value}-${option.inversion}`,
-        text: `${chord.text} (${option.label})`,
+        text: easyPlusChordLabel(chord, option.inversion),
         maxRange: maxRangeForEasyPlusInversion(chord, option.inversion)
     })))
 }
