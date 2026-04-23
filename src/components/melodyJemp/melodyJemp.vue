@@ -245,11 +245,32 @@ export default {
         },
         notationClef() {
             if (!this.notationNotes.length) return 'treble'
-            const maxOctave = Math.max(...this.notationNotes.map((n) => {
-                const parsed = parseToneName(n || '')
-                return (parsed?.octave ?? 4) + this.notationOctaveOffset
-            }))
-            return maxOctave <= 3 ? 'bass' : 'treble'
+            const notes = this.notationNotes.filter(Boolean)
+            if (!notes.length) return 'treble'
+
+            const bounds = {
+                treble: { bottom: 30, top: 38 },
+                bass: { bottom: 18, top: 26 }
+            }
+
+            const scoreFor = (clef) => {
+                const b = bounds[clef]
+                let maxLedger = 0
+                let sumLedger = 0
+                for (const name of notes) {
+                    const idx = this.diatonicIndex(name, this.notationOctaveOffset)
+                    const ledgers = idx < b.bottom
+                        ? Math.floor((b.bottom - idx) / 2)
+                        : idx > b.top
+                            ? Math.floor((idx - b.top) / 2)
+                            : 0
+                    maxLedger = Math.max(maxLedger, ledgers)
+                    sumLedger += ledgers
+                }
+                return (maxLedger * 10) + sumLedger
+            }
+
+            return scoreFor('bass') <= scoreFor('treble') ? 'bass' : 'treble'
         },
         notationOctaveOffset() {
             return 1
