@@ -34,6 +34,7 @@
 
 <script>
 import { Factory } from 'vexflow'
+import { normalizeAccidental, parseToneName } from '@/domain/notation/spelling'
 
 const CLEF_BOUNDS = {
   treble: { bottom: 30, top: 38 }, // E4..F5
@@ -286,12 +287,12 @@ export default {
       ctx.restore()
     },
     parseNote(noteName) {
-      const match = /^([A-Ga-g])([#bxs]{1,2}|bb|##)?(\d)$/.exec(noteName || '')
-      if (!match) return null
+      const parsed = parseToneName(noteName || '')
+      if (!parsed) return null
       return {
-        letter: match[1].toLowerCase(),
-        accidental: (match[2] || '').toLowerCase(),
-        octave: Number(match[3])
+        letter: parsed.letter.toLowerCase(),
+        accidental: normalizeAccidental(parsed.accidental),
+        octave: parsed.octave
       }
     },
     toVexflowToken(noteName, octaveOffsetOverride = this.renderedOctaveOffset) {

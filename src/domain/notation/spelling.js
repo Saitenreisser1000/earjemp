@@ -1,13 +1,34 @@
 const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 
 export function parseToneName(name = '') {
-    const match = /^([A-G])([^0-9]*)(\d+)$/.exec(name)
+    const match = /^([A-Ga-g])([^0-9]*)(\d+)$/.exec(name)
     if (!match) return null
     return {
-        letter: match[1],
-        accidental: match[2] || '',
+        letter: match[1].toUpperCase(),
+        accidental: normalizeAccidental(match[2] || ''),
         octave: Number(match[3])
     }
+}
+
+export function normalizeAccidental(accidental = '') {
+    const value = String(accidental || '').trim().toLowerCase()
+    if (!value) return ''
+    if (value === 's') return '#'
+    if (value === 'ss' || value === 'x') return 'x'
+    if (value === '##') return 'x'
+    if (value === '#') return '#'
+    if (value === 'b') return 'b'
+    if (value === 'bb') return 'bb'
+    return value
+}
+
+export function formatToneName({ letter = '', accidental = '', octave = 0 } = {}) {
+    const parsedLetter = String(letter || '').toUpperCase()
+    if (!/^[A-G]$/.test(parsedLetter)) return ''
+    const parsedOctave = Number(octave)
+    if (!Number.isFinite(parsedOctave)) return ''
+    const normalizedAccidental = normalizeAccidental(accidental)
+    return `${parsedLetter}${normalizedAccidental}${Math.trunc(parsedOctave)}`
 }
 
 export function shiftLetter(letter, steps) {
@@ -17,8 +38,9 @@ export function shiftLetter(letter, steps) {
 }
 
 export function accidentalComplexity(accidental = '') {
+    const normalized = normalizeAccidental(accidental)
     let weight = 0
-    for (const c of accidental) {
+    for (const c of normalized) {
         if (c === 'x') weight += 2
         else if (c === '#' || c === 'b') weight += 1
     }
@@ -38,4 +60,3 @@ export function chooseBestSpelling(candidates, expectedLetter = '') {
     scored.sort((a, b) => a.score - b.score)
     return scored[0].tone
 }
-

@@ -139,10 +139,23 @@
                 </v-btn>
             </div>
 
-            <div class="mb-2">
-                <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">undo</v-btn>
-                <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">clear</v-btn>
-                <v-btn color="primary" size="small" @click="playRandomMelody">next</v-btn>
+            <div class="mb-2 d-flex align-center justify-space-between ga-2">
+                <v-btn-toggle
+                    v-model="selectedAccidental"
+                    density="comfortable"
+                    variant="outlined"
+                    color="primary"
+                    mandatory
+                >
+                    <v-btn value="">nat</v-btn>
+                    <v-btn value="#">#</v-btn>
+                    <v-btn value="b">b</v-btn>
+                </v-btn-toggle>
+                <div>
+                    <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">undo</v-btn>
+                    <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">clear</v-btn>
+                    <v-btn color="primary" size="small" @click="playRandomMelody">next</v-btn>
+                </div>
             </div>
         </v-card>
     </v-card>
@@ -156,6 +169,8 @@ import responseMixin from "@/components/mixins/responseMixin";
 import StaffRenderer from "@/features/notation/components/StaffRenderer";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
+import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
+import { applyAccidentalInput, clampInputY, pickClosestNoteName } from "@/domain/notation/melodyInput";
 
 export default {
     name: "melodyJemp",
@@ -187,7 +202,8 @@ export default {
             loupeLeft: 0,
             loupeTop: 0,
             loupeNoteTop: 24,
-            scrollResetToken: 0
+            scrollResetToken: 0,
+            selectedAccidental: ''
         }
     },
     computed: {
@@ -200,6 +216,20 @@ export default {
         },
         notePalette() {
             return this.getToneChain.filter((tone) => tone.id < 63 && matchesTonePool(tone, this.difficulty))
+        },
+        notePaletteByName() {
+            const map = {}
+            for (const tone of this.notePalette) map[tone.name] = tone
+            return map
+        },
+        noteInputCandidates() {
+            const diatonic = this.notePalette
+                .filter((tone) => {
+                    const parsed = parseToneName(tone.name)
+                    return parsed && !parsed.accidental
+                })
+                .map((tone) => tone.name)
+            return diatonic.length ? diatonic : this.notePalette.map((tone) => tone.name)
         },
         notationNotes() {
             return this.enteredMelodyNotes
@@ -215,7 +245,10 @@ export default {
         },
         notationClef() {
             if (!this.notationNotes.length) return 'treble'
-            const maxOctave = Math.max(...this.notationNotes.map((n) => Number((/(\d)$/.exec(n) || [])[1] || 4) + this.notationOctaveOffset))
+            const maxOctave = Math.max(...this.notationNotes.map((n) => {
+                const parsed = parseToneName(n || '')
+                return (parsed?.octave ?? 4) + this.notationOctaveOffset
+            }))
             return maxOctave <= 3 ? 'bass' : 'treble'
         },
         notationOctaveOffset() {
@@ -317,18 +350,17 @@ export default {
             return Math.max(-8, Math.min(52, y))
         },
         formatDisplayNoteName(noteName) {
-            const match = /^([A-Ga-g])([^0-9]*)(\d)$/.exec(noteName || '')
-            if (!match) return noteName || ''
+            const parsed = parseToneName(noteName || '')
+            if (!parsed) return noteName || ''
 
-            const letter = match[1]
-            const accidental = match[2] || ''
-            const internalOctave = Number(match[3])
-            const displayOctave = internalOctave - 2
+            const letter = parsed.letter
+            const accidental = parsed.accidental || ''
+            const displayOctave = parsed.octave - 2
 
             if (displayOctave <= 0) {
-                return `${letter.toLowerCase()}${accidental.toLowerCase()}`
+                return letter.toLowerCase() + accidental.toLowerCase()
             }
-            return `${letter.toUpperCase()}${accidental}${displayOctave}`
+            return letter.toUpperCase() + accidental + String(displayOctave)
         },
         handleSlotPositions(xs) {
             this.staffSlotXs = Array.isArray(xs) ? xs : []
@@ -385,6 +417,10 @@ export default {
                 start += delay
             }
             this.setExactTimeout(() => { this.setInputlock(false) }, start + 100, 20)
+        },
+        resolveAccidentalInput(noteName) {
+            const resolved = applyAccidentalInput(noteName, this.selectedAccidental, this.notePalette)
+            return resolved || noteName
         },
         addInputNote(noteName, displayIndex = this.activeDisplayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
@@ -521,7 +557,13 @@ export default {
             if (!current) return
             // Sort by pitch for deterministic stepping.
             const pitchSorted = [...new Set(this.notePalette.map((tone) => tone.name))]
-                .sort((a, b) => (this.toneIdByName[a] || 0) - (this.toneIdByName[b] || 0))
+                .sort((a, b) => {
+                    const diff = (this.toneIdByName[a] || 0) - (this.toneIdByName[b] || 0)
+                    if (diff !== 0) return diff
+                    const accA = parseToneName(a)?.accidental || ''
+                    const accB = parseToneName(b)?.accidental || ''
+                    return accidentalComplexity(accA) - accidentalComplexity(accB)
+                })
             const index = pitchSorted.indexOf(current)
             if (index < 0) return
             const nextIndex = Math.max(0, Math.min(pitchSorted.length - 1, index + step))
@@ -540,10 +582,12 @@ export default {
             if (!currentTone || !Array.isArray(currentTone.enh)) return
             const candidates = currentTone.enh
                 .map((id) => this.getToneChain[id])
-                .filter((tone) => tone && this.notePalette.some((p) => p.name === tone.name))
+                .filter((tone) => tone && this.notePaletteByName[tone.name])
             if (!candidates.length) return
             const currentIdx = candidates.findIndex((tone) => tone.name === current)
             const next = candidates[(currentIdx + 1 + candidates.length) % candidates.length] || candidates[0]
+            const parsedNext = parseToneName(next.name)
+            if (parsedNext) this.selectedAccidental = parsedNext.accidental || ''
             this.userMelody.splice(userIndex, 1, next.name)
             this.showCheckOverlay = false
             this.activeDisplayIndex = targetDisplay
@@ -576,10 +620,15 @@ export default {
             const xInWrap = event.clientX - wrapRect.left
             const xInSvg = event.clientX - svgRect.left
             const yInSvg = event.clientY - svgRect.top
-            // Allow a small margin above/below the SVG to better catch edge/ledger note positions.
-            const clampedYInSvg = Math.max(-24, Math.min(svgRect.height + 24, yInSvg))
-            const noteName = this.mapYToNoteName(clampedYInSvg)
-            const snappedYInSvg = this.noteYForClef(noteName, this.notationClef)
+            const clampedYInSvg = clampInputY(
+                yInSvg,
+                this.noteInputCandidates,
+                (name) => this.noteYForClef(name, this.notationClef),
+                10
+            )
+            const baseName = this.mapYToNoteName(clampedYInSvg)
+            const noteName = this.resolveAccidentalInput(baseName)
+            const snappedYInSvg = this.noteYForClef(baseName || noteName, this.notationClef)
             const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
             let slotIndex = 0
             const maxSlots = Math.max(1, this.melodyLength)
@@ -607,20 +656,9 @@ export default {
             return { noteName, xInWrap, snappedYInWrap, slotIndex }
         },
         mapYToNoteName(y) {
-            const candidates = this.notePalette.map((tone) => tone.name)
+            const candidates = this.noteInputCandidates
             if (!candidates.length) return ''
-
-            let best = candidates[0]
-            let bestDist = Number.POSITIVE_INFINITY
-            for (const name of candidates) {
-                const expectedY = this.noteYForClef(name, this.notationClef)
-                const dist = Math.abs(expectedY - y)
-                if (dist < bestDist) {
-                    bestDist = dist
-                    best = name
-                }
-            }
-            return best
+            return pickClosestNoteName(y, candidates, (name) => this.noteYForClef(name, this.notationClef))
         },
         noteYForClef(noteName, clef) {
             // SVG coordinates from StaffRenderer/VexFlow: bottom line at y≈55, 5px per diatonic step.
@@ -631,10 +669,10 @@ export default {
             return bottomY - (idx - bottomIndex) * 5 + drawingOffsetPx
         },
         diatonicIndex(noteName, octaveOffset = 0) {
-            const match = /^([A-Ga-g])[^0-9]*(\d)$/.exec(noteName || '')
-            if (!match) return 0
-            const letter = match[1].toLowerCase()
-            const octave = Number(match[2]) + octaveOffset
+            const parsed = parseToneName(noteName || '')
+            if (!parsed) return 0
+            const letter = parsed.letter.toLowerCase()
+            const octave = Number(parsed.octave) + octaveOffset
             const map = { c: 0, d: 1, e: 2, f: 3, g: 4, a: 5, b: 6 }
             return octave * 7 + map[letter]
         },
@@ -720,9 +758,9 @@ export default {
 }
 .staff-input-overlay {
     position: absolute;
-    top: 28px;
+    top: 0;
     right: 0;
-    bottom: 44px;
+    bottom: 0;
     left: 0;
     z-index: 2;
     touch-action: pan-x;
