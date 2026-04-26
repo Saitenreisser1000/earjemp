@@ -454,7 +454,9 @@ export default {
                 startedAt: Date.now(),
                 startX: touch.clientX,
                 startY: touch.clientY,
-                slotIndex: picked?.slotIndex ?? this.activeDisplayIndex
+                slotIndex: picked?.slotIndex ?? this.activeDisplayIndex,
+                lastPickedNoteName: picked?.noteName || '',
+                lastPickedSlotIndex: picked?.slotIndex ?? this.activeDisplayIndex
             }
             if (picked && Number.isFinite(picked.slotIndex)) {
                 const minDisplay = this.showFirstToneHint ? 1 : 0
@@ -477,6 +479,8 @@ export default {
             })
             if (picked?.noteName) {
                 this.touchState.slotIndex = picked.slotIndex
+                this.touchState.lastPickedNoteName = picked.noteName
+                this.touchState.lastPickedSlotIndex = picked.slotIndex
                 const minDisplay = this.showFirstToneHint ? 1 : 0
                 this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
                 this.hoverNote = picked.noteName
@@ -531,12 +535,15 @@ export default {
                 clientX: touch.clientX,
                 clientY: touch.clientY
             })
+            const targetNoteName = picked?.noteName || this.touchState.lastPickedNoteName
             const targetSlotIndex = Number.isFinite(picked?.slotIndex)
                 ? picked.slotIndex
-                : this.touchState.slotIndex
-            if (picked?.noteName) {
+                : (Number.isFinite(this.touchState.lastPickedSlotIndex)
+                    ? this.touchState.lastPickedSlotIndex
+                    : this.touchState.slotIndex)
+            if (targetNoteName) {
                 this.activeDisplayIndex = targetSlotIndex
-                this.addInputNote(picked.noteName, targetSlotIndex)
+                this.addInputNote(targetNoteName, targetSlotIndex)
             }
             this.touchState = null
             this.clearStaffHover()
