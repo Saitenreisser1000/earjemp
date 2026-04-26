@@ -171,6 +171,7 @@ import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
 import { applyAccidentalInput, clampInputY, pickClosestNoteName } from "@/domain/notation/melodyInput";
+import { diatonicIndex, formatDisplayNoteName, loupeNoteTopFor } from "@/domain/notation/display";
 
 export default {
     name: "melodyJemp",
@@ -258,7 +259,7 @@ export default {
                 let maxLedger = 0
                 let sumLedger = 0
                 for (const name of notes) {
-                    const idx = this.diatonicIndex(name, this.notationOctaveOffset)
+                    const idx = diatonicIndex(name, this.notationOctaveOffset)
                     const ledgers = idx < b.bottom
                         ? Math.floor((b.bottom - idx) / 2)
                         : idx > b.top
@@ -358,31 +359,10 @@ export default {
             this.loupeLeft = picked.xInWrap
             // Keep enough vertical distance so higher expert-range notes stay inside the loupe.
             this.loupeTop = Math.max(-28, picked.snappedYInWrap - 170)
-            this.loupeNoteTop = this.loupeNoteTopFor(noteName)
+            this.loupeNoteTop = loupeNoteTopFor(noteName, this.notationClef, this.notationOctaveOffset)
             this.loupeVisible = true
         },
-        loupeNoteTopFor(noteName) {
-            const clef = this.notationClef
-            const bottomIndex = clef === 'bass' ? 18 : 30 // same base as staff renderer
-            const idx = this.diatonicIndex(noteName, this.notationOctaveOffset)
-            const bottomY = 40 // bottom staff line in loupe
-            const stepPx = 4    // one diatonic step in loupe
-            const y = bottomY - ((idx - bottomIndex) * stepPx)
-            return Math.max(-8, Math.min(52, y))
-        },
-        formatDisplayNoteName(noteName) {
-            const parsed = parseToneName(noteName || '')
-            if (!parsed) return noteName || ''
-
-            const letter = parsed.letter
-            const accidental = parsed.accidental || ''
-            const displayOctave = parsed.octave - 2
-
-            if (displayOctave <= 0) {
-                return letter.toLowerCase() + accidental.toLowerCase()
-            }
-            return letter.toUpperCase() + accidental + String(displayOctave)
-        },
+        formatDisplayNoteName,
         handleSlotPositions(xs) {
             this.staffSlotXs = Array.isArray(xs) ? xs : []
         },
@@ -685,17 +665,9 @@ export default {
             // SVG coordinates from StaffRenderer/VexFlow: bottom line at y≈55, 5px per diatonic step.
             const bottomIndex = clef === 'bass' ? 18 : 30 // bass G2, treble E4
             const bottomY = 55
-            const idx = this.diatonicIndex(noteName, this.notationOctaveOffset)
+            const idx = diatonicIndex(noteName, this.notationOctaveOffset)
             const drawingOffsetPx = 40 // one ninth (8 diatonic steps) downward correction
             return bottomY - (idx - bottomIndex) * 5 + drawingOffsetPx
-        },
-        diatonicIndex(noteName, octaveOffset = 0) {
-            const parsed = parseToneName(noteName || '')
-            if (!parsed) return 0
-            const letter = parsed.letter.toLowerCase()
-            const octave = Number(parsed.octave) + octaveOffset
-            const map = { c: 0, d: 1, e: 2, f: 3, g: 4, a: 5, b: 6 }
-            return octave * 7 + map[letter]
         },
         undoInput() {
             this.showCheckOverlay = false
