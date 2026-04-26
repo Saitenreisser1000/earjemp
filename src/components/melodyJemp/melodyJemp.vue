@@ -476,6 +476,9 @@ export default {
                 clientY: touch.clientY
             })
             if (picked?.noteName) {
+                this.touchState.slotIndex = picked.slotIndex
+                const minDisplay = this.showFirstToneHint ? 1 : 0
+                this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
                 this.hoverNote = picked.noteName
                 this.hoverLeft = picked.xInWrap + 10
                 this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
@@ -498,14 +501,6 @@ export default {
             if (absDy >= 24 && absDy > Math.abs(dx)) {
                 const step = Math.round((-dy) / 24)
                 this.adjustInputAt(step, this.touchState.slotIndex)
-                this.touchState = null
-                this.clearStaffHover()
-                this.restoreInsertMarker()
-                return
-            }
-
-            // Horizontal drags on the staff are treated as navigation gestures, not note input.
-            if (!isLongPress && absDx >= 12 && absDx > absDy) {
                 this.touchState = null
                 this.clearStaffHover()
                 this.restoreInsertMarker()
@@ -536,9 +531,12 @@ export default {
                 clientX: touch.clientX,
                 clientY: touch.clientY
             })
+            const targetSlotIndex = Number.isFinite(picked?.slotIndex)
+                ? picked.slotIndex
+                : this.touchState.slotIndex
             if (picked?.noteName) {
-                this.activeDisplayIndex = picked.slotIndex
-                this.addInputNote(picked.noteName, picked.slotIndex)
+                this.activeDisplayIndex = targetSlotIndex
+                this.addInputNote(picked.noteName, targetSlotIndex)
             }
             this.touchState = null
             this.clearStaffHover()
