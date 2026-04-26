@@ -4,6 +4,7 @@ import {
   clampInputY,
   computeInputYBounds,
   findToneByPitchAndAccidental,
+  pickBoundedNoteName,
   pickClosestNoteName,
 } from '@/domain/notation/melodyInput'
 
@@ -33,6 +34,11 @@ describe('melody input helpers', () => {
   it('picks the closest note by y coordinate', () => {
     expect(pickClosestNoteName(88, ['C4', 'D4', 'E4'], noteYForName)).toBe('D4')
     expect(pickClosestNoteName(79, ['C4', 'D4', 'E4'], noteYForName)).toBe('E4')
+  })
+
+  it('clamps out-of-range positions to the highest or lowest available note', () => {
+    expect(pickBoundedNoteName(40, ['C4', 'D4', 'E4'], noteYForName)).toBe('E4')
+    expect(pickBoundedNoteName(160, ['C4', 'D4', 'E4'], noteYForName)).toBe('C4')
   })
 
   it('finds a preferred accidental spelling when available', () => {

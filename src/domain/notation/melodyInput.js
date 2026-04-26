@@ -36,6 +36,21 @@ export function pickClosestNoteName(y, noteNames, noteYForName) {
     return best
 }
 
+export function pickBoundedNoteName(y, noteNames, noteYForName) {
+    if (!Array.isArray(noteNames) || !noteNames.length) return ''
+
+    const candidates = noteNames
+        .map((name) => ({ name, y: noteYForName(name) }))
+        .filter((entry) => Number.isFinite(entry.y))
+        .sort((a, b) => a.y - b.y)
+
+    if (!candidates.length) return ''
+    if (y <= candidates[0].y) return candidates[0].name
+    if (y >= candidates[candidates.length - 1].y) return candidates[candidates.length - 1].name
+
+    return pickClosestNoteName(y, candidates.map((entry) => entry.name), noteYForName)
+}
+
 export function findToneByPitchAndAccidental(tones, toneID, preferredAccidental = '') {
     if (!Array.isArray(tones)) return null
     const targetAccidental = normalizeAccidental(preferredAccidental)

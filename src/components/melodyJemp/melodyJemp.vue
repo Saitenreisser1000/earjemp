@@ -170,7 +170,7 @@ import StaffRenderer from "@/features/notation/components/StaffRenderer";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
-import { applyAccidentalInput, clampInputY, pickClosestNoteName } from "@/domain/notation/melodyInput";
+import { applyAccidentalInput, clampInputY, pickBoundedNoteName } from "@/domain/notation/melodyInput";
 import { diatonicIndex, formatDisplayNoteName, loupeNoteTopFor } from "@/domain/notation/display";
 
 export default {
@@ -657,7 +657,7 @@ export default {
         mapYToNoteName(y) {
             const candidates = this.noteInputCandidates
             if (!candidates.length) return ''
-            return pickClosestNoteName(y, candidates, (name) => this.noteYForClef(name, this.notationClef))
+            return pickBoundedNoteName(y, candidates, (name) => this.noteYForClef(name, this.notationClef))
         },
         noteYForClef(noteName, clef) {
             // SVG coordinates from StaffRenderer/VexFlow: bottom line at y≈55, 5px per diatonic step.
