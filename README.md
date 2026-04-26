@@ -1,24 +1,33 @@
 # earjemp
 
-## Project setup
-```
+Ear training app built with Vue 3, Vite and Vuetify.
+
+## Setup
+```bash
 npm install
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
+## Development
+```bash
+npm run dev
 ```
 
-### Compiles and minifies for production
-```
+## Production build
+```bash
 npm run build
 ```
 
-### Lints and fixes files
+## Preview production build
+```bash
+npm run preview
 ```
+
+## Lint
+```bash
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Unit tests
+```bash
+npm run test:unit
+```
