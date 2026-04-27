@@ -183,10 +183,7 @@ import {
     shouldRejectTap,
     updateTouchStateWithPick,
 } from "@/features/notation/input/staffInputController";
-import {
-    measurePointerPosition,
-    pickSlotIndex,
-} from "@/features/notation/input/staffPointerMapping";
+import { createStaffNotePicker } from "@/features/notation/input/staffNotePicker";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
@@ -726,35 +723,22 @@ export default {
             const svg = wrap.querySelector('svg')
             if (!svg) return null
 
-            const wrapRect = wrap.getBoundingClientRect()
-            const svgRect = svg.getBoundingClientRect()
-            const { xInWrap, xInSvg, yInSvg } = measurePointerPosition({
-                clientX: event.clientX,
-                clientY: event.clientY,
-                wrapRect,
-                svgRect,
-            })
-            const clampedYInSvg = clampInputY(
-                yInSvg,
-                this.noteInputCandidates,
-                (name) => this.noteYForClef(name, this.notationClef),
-                10
-            )
-            const baseName = this.mapYToNoteName(clampedYInSvg)
-            const noteName = this.resolveAccidentalInput(baseName)
-            const snappedYInSvg = this.noteYForClef(baseName || noteName, this.notationClef)
-            const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
-            const maxSlots = Math.max(1, this.melodyLength)
-            const slotIndex = pickSlotIndex({
-                xInSvg,
-                staffSlotXs: this.staffSlotXs,
-                maxSlots,
-                svgWidth: svgRect.width,
-                leftPadding: 90,
-                rightPadding: 22,
+            const pickNote = createStaffNotePicker({
+                noteInputCandidates: this.noteInputCandidates,
+                clampInputY,
+                noteYForName: (name) => this.noteYForClef(name, this.notationClef),
+                mapYToNoteName: (y) => this.mapYToNoteName(y),
+                resolveAccidentalInput: (name) => this.resolveAccidentalInput(name),
+                pickSlotXs: this.staffSlotXs,
+                melodyLength: this.melodyLength,
             })
 
-            return { noteName, xInWrap, snappedYInWrap, slotIndex }
+            return pickNote({
+                clientX: event.clientX,
+                clientY: event.clientY,
+                wrapRect: wrap.getBoundingClientRect(),
+                svgRect: svg.getBoundingClientRect(),
+            })
         },
         mapYToNoteName(y) {
             const candidates = this.noteInputCandidates
