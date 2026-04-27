@@ -91,7 +91,7 @@
             <span class="text-white footer-brand">JEMPCompany</span>
             <span class="footer-note">,2026</span>
             <v-spacer></v-spacer>
-            <span class="mr-2 footer-version">v.1.1.4</span>
+            <span class="mr-2 footer-version">v.1.1.5</span>
         </v-footer>
         </template>
     </v-app>

@@ -183,6 +183,10 @@ import {
     shouldRejectTap,
     updateTouchStateWithPick,
 } from "@/features/notation/input/staffInputController";
+import {
+    measurePointerPosition,
+    pickSlotIndex,
+} from "@/features/notation/input/staffPointerMapping";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
@@ -724,9 +728,12 @@ export default {
 
             const wrapRect = wrap.getBoundingClientRect()
             const svgRect = svg.getBoundingClientRect()
-            const xInWrap = event.clientX - wrapRect.left
-            const xInSvg = event.clientX - svgRect.left
-            const yInSvg = event.clientY - svgRect.top
+            const { xInWrap, xInSvg, yInSvg } = measurePointerPosition({
+                clientX: event.clientX,
+                clientY: event.clientY,
+                wrapRect,
+                svgRect,
+            })
             const clampedYInSvg = clampInputY(
                 yInSvg,
                 this.noteInputCandidates,
@@ -737,28 +744,15 @@ export default {
             const noteName = this.resolveAccidentalInput(baseName)
             const snappedYInSvg = this.noteYForClef(baseName || noteName, this.notationClef)
             const snappedYInWrap = (svgRect.top - wrapRect.top) + snappedYInSvg
-            let slotIndex = 0
             const maxSlots = Math.max(1, this.melodyLength)
-            if (this.staffSlotXs.length >= 2) {
-                const centers = this.staffSlotXs.slice(0, maxSlots)
-                // Use midpoint boundaries between real rendered slot centers.
-                let chosen = centers.length - 1
-                for (let i = 0; i < centers.length - 1; i++) {
-                    const boundary = (centers[i] + centers[i + 1]) / 2
-                    if (xInSvg < boundary) {
-                        chosen = i
-                        break
-                    }
-                }
-                slotIndex = Math.max(0, Math.min(maxSlots - 1, chosen))
-            } else {
-                const leftPadding = 90
-                const rightPadding = 22
-                const usable = Math.max(20, svgRect.width - leftPadding - rightPadding)
-                const normalized = Math.max(0, Math.min(usable, xInSvg - leftPadding))
-                const slotIndexRaw = Math.floor((normalized / usable) * maxSlots)
-                slotIndex = Math.max(0, Math.min(maxSlots - 1, slotIndexRaw))
-            }
+            const slotIndex = pickSlotIndex({
+                xInSvg,
+                staffSlotXs: this.staffSlotXs,
+                maxSlots,
+                svgWidth: svgRect.width,
+                leftPadding: 90,
+                rightPadding: 22,
+            })
 
             return { noteName, xInWrap, snappedYInWrap, slotIndex }
         },
