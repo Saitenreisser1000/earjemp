@@ -129,12 +129,15 @@
                 hide-details
                 class="melody-length-select flex-grow-0"
             />
+            <div class="input-progress" :class="{ complete: canCheckAnswer }">
+                {{ inputProgressText }}
+            </div>
 
             <div class="mb-2 mt-2 container">
                 <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
                     <v-icon>mdi-play</v-icon>
                 </v-btn>
-                <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="checkAnswer">
+                <v-btn class="button depth-btn" color="primary" width="30%" height="52" :disabled="!canCheckAnswer" @click="checkAnswer">
                     <span>check</span>
                 </v-btn>
             </div>
@@ -283,6 +286,17 @@ export default {
         },
         maxInputLength() {
             return this.showFirstToneHint ? Math.max(0, this.melodyLength - 1) : this.melodyLength
+        },
+        enteredUserNotesCount() {
+            return this.userMelody.filter(Boolean).length
+        },
+        canCheckAnswer() {
+            return !!this.targetMelody.length && this.enteredUserNotesCount >= this.maxInputLength
+        },
+        inputProgressText() {
+            if (!this.targetMelody.length) return 'Tap play to generate a melody.'
+            if (this.canCheckAnswer) return 'All notes entered — ready to check.'
+            return `Input progress: ${this.enteredUserNotesCount}/${this.maxInputLength} notes`
         },
         mismatchIndices() {
             const target = this.targetMelodyNames
@@ -699,6 +713,7 @@ export default {
             return -1
         },
         checkAnswer() {
+            if (!this.canCheckAnswer) return
             const target = this.targetMelodyNames
             const entered = this.enteredMelodyNotes
             const sameLength = entered.length === target.length
@@ -747,6 +762,16 @@ export default {
 .between-slot {
     margin-top: 14px;
     margin-bottom: 18px;
+}
+.input-progress {
+    margin-top: 6px;
+    margin-bottom: 2px;
+    font-size: 13px;
+    color: #546e7a;
+}
+.input-progress.complete {
+    color: #2e7d32;
+    font-weight: 600;
 }
 .staff-input-wrap {
     position: relative;
