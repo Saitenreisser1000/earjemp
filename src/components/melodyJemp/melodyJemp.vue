@@ -180,6 +180,11 @@ import {
 } from "@/features/notation/input/staffInputController";
 import { createStaffNotePicker } from "@/features/notation/input/staffNotePicker";
 import { resolveTouchCommit } from "@/features/notation/input/staffTouchCommit";
+import {
+    addInputNoteAt,
+    adjustInputAt as adjustStaffInputAt,
+    toggleAccidentalAt as toggleStaffAccidentalAt,
+} from "@/features/notation/input/staffInputOps";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
@@ -487,11 +492,16 @@ export default {
         },
         addInputNote(noteName, displayIndex = this.activeDisplayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
-            const clampedDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
-            const userIndex = this.displayIndexToUserIndex(clampedDisplay)
-            if (userIndex < 0 || userIndex >= this.maxInputLength) return
+            const result = addInputNoteAt({
+                userMelody: this.userMelody,
+                noteName,
+                displayIndex,
+                minDisplay,
+                melodyLength: this.melodyLength,
+            })
+            if (!result) return
             this.showCheckOverlay = false
-            this.userMelody.splice(userIndex, 1, noteName)
+            this.userMelody = result.nextUserMelody
             this.restoreInsertMarker()
             this.triggerHaptic()
         },
@@ -606,11 +616,6 @@ export default {
         adjustInputAt(step, displayIndex) {
             if (!Number.isFinite(step) || step === 0 || !this.maxInputLength) return
             const minDisplay = this.showFirstToneHint ? 1 : 0
-            const targetDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
-            const userIndex = this.displayIndexToUserIndex(targetDisplay)
-            const current = this.userMelody[userIndex]
-            if (!current) return
-            // Sort by pitch for deterministic stepping.
             const pitchSorted = [...new Set(this.notePalette.map((tone) => tone.name))]
                 .sort((a, b) => {
                     const diff = (this.toneIdByName[a] || 0) - (this.toneIdByName[b] || 0)
@@ -619,33 +624,37 @@ export default {
                     const accB = parseToneName(b)?.accidental || ''
                     return accidentalComplexity(accA) - accidentalComplexity(accB)
                 })
-            const index = pitchSorted.indexOf(current)
-            if (index < 0) return
-            const nextIndex = Math.max(0, Math.min(pitchSorted.length - 1, index + step))
-            this.userMelody.splice(userIndex, 1, pitchSorted[nextIndex])
+            const result = adjustStaffInputAt({
+                userMelody: this.userMelody,
+                displayIndex,
+                minDisplay,
+                melodyLength: this.melodyLength,
+                step,
+                pitchSorted,
+            })
+            if (!result) return
+            this.userMelody = result.nextUserMelody
             this.showCheckOverlay = false
-            this.activeDisplayIndex = targetDisplay
+            this.activeDisplayIndex = result.targetDisplay
             this.triggerHaptic()
         },
         toggleAccidentalAt(displayIndex) {
             const minDisplay = this.showFirstToneHint ? 1 : 0
-            const targetDisplay = Math.max(minDisplay, Math.min(this.melodyLength - 1, displayIndex))
-            const userIndex = this.displayIndexToUserIndex(targetDisplay)
-            const current = this.userMelody[userIndex]
-            if (!current) return
-            const currentTone = this.notePalette.find((tone) => tone.name === current)
-            if (!currentTone || !Array.isArray(currentTone.enh)) return
-            const candidates = currentTone.enh
-                .map((id) => this.getToneChain[id])
-                .filter((tone) => tone && this.notePaletteByName[tone.name])
-            if (!candidates.length) return
-            const currentIdx = candidates.findIndex((tone) => tone.name === current)
-            const next = candidates[(currentIdx + 1 + candidates.length) % candidates.length] || candidates[0]
-            const parsedNext = parseToneName(next.name)
+            const result = toggleStaffAccidentalAt({
+                userMelody: this.userMelody,
+                displayIndex,
+                minDisplay,
+                melodyLength: this.melodyLength,
+                notePalette: this.notePalette,
+                notePaletteByName: this.notePaletteByName,
+                getToneById: (id) => this.getToneChain[id],
+            })
+            if (!result) return
+            const parsedNext = parseToneName(result.noteName)
             if (parsedNext) this.selectedAccidental = parsedNext.accidental || ''
-            this.userMelody.splice(userIndex, 1, next.name)
+            this.userMelody = result.nextUserMelody
             this.showCheckOverlay = false
-            this.activeDisplayIndex = targetDisplay
+            this.activeDisplayIndex = result.targetDisplay
             this.triggerHaptic()
         },
         handleStaffHover(event) {
