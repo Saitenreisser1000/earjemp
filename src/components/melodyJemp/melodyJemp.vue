@@ -174,6 +174,15 @@ import toneCalcService from "@/components/mixins/toneCalcService";
 import playSounds from "@/components/mixins/playSounds";
 import responseMixin from "@/components/mixins/responseMixin";
 import StaffRenderer from "@/features/notation/components/StaffRenderer";
+import {
+    createTouchState,
+    getTouchMetrics,
+    isDoubleTap,
+    resolveCommittedPick,
+    shouldAdjustPitch,
+    shouldRejectTap,
+    updateTouchStateWithPick,
+} from "@/features/notation/input/staffInputController";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
@@ -508,14 +517,13 @@ export default {
                 clientX: touch.clientX,
                 clientY: touch.clientY
             })
-            this.touchState = {
+            this.touchState = createTouchState({
                 startedAt: Date.now(),
                 startX: touch.clientX,
                 startY: touch.clientY,
                 slotIndex: picked?.slotIndex ?? this.activeDisplayIndex,
-                lastPickedNoteName: picked?.noteName || '',
-                lastPickedSlotIndex: picked?.slotIndex ?? this.activeDisplayIndex
-            }
+                noteName: picked?.noteName || ''
+            })
             if (picked && Number.isFinite(picked.slotIndex)) {
                 const minDisplay = this.showFirstToneHint ? 1 : 0
                 this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
@@ -536,9 +544,7 @@ export default {
                 clientY: touch.clientY
             })
             if (picked?.noteName) {
-                this.touchState.slotIndex = picked.slotIndex
-                this.touchState.lastPickedNoteName = picked.noteName
-                this.touchState.lastPickedSlotIndex = picked.slotIndex
+                this.touchState = updateTouchStateWithPick(this.touchState, picked)
                 const minDisplay = this.showFirstToneHint ? 1 : 0
                 this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
                 this.hoverNote = picked.noteName
@@ -557,16 +563,10 @@ export default {
             if (!touch || !this.touchState) return
             this.suppressClickUntil = Date.now() + 400
 
-            const elapsed = Date.now() - this.touchState.startedAt
-            const dx = touch.clientX - this.touchState.startX
-            const dy = touch.clientY - this.touchState.startY
-            const absDx = Math.abs(dx)
-            const absDy = Math.abs(dy)
-            const distance = Math.hypot(dx, dy)
-            const isLongPress = elapsed >= 220
+            const metrics = getTouchMetrics(this.touchState, touch)
 
-            if (absDy >= 24 && absDy > Math.abs(dx)) {
-                const step = Math.round((-dy) / 24)
+            if (shouldAdjustPitch(metrics)) {
+                const step = Math.round((-metrics.dy) / 24)
                 this.adjustInputAt(step, this.touchState.slotIndex)
                 this.touchState = null
                 this.clearStaffHover()
@@ -574,9 +574,10 @@ export default {
                 return
             }
 
-            const isDoubleTap = !isLongPress && (Date.now() - this.lastTapAt < 320)
-            this.lastTapAt = Date.now()
-            if (isDoubleTap) {
+            const now = Date.now()
+            const isDoubleTapGesture = !metrics.isLongPress && isDoubleTap(this.lastTapAt, now)
+            this.lastTapAt = now
+            if (isDoubleTapGesture) {
                 this.toggleAccidentalAt(this.touchState.slotIndex)
                 this.touchState = null
                 this.clearStaffHover()
@@ -584,9 +585,7 @@ export default {
                 return
             }
 
-            // Prevent accidental sets after larger pointer movement.
-            const maxTapDistance = isLongPress ? 26 : 10
-            if (distance > maxTapDistance) {
+            if (shouldRejectTap(metrics)) {
                 this.touchState = null
                 this.clearStaffHover()
                 this.restoreInsertMarker()
@@ -598,12 +597,7 @@ export default {
                 clientX: touch.clientX,
                 clientY: touch.clientY
             })
-            const targetNoteName = picked?.noteName || this.touchState.lastPickedNoteName
-            const targetSlotIndex = Number.isFinite(picked?.slotIndex)
-                ? picked.slotIndex
-                : (Number.isFinite(this.touchState.lastPickedSlotIndex)
-                    ? this.touchState.lastPickedSlotIndex
-                    : this.touchState.slotIndex)
+            const { noteName: targetNoteName, slotIndex: targetSlotIndex } = resolveCommittedPick(this.touchState, picked)
             if (targetNoteName) {
                 this.activeDisplayIndex = targetSlotIndex
                 this.addInputNote(targetNoteName, targetSlotIndex)
