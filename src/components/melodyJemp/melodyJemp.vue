@@ -786,7 +786,8 @@ export default {
     bottom: 0;
     left: 0;
     z-index: 2;
-    touch-action: pan-x;
+    /* Keep the gesture fully in-app so touch note placement and vertical adjustments stay reliable. */
+    touch-action: none;
 }
 .hover-note {
     position: absolute;
