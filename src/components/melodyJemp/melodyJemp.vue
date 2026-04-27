@@ -176,14 +176,10 @@ import responseMixin from "@/components/mixins/responseMixin";
 import StaffRenderer from "@/features/notation/components/StaffRenderer";
 import {
     createTouchState,
-    getTouchMetrics,
-    isDoubleTap,
-    resolveCommittedPick,
-    shouldAdjustPitch,
-    shouldRejectTap,
     updateTouchStateWithPick,
 } from "@/features/notation/input/staffInputController";
 import { createStaffNotePicker } from "@/features/notation/input/staffNotePicker";
+import { resolveTouchCommit } from "@/features/notation/input/staffTouchCommit";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
@@ -564,44 +560,39 @@ export default {
             if (!touch || !this.touchState) return
             this.suppressClickUntil = Date.now() + 400
 
-            const metrics = getTouchMetrics(this.touchState, touch)
-
-            if (shouldAdjustPitch(metrics)) {
-                const step = Math.round((-metrics.dy) / 24)
-                this.adjustInputAt(step, this.touchState.slotIndex)
-                this.touchState = null
-                this.clearStaffHover()
-                this.restoreInsertMarker()
-                return
-            }
-
-            const now = Date.now()
-            const isDoubleTapGesture = !metrics.isLongPress && isDoubleTap(this.lastTapAt, now)
-            this.lastTapAt = now
-            if (isDoubleTapGesture) {
-                this.toggleAccidentalAt(this.touchState.slotIndex)
-                this.touchState = null
-                this.clearStaffHover()
-                this.restoreInsertMarker()
-                return
-            }
-
-            if (shouldRejectTap(metrics)) {
-                this.touchState = null
-                this.clearStaffHover()
-                this.restoreInsertMarker()
-                return
-            }
-
             const picked = this.pickNoteFromPointerEvent({
                 currentTarget: event.currentTarget,
                 clientX: touch.clientX,
                 clientY: touch.clientY
             })
-            const { noteName: targetNoteName, slotIndex: targetSlotIndex } = resolveCommittedPick(this.touchState, picked)
-            if (targetNoteName) {
-                this.activeDisplayIndex = targetSlotIndex
-                this.addInputNote(targetNoteName, targetSlotIndex)
+            const commit = resolveTouchCommit({
+                touchState: this.touchState,
+                touch,
+                lastTapAt: this.lastTapAt,
+                now: Date.now(),
+                pick: picked,
+            })
+            this.lastTapAt = commit.nextLastTapAt
+
+            if (commit.action === 'adjustPitch') {
+                this.adjustInputAt(commit.step, commit.slotIndex)
+                this.touchState = null
+                this.clearStaffHover()
+                this.restoreInsertMarker()
+                return
+            }
+
+            if (commit.action === 'toggleAccidental') {
+                this.toggleAccidentalAt(commit.slotIndex)
+                this.touchState = null
+                this.clearStaffHover()
+                this.restoreInsertMarker()
+                return
+            }
+
+            if (commit.action === 'commitNote') {
+                this.activeDisplayIndex = commit.slotIndex
+                this.addInputNote(commit.noteName, commit.slotIndex)
             }
             this.touchState = null
             this.clearStaffHover()
