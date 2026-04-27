@@ -483,6 +483,7 @@ export default {
             this.triggerHaptic()
         },
         handleStaffClick(event) {
+            if (this.lockInput) return
             if (!this.targetMelody.length) return
             if (Date.now() < this.suppressClickUntil) return
             const picked = this.pickNoteFromPointerEvent(event)
@@ -491,6 +492,7 @@ export default {
             this.addInputNote(picked.noteName, picked.slotIndex)
         },
         handleStaffTouchStart(event) {
+            if (this.lockInput) return
             if (!this.targetMelody.length) return
             const touch = event.changedTouches?.[0]
             if (!touch) return
@@ -520,7 +522,7 @@ export default {
         },
         handleStaffTouchMove(event) {
             const touch = event.changedTouches?.[0]
-            if (!touch || !this.touchState) return
+            if (this.lockInput || !touch || !this.touchState) return
             const picked = this.pickNoteFromPointerEvent({
                 currentTarget: event.currentTarget,
                 clientX: touch.clientX,
@@ -540,6 +542,11 @@ export default {
         },
         handleStaffTouchEnd(event) {
             const touch = event.changedTouches?.[0]
+            if (this.lockInput) {
+                this.touchState = null
+                this.clearStaffHover()
+                return
+            }
             if (!touch || !this.touchState) return
             this.suppressClickUntil = Date.now() + 400
 
@@ -649,6 +656,10 @@ export default {
             this.triggerHaptic()
         },
         handleStaffHover(event) {
+            if (this.lockInput) {
+                this.clearStaffHover()
+                return
+            }
             const picked = this.pickNoteFromPointerEvent(event)
             if (!picked || !picked.noteName) {
                 this.clearStaffHover()
