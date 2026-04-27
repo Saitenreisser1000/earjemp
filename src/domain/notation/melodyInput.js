@@ -44,7 +44,7 @@ export function pickClosestNoteName(y, noteNames, noteYForName) {
     return best
 }
 
-export function pickBoundedNoteName(y, noteNames, noteYForName) {
+export function pickBoundedNoteName(y, noteNames, noteYForName, edgeBias = 0.75) {
     if (!Array.isArray(noteNames) || !noteNames.length) return ''
 
     const candidates = noteNames
@@ -53,8 +53,15 @@ export function pickBoundedNoteName(y, noteNames, noteYForName) {
         .sort((a, b) => a.y - b.y)
 
     if (!candidates.length) return ''
-    if (y <= candidates[0].y) return candidates[0].name
-    if (y >= candidates[candidates.length - 1].y) return candidates[candidates.length - 1].name
+    if (candidates.length === 1) return candidates[0].name
+
+    const topGap = Math.abs(candidates[1].y - candidates[0].y)
+    const bottomGap = Math.abs(candidates[candidates.length - 1].y - candidates[candidates.length - 2].y)
+    const topThreshold = candidates[0].y + (topGap * edgeBias)
+    const bottomThreshold = candidates[candidates.length - 1].y - (bottomGap * edgeBias)
+
+    if (y <= topThreshold) return candidates[0].name
+    if (y >= bottomThreshold) return candidates[candidates.length - 1].name
 
     return pickClosestNoteName(y, candidates.map((entry) => entry.name), noteYForName)
 }

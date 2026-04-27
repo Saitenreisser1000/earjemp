@@ -41,6 +41,11 @@ describe('melody input helpers', () => {
     expect(pickBoundedNoteName(160, ['C4', 'D4', 'E4'], noteYForName)).toBe('C4')
   })
 
+  it('biases the top and bottom note zones to be easier to hit with a finger', () => {
+    expect(pickBoundedNoteName(87, ['C4', 'D4', 'E4'], noteYForName)).toBe('E4')
+    expect(pickBoundedNoteName(93, ['C4', 'D4', 'E4'], noteYForName)).toBe('C4')
+  })
+
   it('gives top and bottom notes a larger finger-friendly hit margin', () => {
     expect(clampInputY(66, ['C4', 'D4', 'E4'], noteYForName, 8)).toBe(67)
     expect(clampInputY(114, ['C4', 'D4', 'E4'], noteYForName, 8)).toBe(113)
