@@ -81,9 +81,13 @@
                     />
                     <div
                         class="staff-input-overlay"
+                        tabindex="0"
+                        role="application"
+                        aria-label="Melody input staff"
                         @click="handleStaffClick"
                         @mousemove="handleStaffHover"
                         @mouseleave="clearStaffHover"
+                        @keydown="handleStaffKeydown"
                         @touchstart.prevent="handleStaffTouchStart"
                         @touchmove.prevent="handleStaffTouchMove"
                         @touchend.prevent="handleStaffTouchEnd"
@@ -670,6 +674,46 @@ export default {
             this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
             this.showLoupe(picked.noteName, picked)
         },
+        handleStaffKeydown(event) {
+            if (this.lockInput || !this.targetMelody.length) return
+
+            const minDisplay = this.showFirstToneHint ? 1 : 0
+            const maxDisplay = Math.max(minDisplay, this.melodyLength - 1)
+
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault()
+                this.activeDisplayIndex = Math.max(minDisplay, this.activeDisplayIndex - 1)
+                return
+            }
+            if (event.key === 'ArrowRight') {
+                event.preventDefault()
+                this.activeDisplayIndex = Math.min(maxDisplay, this.activeDisplayIndex + 1)
+                return
+            }
+            if (event.key === 'ArrowUp') {
+                event.preventDefault()
+                this.adjustInputAt(1, this.activeDisplayIndex)
+                return
+            }
+            if (event.key === 'ArrowDown') {
+                event.preventDefault()
+                this.adjustInputAt(-1, this.activeDisplayIndex)
+                return
+            }
+            if (event.key === 'Backspace' || event.key === 'Delete') {
+                event.preventDefault()
+                this.undoInput()
+                return
+            }
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                if (this.canCheckAnswer) {
+                    this.checkAnswer()
+                } else {
+                    this.playAgain()
+                }
+            }
+        },
         clearStaffHover() {
             this.hoverNote = ''
             this.loupeVisible = false
@@ -847,6 +891,11 @@ export default {
     z-index: 2;
     /* Keep the gesture fully in-app so touch note placement and vertical adjustments stay reliable. */
     touch-action: none;
+}
+.staff-input-overlay:focus-visible {
+    outline: 2px solid rgba(25, 118, 210, 0.85);
+    outline-offset: 4px;
+    border-radius: 10px;
 }
 .hover-note {
     position: absolute;
