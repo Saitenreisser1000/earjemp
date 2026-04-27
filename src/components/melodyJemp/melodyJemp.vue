@@ -138,10 +138,10 @@
             </div>
 
             <div class="mb-2 mt-2 container">
-                <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
+                <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" :disabled="interactionDisabled" @click="playAgain">
                     <v-icon>mdi-play</v-icon>
                 </v-btn>
-                <v-btn class="button depth-btn" color="primary" width="30%" height="52" :disabled="!canCheckAnswer" @click="checkAnswer">
+                <v-btn class="button depth-btn" color="primary" width="30%" height="52" :disabled="interactionDisabled || !canCheckAnswer" @click="checkAnswer">
                     <span>check</span>
                 </v-btn>
             </div>
@@ -159,9 +159,9 @@
                     <v-btn value="b">b</v-btn>
                 </v-btn-toggle>
                 <div>
-                    <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">undo</v-btn>
-                    <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">clear</v-btn>
-                    <v-btn color="primary" size="small" @click="playRandomMelody">next</v-btn>
+                    <v-btn class="mr-2" variant="tonal" size="small" :disabled="interactionDisabled" @click="undoInput">undo</v-btn>
+                    <v-btn class="mr-2" variant="tonal" size="small" :disabled="interactionDisabled" @click="clearInput">clear</v-btn>
+                    <v-btn color="primary" size="small" :disabled="interactionDisabled" @click="playRandomMelody">next</v-btn>
                 </div>
             </div>
         </v-card>
@@ -298,6 +298,9 @@ export default {
         },
         canCheckAnswer() {
             return !!this.targetMelody.length && this.enteredUserNotesCount >= this.maxInputLength
+        },
+        interactionDisabled() {
+            return this.lockInput || this.soundLoading
         },
         inputProgressText() {
             if (!this.targetMelody.length) return 'Tap play to generate a melody.'
@@ -675,7 +678,7 @@ export default {
             this.showLoupe(picked.noteName, picked)
         },
         handleStaffKeydown(event) {
-            if (this.lockInput || !this.targetMelody.length) return
+            if (this.interactionDisabled || !this.targetMelody.length) return
 
             const minDisplay = this.showFirstToneHint ? 1 : 0
             const maxDisplay = Math.max(minDisplay, this.melodyLength - 1)
