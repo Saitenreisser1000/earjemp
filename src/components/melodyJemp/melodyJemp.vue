@@ -176,6 +176,8 @@ import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling"
 import { applyAccidentalInput, clampInputY, pickBoundedNoteName } from "@/domain/notation/melodyInput";
 import { diatonicIndex, formatDisplayNoteName, loupeNoteTopFor } from "@/domain/notation/display";
 
+const MELODY_SETTINGS_STORAGE_KEY = 'earjemp:melody-settings'
+
 export default {
     name: "melodyJemp",
     components: { StaffRenderer },
@@ -357,6 +359,9 @@ export default {
             return tops
         }
     },
+    mounted() {
+        this.loadStoredSettings()
+    },
     methods: {
         isMobileInputMode() {
             if (typeof window === 'undefined') return false
@@ -366,6 +371,36 @@ export default {
             if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
                 navigator.vibrate(10)
             }
+        },
+        loadStoredSettings() {
+            if (typeof window === 'undefined') return
+            try {
+                const raw = window.localStorage.getItem(MELODY_SETTINGS_STORAGE_KEY)
+                if (!raw) return
+                const parsed = JSON.parse(raw)
+                const difficultyOptions = ['easy', 'advanced', 'expert']
+                const bpmValues = BPM_OPTIONS.map((option) => option.value)
+                const melodyLengths = MELODY_LENGTH_OPTIONS.map((option) => option.value)
+
+                if (difficultyOptions.includes(parsed?.difficulty)) this.difficulty = parsed.difficulty
+                if (bpmValues.includes(parsed?.bpm)) this.bpm = parsed.bpm
+                if (melodyLengths.includes(parsed?.melodyLength)) this.melodyLength = parsed.melodyLength
+                if (typeof parsed?.autoplay === 'boolean') this.autoplay = parsed.autoplay
+                if (typeof parsed?.showFirstToneHint === 'boolean') this.showFirstToneHint = parsed.showFirstToneHint
+            } catch (error) {
+                // Ignore malformed persisted settings.
+            }
+        },
+        persistSettings() {
+            if (typeof window === 'undefined') return
+            const payload = {
+                difficulty: this.difficulty,
+                bpm: this.bpm,
+                melodyLength: this.melodyLength,
+                autoplay: this.autoplay,
+                showFirstToneHint: this.showFirstToneHint,
+            }
+            window.localStorage.setItem(MELODY_SETTINGS_STORAGE_KEY, JSON.stringify(payload))
         },
         showLoupe(noteName, picked) {
             if (!picked) return
@@ -732,6 +767,19 @@ export default {
             this.clearInput()
             this.resetResponse()
             this.showCheckOverlay = false
+            this.persistSettings()
+        },
+        autoplay() {
+            this.persistSettings()
+        },
+        difficulty() {
+            this.persistSettings()
+        },
+        bpm() {
+            this.persistSettings()
+        },
+        melodyLength() {
+            this.persistSettings()
         }
     }
 }
