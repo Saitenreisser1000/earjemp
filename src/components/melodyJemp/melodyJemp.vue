@@ -185,6 +185,10 @@ import {
     adjustInputAt as adjustStaffInputAt,
     toggleAccidentalAt as toggleStaffAccidentalAt,
 } from "@/features/notation/input/staffInputOps";
+import {
+    createActiveDisplayIndex,
+    createHoverFeedback,
+} from "@/features/notation/input/staffInteractionFeedback";
 import { BPM_OPTIONS, MELODY_LENGTH_OPTIONS } from "@/domain/music/definitions";
 import { matchesTonePool } from "@/domain/music/difficulty";
 import { accidentalComplexity, parseToneName } from "@/domain/notation/spelling";
@@ -533,12 +537,16 @@ export default {
             })
             if (picked && Number.isFinite(picked.slotIndex)) {
                 const minDisplay = this.showFirstToneHint ? 1 : 0
-                this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
+                this.activeDisplayIndex = createActiveDisplayIndex(picked.slotIndex, {
+                    minDisplay,
+                    melodyLength: this.melodyLength,
+                })
             }
             if (picked?.noteName) {
-                this.hoverNote = picked.noteName
-                this.hoverLeft = picked.xInWrap + 10
-                this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+                const feedback = createHoverFeedback(picked)
+                this.hoverNote = feedback.noteName
+                this.hoverLeft = feedback.hoverLeft
+                this.hoverTop = feedback.hoverTop
                 this.showLoupe(picked.noteName, picked)
             }
         },
@@ -553,10 +561,14 @@ export default {
             if (picked?.noteName) {
                 this.touchState = updateTouchStateWithPick(this.touchState, picked)
                 const minDisplay = this.showFirstToneHint ? 1 : 0
-                this.activeDisplayIndex = Math.max(minDisplay, Math.min(this.melodyLength - 1, picked.slotIndex))
-                this.hoverNote = picked.noteName
-                this.hoverLeft = picked.xInWrap + 10
-                this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+                this.activeDisplayIndex = createActiveDisplayIndex(picked.slotIndex, {
+                    minDisplay,
+                    melodyLength: this.melodyLength,
+                })
+                const feedback = createHoverFeedback(picked)
+                this.hoverNote = feedback.noteName
+                this.hoverLeft = feedback.hoverLeft
+                this.hoverTop = feedback.hoverTop
                 this.showLoupe(picked.noteName, picked)
             }
         },
@@ -667,9 +679,10 @@ export default {
                 this.clearStaffHover()
                 return
             }
-            this.hoverNote = picked.noteName
-            this.hoverLeft = picked.xInWrap + 10
-            this.hoverTop = Math.max(0, picked.snappedYInWrap - 22)
+            const feedback = createHoverFeedback(picked)
+            this.hoverNote = feedback.noteName
+            this.hoverLeft = feedback.hoverLeft
+            this.hoverTop = feedback.hoverTop
             this.showLoupe(picked.noteName, picked)
         },
         handleStaffKeydown(event) {
