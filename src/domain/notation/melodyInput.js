@@ -7,10 +7,18 @@ export function computeInputYBounds(noteNames, noteYForName, margin = 8) {
     const ys = noteNames
         .map((name) => noteYForName(name))
         .filter((y) => Number.isFinite(y))
+        .sort((a, b) => a - b)
     if (!ys.length) return { min: -24, max: 154 }
+
+    const topGap = ys.length > 1 ? Math.abs(ys[1] - ys[0]) : 0
+    const bottomGap = ys.length > 1 ? Math.abs(ys[ys.length - 1] - ys[ys.length - 2]) : 0
+    const expandedMargin = (gap) => Math.max(margin, Math.min(margin + 6, Math.round(gap * 1.25)))
+    const topMargin = expandedMargin(topGap)
+    const bottomMargin = expandedMargin(bottomGap)
+
     return {
-        min: Math.min(...ys) - margin,
-        max: Math.max(...ys) + margin
+        min: ys[0] - topMargin,
+        max: ys[ys.length - 1] + bottomMargin
     }
 }
 

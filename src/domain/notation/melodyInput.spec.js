@@ -25,10 +25,10 @@ const tones = [
 ]
 
 describe('melody input helpers', () => {
-  it('computes and clamps input bounds', () => {
-    expect(computeInputYBounds(['C4', 'E4'], noteYForName, 10)).toEqual({ min: 70, max: 110 })
-    expect(clampInputY(40, ['C4', 'E4'], noteYForName, 10)).toBe(70)
-    expect(clampInputY(120, ['C4', 'E4'], noteYForName, 10)).toBe(110)
+  it('computes and clamps input bounds with extra edge reach', () => {
+    expect(computeInputYBounds(['C4', 'E4'], noteYForName, 10)).toEqual({ min: 64, max: 116 })
+    expect(clampInputY(40, ['C4', 'E4'], noteYForName, 10)).toBe(64)
+    expect(clampInputY(140, ['C4', 'E4'], noteYForName, 10)).toBe(116)
   })
 
   it('picks the closest note by y coordinate', () => {
@@ -39,6 +39,11 @@ describe('melody input helpers', () => {
   it('clamps out-of-range positions to the highest or lowest available note', () => {
     expect(pickBoundedNoteName(40, ['C4', 'D4', 'E4'], noteYForName)).toBe('E4')
     expect(pickBoundedNoteName(160, ['C4', 'D4', 'E4'], noteYForName)).toBe('C4')
+  })
+
+  it('gives top and bottom notes a larger finger-friendly hit margin', () => {
+    expect(clampInputY(66, ['C4', 'D4', 'E4'], noteYForName, 8)).toBe(67)
+    expect(clampInputY(114, ['C4', 'D4', 'E4'], noteYForName, 8)).toBe(113)
   })
 
   it('finds a preferred accidental spelling when available', () => {

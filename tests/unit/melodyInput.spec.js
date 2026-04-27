@@ -19,7 +19,7 @@ describe('melody input utilities', () => {
     const noteY = (name) => yByName[name]
 
     const bounds = computeInputYBounds(names, noteY, 10)
-    expect(bounds).toEqual({ min: 25, max: 175 })
+    expect(bounds).toEqual({ min: 19, max: 181 })
 
     const clampedTop = clampInputY(-100, names, noteY, 10)
     const clampedBottom = clampInputY(300, names, noteY, 10)
