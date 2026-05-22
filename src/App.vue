@@ -85,7 +85,7 @@
                 {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
                 {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-format-align-right'},
                 {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'},
-                {path: '/melodyJemp', title: 'melodyJEMP', icon: 'mdi-music-note'}
+                {path: '/melodyJemp', title: 'melodyJEMP (beta)', icon: 'mdi-music-note'}
             ],
             drawer: false,
             soundLoading: false,
