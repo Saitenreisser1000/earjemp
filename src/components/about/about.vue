@@ -12,11 +12,8 @@
             <p class="text-body-1 mb-0">
                 earJEMP is optimized for mobile devices in portrait mode.
             </p>
-            <p class="text-caption mt-5 mb-0">
-                JEMPCompany &copy;, 2026
-            </p>
-            <p class="text-caption mt-1 mb-0">
-                office@jemphub.com
+            <p class="about-contact text-caption mt-5 mb-0">
+                JEMPCompany &copy;, 2026 · office@jemphub.com
             </p>
         </v-sheet>
     </v-container>
@@ -41,5 +38,10 @@
         width: 100%;
         max-width: 420px;
         border-radius: 8px;
+    }
+
+    .about-contact {
+        border-top: 1px solid rgba(0, 0, 0, 0.24);
+        padding-top: 10px;
     }
 </style>
