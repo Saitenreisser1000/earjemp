@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -18,4 +19,9 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
           script: |
-            /var/www/jemphub/deploy.sh
+            set -e
+            cd /var/www/jemphub
+            git fetch origin main
+            git reset --hard origin/main
+            npm ci
+            npm run build
