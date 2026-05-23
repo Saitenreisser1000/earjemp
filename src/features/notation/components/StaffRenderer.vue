@@ -285,6 +285,63 @@ export default {
       }
       ctx.restore()
     },
+    noteLabel(name) {
+      if (!name) return ''
+      const parsed = this.parseNote(String(name).replace(/s(?=\d$)/, '#'))
+      if (!parsed) return String(name)
+
+      const letter = parsed.octave <= 1
+        ? parsed.letter.toUpperCase()
+        : parsed.letter.toLowerCase()
+      const suffix = parsed.octave <= 2 ? '' : String(parsed.octave - 2)
+      return `${letter}${parsed.accidental}${suffix}`
+    },
+    noteLabelX(note) {
+      if (!note) return null
+      const begin = typeof note.getNoteHeadBeginX === 'function' ? note.getNoteHeadBeginX() : null
+      const end = typeof note.getNoteHeadEndX === 'function' ? note.getNoteHeadEndX() : null
+      if (Number.isFinite(begin) && Number.isFinite(end)) return (begin + end) / 2
+      if (typeof note.getAbsoluteX === 'function') return note.getAbsoluteX() + 6
+      return null
+    },
+    drawCenteredText(ctx, label, x, y) {
+      const text = String(label)
+      const width = text.length * 6
+      ctx.fillText(text, x - (width / 2), y)
+    },
+    drawNoteLabels(vf, noteObjects, noteNames, options = {}) {
+      if (!vf || !Array.isArray(noteObjects) || !Array.isArray(noteNames)) return
+      const ctx = vf.getContext()
+      if (!ctx) return
+
+      const labels = noteNames.map((name) => this.noteLabel(name))
+      const y = options.y || 122
+      ctx.save()
+      ctx.setFont('600 11px Arial, sans-serif')
+
+      if (this.mode === 'chord') {
+        const label = labels.filter(Boolean).join(' ')
+        const x = this.noteLabelX(noteObjects[0])
+        if (label && Number.isFinite(x)) {
+          ctx.setFillStyle(options.color || 'rgba(0,0,0,0.78)')
+          this.drawCenteredText(ctx, label, x, y)
+        }
+        ctx.restore()
+        return
+      }
+
+      const mismatchSet = new Set(this.mismatchIndices || [])
+      for (let i = 0; i < Math.min(noteObjects.length, labels.length); i++) {
+        const label = labels[i]
+        if (!label) continue
+        const x = this.noteLabelX(noteObjects[i])
+        if (!Number.isFinite(x)) continue
+        const color = options.color || (mismatchSet.has(i) ? 'rgba(198,40,40,0.98)' : 'rgba(0,0,0,0.78)')
+        ctx.setFillStyle(color)
+        this.drawCenteredText(ctx, label, x, y)
+      }
+      ctx.restore()
+    },
     parseNote(noteName) {
       const match = /^([A-Ga-g])([#bxs]{1,2}|bb|##)?(\d)$/.exec(noteName || '')
       if (!match) return null
@@ -521,7 +578,7 @@ export default {
       const width = Math.max(baseWidth, extendedWidth)
       this.renderWidth = width
       const vf = new Factory({
-        renderer: { elementId: root, width, height: 130 }
+        renderer: { elementId: root, width, height: 145 }
       })
       const score = vf.EasyScore()
       const system = vf.System({ x: 10, y: 15, width: width - 20 })
@@ -596,6 +653,10 @@ export default {
         this.drawMismatchStrikes(vf, mainNotes, this.mismatchIndices)
         this.drawCorrectChecks(vf, mainNotes, this.correctIndices)
         this.drawPositionNumbers(vf, anchorNotes)
+        this.drawNoteLabels(vf, mainNotes, this.notes)
+        this.drawNoteLabels(vf, comparisonVoice.getTickables(), this.comparisonNotes, {
+          color: 'rgba(198,40,40,0.98)'
+        })
         this.updateRenderedSlotXs(anchorNotes)
         if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
         this.maybeAutoScrollToInsertMarker(scrollContainer)
@@ -671,6 +732,7 @@ export default {
       this.drawMismatchStrikes(vf, notes, this.mismatchIndices)
       this.drawCorrectChecks(vf, notes, this.correctIndices)
       this.drawPositionNumbers(vf, anchorVoice ? anchorNotes : notes)
+      this.drawNoteLabels(vf, notes, this.notes)
       this.updateRenderedSlotXs(anchorVoice ? anchorNotes : notes)
       if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
       this.maybeAutoScrollToInsertMarker(scrollContainer)
@@ -753,7 +815,7 @@ export default {
 
 .staff-renderer {
   min-width: 100%;
-  min-height: 120px;
+  min-height: 138px;
 }
 
 .staff-scroll {

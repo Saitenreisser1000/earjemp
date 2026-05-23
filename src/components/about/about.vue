@@ -15,6 +15,9 @@
             <p class="text-caption mt-5 mb-0">
                 JEMPCompany &copy;, 2026
             </p>
+            <p class="text-caption mt-1 mb-0">
+                office@jemphub.com
+            </p>
         </v-sheet>
     </v-container>
 </template>
