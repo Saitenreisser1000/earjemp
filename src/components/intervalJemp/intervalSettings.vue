@@ -85,7 +85,7 @@
 <script>
     import {mapActions} from 'vuex';
     import { createIntervalOptions, createDefaultSelectedIntervals } from "@/domain/music/definitions";
-    import { intervalValuesForDifficulty, intervalPlayOrderForDifficulty } from "@/domain/music/difficulty";
+    import { intervalPlayOrderForDifficulty, intervalValuesForDifficulty } from "@/domain/music/difficulty";
 
 export default {
         name: "intervalChoose",
@@ -102,7 +102,7 @@ export default {
         emits: ['update:autoplay', 'update:difficulty', 'setPlayOrder'],
         data() {
             return {
-                playOrder: 'increase',
+                playOrder: ['increase'],
                 intervals: createIntervalOptions(),
                 selectInt: createDefaultSelectedIntervals()
             }
@@ -137,13 +137,18 @@ export default {
                     const allowed = intervalValuesForDifficulty(value);
                     this.selectInt = this.intervals.filter((item) => allowed.includes(item.value));
                     this.playOrder = intervalPlayOrderForDifficulty(value);
-                    this.$emit('setPlayOrder', this.playOrder);
                 }
             },
             selectInt: {
                 immediate: true,
                 handler() {
                     this.setSelectedIntervals(this.selectInt)
+                }
+            },
+            playOrder: {
+                immediate: true,
+                handler(value) {
+                    this.$emit('setPlayOrder', value);
                 }
             }
         }
