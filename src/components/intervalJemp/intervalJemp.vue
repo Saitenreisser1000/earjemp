@@ -64,13 +64,21 @@
         mixins: [toneCalcService, playSounds, responseMixin],
         computed: {
             ...mapGetters(['getToneChain', 'getSelectedIntervals']),
+            notationStartTone() {
+                if (this.randomOrder !== 'decrease') return this.firstTone;
+                return this.higherTone(this.firstTone, this.secondTone);
+            },
+            notationTargetTone() {
+                if (this.randomOrder !== 'decrease') return this.secondTone;
+                return this.lowerTone(this.firstTone, this.secondTone);
+            },
             notationNotes() {
                 const notes = [];
-                if (this.firstTone && this.firstTone.name) notes.push(this.firstTone.name);
+                if (this.notationStartTone && this.notationStartTone.name) notes.push(this.notationStartTone.name);
                 if (!this.hasAnswered) return notes;
 
                 if (this.resColor === 'green') {
-                    if (this.secondTone && this.secondTone.name) notes.push(this.secondTone.name);
+                    if (this.notationTargetTone && this.notationTargetTone.name) notes.push(this.notationTargetTone.name);
                     return notes;
                 }
                 if (this.guessedSecondTone && this.guessedSecondTone.name) notes.push(this.guessedSecondTone.name);
@@ -78,10 +86,10 @@
             },
             notationComparisonNotes() {
                 if (!this.hasAnswered || this.resColor === 'green') return [];
-                const notes = [];
-                if (this.firstTone && this.firstTone.name) notes.push(this.firstTone.name);
-                if (this.secondTone && this.secondTone.name) notes.push(this.secondTone.name);
-                return notes;
+                return [
+                    null,
+                    this.notationTargetTone && this.notationTargetTone.name ? this.notationTargetTone.name : null
+                ];
             },
             notationMismatchIndices() {
                 if (!this.hasAnswered || this.resColor === 'green') return [];
@@ -106,7 +114,7 @@
                 return 1;
             },
             notationAdjustedOctaves() {
-                return this.notationNotes
+                return [...this.notationNotes, ...this.notationComparisonNotes]
                     .map((n) => /(\d)$/.exec(n))
                     .filter(Boolean)
                     .map((m) => Number(m[1]) + this.notationOctaveOffset);
@@ -119,6 +127,17 @@
         },
 
         methods: {
+            higherTone(first, second) {
+                if (!first) return second;
+                if (!second) return first;
+                return second.toneID > first.toneID ? second : first;
+            },
+
+            lowerTone(first, second) {
+                if (!first) return second;
+                if (!second) return first;
+                return second.toneID < first.toneID ? second : first;
+            },
 
             playRandom(){
                 //calc intervals
@@ -206,8 +225,10 @@
             guessResult(guess) {
                 this.hasAnswered = true;
                 const guessedInterval = this.getSelectedIntervals.find((item) => item.text === guess);
-                if (guessedInterval && this.firstTone) {
-                    this.guessedSecondTone = this.getInterval(this.firstTone, guessedInterval.value, guessedInterval.lineDist);
+                if (guessedInterval && this.notationStartTone) {
+                    this.guessedSecondTone = this.randomOrder === 'decrease'
+                        ? this.getDescendingInterval(this.notationStartTone, guessedInterval.value, guessedInterval.lineDist)
+                        : this.getInterval(this.notationStartTone, guessedInterval.value, guessedInterval.lineDist);
                 } else {
                     this.guessedSecondTone = null;
                 }

@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { Factory } from 'vexflow'
+import { Factory, Stem } from 'vexflow'
 
 const CLEF_BOUNDS = {
   treble: { bottom: 30, top: 38 }, // E4..F5
@@ -380,6 +380,13 @@ export default {
       const anchor = this.placeholderToken()
       return Array.from({ length: Math.max(1, beats) }, () => `${anchor}/q`).join(', ')
     },
+    setStemDirection(noteObjects, direction) {
+      for (const note of noteObjects || []) {
+        if (note && typeof note.setStemDirection === 'function') {
+          note.setStemDirection(direction)
+        }
+      }
+    },
     updateRenderedSlotXs(noteObjects) {
       const xs = []
       for (const note of noteObjects || []) {
@@ -549,6 +556,7 @@ export default {
         anchorVoice.setStrict(false)
         comparisonVoice.setStrict(false)
         mainVoice.setStrict(false)
+        this.setStemDirection(mainNotes, Stem.UP)
         for (const note of anchorNotes) {
           note.setStyle({
             fillStyle: 'rgba(0,0,0,0)',

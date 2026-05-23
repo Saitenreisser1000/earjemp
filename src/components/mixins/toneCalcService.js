@@ -1,4 +1,5 @@
 import {
+    getDescendingInterval as domainGetDescendingInterval,
     getInterval as domainGetInterval,
     getScale as domainGetScale,
     reduceToneList as domainReduceToneList,
@@ -20,6 +21,10 @@ export default {
 
         getInterval(tone, intervalSteps, lineDist) {
             return domainGetInterval(this.getToneChain, tone, intervalSteps, lineDist);
+        },
+
+        getDescendingInterval(tone, intervalSteps, lineDist) {
+            return domainGetDescendingInterval(this.getToneChain, tone, intervalSteps, lineDist);
         },
 
         //random takes {min:'' , max:''} object

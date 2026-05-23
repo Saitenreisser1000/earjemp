@@ -13,7 +13,7 @@ export function parseToneName(name = '') {
 export function shiftLetter(letter, steps) {
     const start = LETTERS.indexOf(letter)
     if (start < 0) return letter
-    return LETTERS[(start + steps) % LETTERS.length]
+    return LETTERS[((start + steps) % LETTERS.length + LETTERS.length) % LETTERS.length]
 }
 
 export function accidentalComplexity(accidental = '') {
@@ -38,4 +38,3 @@ export function chooseBestSpelling(candidates, expectedLetter = '') {
     scored.sort((a, b) => a.score - b.score)
     return scored[0].tone
 }
-

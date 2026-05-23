@@ -18,7 +18,7 @@ export function reduceToneList(toneChain, reduceAmount) {
     return toneChain.filter((tone) => tone.toneID <= 44 - reduceAmount && tone.id < 63)
 }
 
-export function switchToneByNotation(toneChain, firstTone, secondTone, lineDist) {
+export function switchToneByNotation(toneChain, firstTone, secondTone, lineDist, direction = 1) {
     if (!firstTone || !secondTone) return secondTone
     if (Math.abs(firstTone.linePos - secondTone.linePos) === lineDist) return secondTone
 
@@ -29,7 +29,7 @@ export function switchToneByNotation(toneChain, firstTone, secondTone, lineDist)
     if (!validLineCandidates.length) return secondTone
 
     const parsedFirst = parseToneName(firstTone.name)
-    const expectedLetter = parsedFirst ? shiftLetter(parsedFirst.letter, lineDist) : ''
+    const expectedLetter = parsedFirst ? shiftLetter(parsedFirst.letter, lineDist * direction) : ''
     return chooseBestSpelling(validLineCandidates, expectedLetter) || secondTone
 }
 
@@ -39,6 +39,15 @@ export function getInterval(toneChain, tone, intervalSteps, lineDist) {
         newTone = toneById(toneChain, newTone.next)
     }
     return switchToneByNotation(toneChain, tone, newTone, lineDist)
+}
+
+export function getDescendingInterval(toneChain, tone, intervalSteps, lineDist) {
+    let newTone = tone
+    for (let i = 0; i < intervalSteps; i++) {
+        if (!newTone || newTone.prev === '') return null
+        newTone = toneById(toneChain, newTone.prev)
+    }
+    return switchToneByNotation(toneChain, tone, newTone, lineDist, -1)
 }
 
 export function getScale(toneChain, rootToneIndex, stepsPattern) {
@@ -52,4 +61,3 @@ export function getScale(toneChain, rootToneIndex, stepsPattern) {
     }
     return notes
 }
-
