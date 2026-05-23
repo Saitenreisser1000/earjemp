@@ -44,8 +44,9 @@
                         :key="item.title"
                         :title="item.title"
                         :prepend-icon="item.icon"
-                        :to="item.path"
-                        link
+                        :to="item.disabled ? undefined : item.path"
+                        :disabled="item.disabled"
+                        :link="!item.disabled"
                 />
             </v-list>
         </v-navigation-drawer>
@@ -84,7 +85,7 @@
                 {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
                 {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-format-align-right'},
                 {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'},
-                {path: '/melodyJemp', title: 'melodyJEMP (beta)', icon: 'mdi-music-note'},
+                {path: '/melodyJemp', title: 'melodyJEMP (beta)', icon: 'mdi-music-note', disabled: true},
                 {path: '/about', title: 'about', icon: 'mdi-information-outline'}
             ],
             drawer: false,
