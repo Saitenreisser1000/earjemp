@@ -18,8 +18,7 @@
                 <v-btn icon variant="text" color="white" class="ml-n2" @click.stop="drawer = !drawer">
                     <v-icon>mdi-menu</v-icon>
                 </v-btn>
-                <v-spacer></v-spacer>
-                <v-toolbar-title style="float:right">earJEMP</v-toolbar-title>
+                <v-toolbar-title class="app-title">earJEMP</v-toolbar-title>
 
             </v-toolbar>
 
@@ -67,7 +66,7 @@
                 height="5vh"
                 class="px-4 d-flex align-center app-footer"
         >
-            <span style="font-size: 14px; margin-right:5px">proudly presented by &copy;</span> <span class="text-white">JEMPCompany</span><span style="font-size: 14px; margin-left:2px">,2026</span>
+            <span class="text-white">JEMPCompany</span>
             <v-spacer></v-spacer>
             <span class="mr-2">v.1.1</span>
         </v-footer>
@@ -85,7 +84,8 @@
                 {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
                 {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-format-align-right'},
                 {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'},
-                {path: '/melodyJemp', title: 'melodyJEMP (beta)', icon: 'mdi-music-note'}
+                {path: '/melodyJemp', title: 'melodyJEMP (beta)', icon: 'mdi-music-note'},
+                {path: '/about', title: 'about', icon: 'mdi-information-outline'}
             ],
             drawer: false,
             soundLoading: false,
@@ -150,6 +150,13 @@
         min-height: 90vh !important;
         box-sizing: border-box;
         padding-top: 10px;
+    }
+    .app-title {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        pointer-events: none;
     }
     .orientation-lock-screen {
         position: fixed;
