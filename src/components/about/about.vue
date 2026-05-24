@@ -1,8 +1,11 @@
 <template>
     <v-container class="about-page">
         <v-sheet class="about-panel pa-5" elevation="2">
-            <v-icon size="40" color="primary" class="mb-3">mdi-ear-hearing</v-icon>
-            <h1 class="text-h5 mb-4">about earJEMP</h1>
+            <div class="about-heading mb-4">
+                <h1 class="text-h5 mb-0">about</h1>
+                <img src="/earjemp.png" alt="earJEMP" class="about-icon">
+                <h1 class="about-brand text-h5 mb-0">earJEMP</h1>
+            </div>
             <p class="text-body-1 mb-3">
                 This software was designed to train musical listening skills.
             </p>
@@ -38,6 +41,29 @@
         width: 100%;
         max-width: 420px;
         border-radius: 8px;
+    }
+
+    .about-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .about-brand {
+        margin-left: -14px;
+    }
+
+    .about-icon {
+        width: 36px;
+        height: 36px;
+        object-fit: contain;
+        display: block;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        clip-path: inset(2px);
+        transform: translateY(3px) scale(1.08);
+        transform-origin: center;
     }
 
     .about-contact {

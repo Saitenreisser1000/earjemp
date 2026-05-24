@@ -18,7 +18,10 @@
                 <v-btn icon variant="text" color="white" class="ml-n2" @click.stop="drawer = !drawer">
                     <v-icon>mdi-menu</v-icon>
                 </v-btn>
-                <v-toolbar-title class="app-title">earJEMP</v-toolbar-title>
+                <v-toolbar-title class="app-title">
+                    <img src="/earjemp.png" alt="" class="app-title-icon">
+                    <span>earJEMP</span>
+                </v-toolbar-title>
 
             </v-toolbar>
 
@@ -156,8 +159,19 @@
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
         text-align: center;
         pointer-events: none;
+    }
+    .app-title-icon {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        filter: brightness(0) invert(1);
+        transform: translateY(2px);
     }
     .orientation-lock-screen {
         position: fixed;
