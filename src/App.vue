@@ -3,8 +3,8 @@
         <div v-if="orientationLocked" class="orientation-lock-screen">
             <div class="orientation-lock-card">
                 <v-icon size="42" color="primary">mdi-cellphone</v-icon>
-                <div class="text-h6 mt-2">Bitte auf Hochformat drehen</div>
-                <div class="text-body-2 mt-1">earJEMP ist im Portrait-Modus optimiert.</div>
+                <div class="text-h6 mt-2">{{ $t('app.orientationTitle') }}</div>
+                <div class="text-body-2 mt-1">{{ $t('app.orientationText') }}</div>
             </div>
         </div>
         <template v-else>
@@ -39,7 +39,7 @@
                     class="py-0"
             >
                 <v-list-item two-line >
-                    <v-list-item-title>Menu</v-list-item-title>
+                    <v-list-item-title>{{ $t('app.menu') }}</v-list-item-title>
                 </v-list-item>
 
                 <v-list-item
@@ -51,11 +51,30 @@
                         :disabled="item.disabled"
                         :link="!item.disabled"
                 />
+                <v-divider class="my-2"></v-divider>
+                <v-list-item>
+                    <v-list-item-title class="text-caption">{{ $t('app.language') }}</v-list-item-title>
+                    <v-btn-toggle
+                            v-model="currentLocale"
+                            class="mt-2 language-toggle"
+                            density="compact"
+                            mandatory
+                    >
+                        <v-btn
+                                v-for="locale in locales"
+                                :key="locale.value"
+                                :value="locale.value"
+                                size="small"
+                        >
+                            {{ locale.label }}
+                        </v-btn>
+                    </v-btn-toggle>
+                </v-list-item>
             </v-list>
         </v-navigation-drawer>
         <v-overlay :model-value="soundLoading" :opacity="0.82" class="align-center justify-center">
             <v-sheet rounded="lg" elevation="8" class="pa-4" min-width="280">
-                <div class="text-subtitle-2 mb-2">sound load</div>
+                <div class="text-subtitle-2 mb-2">{{ $t('app.soundLoad') }}</div>
                 <v-progress-linear indeterminate color="primary"></v-progress-linear>
                 <div class="text-caption mt-2">{{ soundStatus }}</div>
             </v-sheet>
@@ -79,24 +98,42 @@
 </template>
 
 <script>
+    import { LOCALES, i18nState, setLocale } from '@/i18n'
 
     export default {
         name: 'App',
 
         data: () => ({
-            items: [
-                {path: '/', title: 'Intervals', icon: 'mdi-view-dashboard'},
-                {path: '/chordJemp', title: 'Chords', icon: 'mdi-format-align-right'},
-                {path: '/scaleJemp', title: 'Scales', icon: 'mdi-chart-line'},
-                {path: '/melodyJemp', title: 'Melody (beta)', icon: 'mdi-music-note', disabled: true},
-                {path: '/about', title: 'About', icon: 'mdi-information-outline'}
-            ],
+            locales: LOCALES,
             drawer: false,
             soundLoading: false,
-            soundStatus: 'loading sounds...',
+            soundStatus: '',
             orientationLocked: false
         }),
+        computed: {
+            items() {
+                return [
+                    {path: '/', title: this.$t('nav.intervals'), icon: 'mdi-view-dashboard'},
+                    {path: '/chordJemp', title: this.$t('nav.chords'), icon: 'mdi-format-align-right'},
+                    {path: '/inversions', title: this.$t('nav.inversions'), icon: 'mdi-format-rotate-90'},
+                    {path: '/scaleJemp', title: this.$t('nav.scales'), icon: 'mdi-chart-line'},
+                    {path: '/melodyJemp', title: this.$t('nav.melody'), icon: 'mdi-music-note', disabled: true},
+                    {path: '/about', title: this.$t('nav.about'), icon: 'mdi-information-outline'},
+                    {path: '/impressum', title: this.$t('nav.legal'), icon: 'mdi-file-document-outline'}
+                ]
+            },
+            currentLocale: {
+                get() {
+                    return i18nState.locale
+                },
+                set(locale) {
+                    setLocale(locale)
+                    if (!this.soundLoading) this.soundStatus = this.$t('app.soundLoading')
+                }
+            }
+        },
         mounted() {
+            this.soundStatus = this.$t('app.soundLoading')
             this.updateOrientationLock()
             window.addEventListener('resize', this.updateOrientationLock, { passive: true })
             window.addEventListener('orientationchange', this.updateOrientationLock, { passive: true })
@@ -172,6 +209,9 @@
         object-fit: contain;
         filter: brightness(0) invert(1);
         transform: translateY(2px);
+    }
+    .language-toggle .v-btn {
+        text-transform: none !important;
     }
     .orientation-lock-screen {
         position: fixed;

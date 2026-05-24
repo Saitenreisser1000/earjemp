@@ -38,7 +38,7 @@ export default {
                 return sharedSoundLoadPromise
             }
 
-            this.$emit('setSoundStatus', isWarmup ? 'preparing sounds...' : 'loading sounds...')
+            this.$emit('setSoundStatus', isWarmup ? this.$t('app.soundPreparing') : this.$t('app.soundLoading'))
             this.$emit('setSoundLoaded', true)
 
             sharedSoundLoadPromise = new Promise((resolve, reject) => {
@@ -66,7 +66,7 @@ export default {
                 sharedSoundLoadTimeoutId = null
             }
             sharedSoundLoadRetries = 0
-            this.$emit('setSoundStatus', 'sounds ready')
+            this.$emit('setSoundStatus', this.$t('app.soundReady'))
             this.$emit('setSoundLoaded', false)
 
             if (sharedResolveSoundLoad) {
@@ -86,7 +86,7 @@ export default {
 
             if (sharedSoundLoadRetries < maxSoundLoadRetries) {
                 sharedSoundLoadRetries += 1
-                this.$emit('setSoundStatus', 'sound load slow, retrying...')
+                this.$emit('setSoundStatus', this.$t('app.soundSlow'))
                 sharedSoundLoadTimeoutId = setTimeout(() => {
                     this.handleSoundLoadFailure(new Error('sound load timeout'))
                 }, 12000)
@@ -94,7 +94,7 @@ export default {
                 return
             }
 
-            this.$emit('setSoundStatus', 'sound load failed, tap play to retry')
+            this.$emit('setSoundStatus', this.$t('app.soundFailed'))
             this.$emit('setSoundLoaded', false)
 
             if (sharedRejectSoundLoad) {

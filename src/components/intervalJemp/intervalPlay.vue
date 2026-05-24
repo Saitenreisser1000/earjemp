@@ -4,7 +4,7 @@
             <v-icon>mdi-play</v-icon>
         </v-btn>
         <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="$emit('playRandomInterval')">
-            <span>next</span>
+            <span>{{ $t('common.next') }}</span>
         </v-btn>
         <br>
     </div>

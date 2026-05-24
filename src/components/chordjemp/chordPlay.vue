@@ -4,7 +4,7 @@
             <v-icon>mdi-play</v-icon>
         </v-btn>
         <v-btn color="primary" class="button depth-btn" width="30%" height="52" @click="$emit('playRandomChord')">
-            <span>next</span>
+            <span>{{ $t('common.next') }}</span>
         </v-btn>
         <br>
     </div>

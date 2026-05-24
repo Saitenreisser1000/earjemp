@@ -2,7 +2,7 @@
     <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
         <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled="lockInput" flat>
             <div class="intro-copy">
-                Train your musical ear by listening to short melodies and entering the notes you hear.
+            {{ $t('intro.melody') }}
             </div>
             <div class="choose-header">
                 <v-btn-toggle
@@ -13,9 +13,9 @@
                     background-color="secondary"
                     mandatory
                 >
-                    <v-btn value="easy" size="small">easy</v-btn>
-                    <v-btn value="advanced" size="small">advanced</v-btn>
-                    <v-btn value="expert" size="small">expert</v-btn>
+                    <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
+                    <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
+                    <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
                 </v-btn-toggle>
                 <v-menu location="bottom end" :close-on-content-click="false">
                     <template #activator="{ props }">
@@ -26,20 +26,20 @@
                             color="primary"
                             prepend-icon="mdi-cog"
                         >
-                            options
+                            {{ $t('common.options') }}
                         </v-btn>
                     </template>
                 <v-card min-width="220" class="pa-2">
                     <v-switch
                         v-model="autoplay"
-                        label="autoplay"
+                        :label="$t('common.autoplay')"
                         class="my-0"
                         density="compact"
                         hide-details
                     />
                     <v-switch
                         v-model="showFirstToneHint"
-                        label="show 1st note"
+                        :label="$t('common.showFirstNote')"
                         class="my-0"
                         density="compact"
                         hide-details
@@ -128,7 +128,7 @@
                 :items="lengthOptions"
                 item-title="label"
                 item-value="value"
-                label="Select Melody Length"
+                :label="$t('common.selectMelodyLength')"
                 hide-details
                 class="melody-length-select flex-grow-0"
             />
@@ -138,14 +138,14 @@
                     <v-icon>mdi-play</v-icon>
                 </v-btn>
                 <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="checkAnswer">
-                    <span>check</span>
+                    <span>{{ $t('common.check') }}</span>
                 </v-btn>
             </div>
 
             <div class="mb-2">
-                <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">undo</v-btn>
-                <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">clear</v-btn>
-                <v-btn color="primary" size="small" @click="playRandomMelody">next</v-btn>
+                <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">{{ $t('common.undo') }}</v-btn>
+                <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">{{ $t('common.clear') }}</v-btn>
+                <v-btn color="primary" size="small" @click="playRandomMelody">{{ $t('common.next') }}</v-btn>
             </div>
         </v-card>
     </v-card>

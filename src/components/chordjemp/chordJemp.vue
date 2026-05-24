@@ -2,7 +2,7 @@
         <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
         <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
             <div class="intro-copy">
-                Train your musical ear by listening to chords and choosing their quality.
+                {{ $t('intro.chords') }}
             </div>
             <chordChoose
                 v-model:autoplay="autoplay"
@@ -105,7 +105,7 @@
             playRandom(){
                 this.clearResultTimer()
                 if (!Array.isArray(this.getSelectedChords) || this.getSelectedChords.length === 0) {
-                    this.setResult('choose at least one chord');
+                    this.setResult(this.$t('feedback.chooseChord'));
                     this.resColor = 'indianred';
                     return;
                 }

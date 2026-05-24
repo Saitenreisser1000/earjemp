@@ -20,10 +20,10 @@ const INTERVAL_OPTIONS = [
 const DEFAULT_INTERVAL_VALUES = [2, 3, 4, 5, 7, 9, 11, 12]
 
 const CHORD_OPTIONS = [
-    {text: 'minor', value: 0 , toneSteps:[3,4], lineDist:[2,2], maxRange: 7},
-    {text: 'major', value: 1 , toneSteps:[4,3], lineDist:[2,2], maxRange: 7},
-    {text: 'diminished', value: 2 , toneSteps:[3,3], lineDist:[2,2], maxRange: 6},
-    {text: 'augmented', value: 3 , toneSteps:[4,4], lineDist:[2,2], maxRange: 8},
+    {text: 'minor', labelKey: 'chords.minor', value: 0 , toneSteps:[3,4], lineDist:[2,2], maxRange: 7},
+    {text: 'major', labelKey: 'chords.major', value: 1 , toneSteps:[4,3], lineDist:[2,2], maxRange: 7},
+    {text: 'diminished', labelKey: 'chords.diminished', value: 2 , toneSteps:[3,3], lineDist:[2,2], maxRange: 6},
+    {text: 'augmented', labelKey: 'chords.augmented', value: 3 , toneSteps:[4,4], lineDist:[2,2], maxRange: 8},
     {text: 'sus2', value: 4 , toneSteps:[2,5], lineDist:[1,3], maxRange: 7},
     {text: 'sus4', value: 5 , toneSteps:[5,2], lineDist:[3,1], maxRange: 7},
     {text: 'm7', value: 6 , toneSteps:[3,4,3], lineDist:[2,2,2], maxRange: 10},
@@ -38,15 +38,15 @@ const CHORD_OPTIONS = [
 const DEFAULT_CHORD_VALUES = [0, 1, 2, 3]
 
 const SCALE_OPTIONS = [
-    {text: 'major/ionian', value: 1 , scale: [2,2,1,2,2,2,1], maxRange: 7},
-    {text: 'dorian', value: 2 , scale: [2,1,2,2,2,1,2], maxRange: 7},
-    {text: 'phrygian', value: 3 , scale: [1,2,2,2,1,2,2], maxRange: 7},
-    {text: 'lydian', value: 4 , scale: [2,2,2,1,2,2,1], maxRange: 7},
-    {text: 'mixolydian', value: 5 , scale: [2,2,1,2,2,1,2], maxRange: 7},
-    {text: 'natural-minor', value: 6 , scale: [2,1,2,2,1,2,2], maxRange: 7},
-    {text: 'locrian', value: 7 , scale: [1,2,2,1,2,2,2], maxRange: 7},
-    {text: 'melodic-minor', value: 9 , scale: [2,1,2,2,2,2,1], maxRange: 7},
-    {text: 'harmonic-minor', value:10 , scale: [2,1,2,2,1,3,1], maxRange: 7},
+    {text: 'major/ionian', labelKey: 'scales.ionian', value: 1 , scale: [2,2,1,2,2,2,1], maxRange: 7},
+    {text: 'dorian', labelKey: 'scales.dorian', value: 2 , scale: [2,1,2,2,2,1,2], maxRange: 7},
+    {text: 'phrygian', labelKey: 'scales.phrygian', value: 3 , scale: [1,2,2,2,1,2,2], maxRange: 7},
+    {text: 'lydian', labelKey: 'scales.lydian', value: 4 , scale: [2,2,2,1,2,2,1], maxRange: 7},
+    {text: 'mixolydian', labelKey: 'scales.mixolydian', value: 5 , scale: [2,2,1,2,2,1,2], maxRange: 7},
+    {text: 'natural-minor', labelKey: 'scales.aeolian', value: 6 , scale: [2,1,2,2,1,2,2], maxRange: 7},
+    {text: 'locrian', labelKey: 'scales.locrian', value: 7 , scale: [1,2,2,1,2,2,2], maxRange: 7},
+    {text: 'melodic-minor', labelKey: 'scales.melodicMinor', value: 9 , scale: [2,1,2,2,2,2,1], maxRange: 7},
+    {text: 'harmonic-minor', labelKey: 'scales.harmonicMinor', value:10 , scale: [2,1,2,2,1,3,1], maxRange: 7},
 ]
 
 const DEFAULT_SCALE_VALUES = [1, 2, 3, 4, 5, 6, 7, 9, 10]

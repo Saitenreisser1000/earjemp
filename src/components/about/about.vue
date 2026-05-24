@@ -2,18 +2,18 @@
     <v-container class="about-page">
         <v-sheet class="about-panel pa-5" elevation="2">
             <div class="about-heading mb-4">
-                <h1 class="text-h5 mb-0">about</h1>
+                <h1 class="text-h5 mb-0">{{ $t('about.title') }}</h1>
                 <img src="/earjemp.png" alt="earJEMP" class="about-icon">
                 <h1 class="about-brand text-h5 mb-0">earJEMP</h1>
             </div>
             <p class="text-body-1 mb-3">
-                This software was designed to train musical listening skills.
+                {{ $t('about.p1') }}
             </p>
             <p class="text-body-1 mb-3">
-                The app is still in development.
+                {{ $t('about.p2') }}
             </p>
             <p class="text-body-1 mb-0">
-                earJEMP is optimized for mobile devices in portrait mode.
+                {{ $t('about.p3') }}
             </p>
             <p class="about-contact text-caption mt-5 mb-0">
                 JEMPCompany &copy;, 2026 · office@jemphub.com
@@ -46,6 +46,7 @@
     .about-heading {
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 12px;
     }
 
@@ -69,5 +70,9 @@
     .about-contact {
         border-top: 1px solid rgba(0, 0, 0, 0.24);
         padding-top: 10px;
+        font-size: 0.72rem !important;
+        line-height: 1.2;
+        text-align: center;
+        white-space: nowrap;
     }
 </style>

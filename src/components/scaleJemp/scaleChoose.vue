@@ -9,9 +9,9 @@
                 background-color="secondary"
                 mandatory
             >
-                <v-btn value="easy" size="small">easy</v-btn>
-                <v-btn value="advanced" size="small">advanced</v-btn>
-                <v-btn value="expert" size="small">expert</v-btn>
+                <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
+                <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
+                <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
             </v-btn-toggle>
             <v-menu location="bottom end" :close-on-content-click="false">
                 <template #activator="{ props }">
@@ -22,20 +22,20 @@
                         color="primary"
                         prepend-icon="mdi-cog"
                     >
-                        options
+                        {{ $t('common.options') }}
                     </v-btn>
                 </template>
                 <v-card min-width="220" class="pa-2">
                     <v-switch
                         v-model="localAutoplay"
-                        label="autoplay"
+                        :label="$t('common.autoplay')"
                         class="my-0"
                         density="compact"
                         hide-details
                     />
                     <v-switch
                         v-model="localOffsetFirst"
-                        label="1st Tone Offset"
+                        :label="$t('common.firstToneOffset')"
                         class="my-0"
                         density="compact"
                         hide-details
@@ -57,10 +57,10 @@
                     mandatory
             >
                 <v-btn value="increase">
-                    <span>up</span>
+                    <span>{{ $t('common.up') }}</span>
                 </v-btn>
                 <v-btn value="decrease">
-                    <span>down</span>
+                    <span>{{ $t('common.down') }}</span>
                 </v-btn>
                 <v-btn value="simultaneous">
                     <span>=</span>
@@ -70,10 +70,10 @@
                     v-model="selectedScales"
                     :items="scales"
                     mandatory
-                    item-title="text"
+                    :item-title="scaleTitle"
                     item-value="value"
                     return-object
-                    label="Select Scales"
+                    :label="$t('common.selectScales')"
                     multiple
                     density="compact"
                     hide-details
@@ -154,6 +154,9 @@ export default {
 
         methods: {
           ...mapActions(['setSelectedScales']),
+          scaleTitle(item) {
+            return item && item.labelKey ? this.$t(item.labelKey) : item.text
+          }
         },
 
         watch: {

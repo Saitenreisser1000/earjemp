@@ -2,7 +2,7 @@
     <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
     <v-card class="mx-auto bg-blue-grey-lighten-5 pb-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
         <div class="intro-copy">
-            Train your musical ear by listening to scales and choosing the scale type.
+            {{ $t('intro.scales') }}
         </div>
         <scaleChoose v-model:autoplay="autoplay" v-model:offset-first="offsetFirst" v-model:difficulty="difficulty" v-model:play-order="playOrder">
             <template #between>
@@ -84,7 +84,7 @@
 
             playRandom() {
                 if (!Array.isArray(this.getSelectedScales) || this.getSelectedScales.length === 0) {
-                    this.setResult('choose at least one scale');
+                    this.setResult(this.$t('feedback.chooseScale'));
                     this.resColor = 'indianred';
                     return;
                 }

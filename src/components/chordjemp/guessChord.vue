@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn :key="index" @click="$emit('guessResult', item.text)" class="mb-2 mr-2 btn depth-btn" color="primary" v-for="(item, index) in getSelectedChords" size="x-large">{{item.text}}
+        <v-btn :key="index" @click="$emit('guessResult', item.text)" class="mb-2 mr-2 btn depth-btn" color="primary" v-for="(item, index) in getSelectedChords" size="x-large">{{ chordTitle(item) }}
         </v-btn>
     </div>
 </template>
@@ -12,6 +12,11 @@
         name: "guessChord",
         computed:{
             ...mapGetters(['getSelectedChords'])
+        },
+        methods: {
+            chordTitle(item) {
+                return item && item.labelKey ? this.$t(item.labelKey) : item.text
+            }
         }
     }
 </script>

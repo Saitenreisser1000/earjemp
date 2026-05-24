@@ -2,7 +2,7 @@
     <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
     <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
         <div class="intro-copy">
-            Train your musical ear by listening to intervals and choosing what you hear.
+            {{ $t('intro.intervals') }}
         </div>
         <interval-settings v-model:autoplay="autoplay" v-model:difficulty="difficulty" @setPlayOrder="setPlayOrder">
             <template #between>
