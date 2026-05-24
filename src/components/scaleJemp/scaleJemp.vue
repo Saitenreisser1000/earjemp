@@ -4,9 +4,18 @@
         <div class="intro-copy">
             {{ $t('intro.scales') }}
         </div>
-        <scaleChoose v-model:autoplay="autoplay" v-model:offset-first="offsetFirst" v-model:difficulty="difficulty" v-model:play-order="playOrder">
+        <scaleChoose
+            v-model:autoplay="autoplay"
+            v-model:offset-first="offsetFirst"
+            v-model:difficulty="difficulty"
+            v-model:play-order="playOrder"
+            v-model:result-display-ms="resultDisplayMs"
+        >
             <template #between>
-                <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="melody" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+                <div class="staff-result-wrap">
+                    <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="melody" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+                    <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
+                </div>
             </template>
         </scaleChoose>
         <scalePlay @playAgain="playAgain" @playRandomScale="playRandom"></scalePlay>
@@ -39,19 +48,26 @@
                 resColor: '#9DA0A9',
 
                 scale: '',
+                randomScale: '',
                 reducedScale: '',
+                successDetail: '',
+                showFullScale: false,
                 autoplay: true,
                 difficulty: 'easy',
                 firstTone: '',
                 playOrder: ['increase'],
-                randomOrder: 'increase'
+                randomOrder: 'increase',
+                resultDisplayMs: 1500
             }
         },
         computed: {
             ...mapGetters(['getToneChain','getSelectedScales']),
             notationNotes() {
                 if (!Array.isArray(this.scale)) return []
-                return this.scale.filter((tone) => tone && tone.name).map((tone) => tone.name)
+                const tones = this.showFullScale
+                    ? this.scale
+                    : [this.firstTone || this.scale[0]]
+                return tones.filter((tone) => tone && tone.name).map((tone) => tone.name)
             },
             notationOctaveOffset() {
                 return 1
@@ -81,8 +97,16 @@
         },
         mixins: [toneCalcService, playSounds, responseMixin],
         methods: {
+            toneLabel(tone) {
+                return tone && tone.name ? tone.name.replace(/\d$/, '') : ''
+            },
+            scaleTitle(item) {
+                return item && item.labelKey ? this.$t(item.labelKey) : item.text
+            },
 
             playRandom() {
+                this.successDetail = ''
+                this.showFullScale = false
                 if (!Array.isArray(this.getSelectedScales) || this.getSelectedScales.length === 0) {
                     this.setResult(this.$t('feedback.chooseScale'));
                     this.resColor = 'indianred';
@@ -94,6 +118,7 @@
                 let randomRoot = this.randomRangeInt(rootRange);
                 let randomScale = this.randomRangeInt({min: 0, max: this.getSelectedScales.length});
                 randomScale = this.getSelectedScales[randomScale];
+                this.randomScale = randomScale;
 
                 //fetch scale
                 this.scale = this.getScale(randomRoot, randomScale.scale);
@@ -161,12 +186,15 @@
             },
 
             guessResult(guess) {
+                this.successDetail = ''
                 if (guess == this.result) {
                     this.resColor = 'green';
+                    this.showFullScale = true;
+                    this.successDetail = `${this.toneLabel(this.scale[0])} ${this.scaleTitle(this.randomScale)}`;
                     if(this.autoplay){
                         this.setExactTimeout(() => {
                             this.playRandom()
-                        },1000, 20)
+                        }, this.resultDisplayMs, 20)
                     }
                 } else {
                     this.resColor = 'indianred'
@@ -187,5 +215,21 @@
         font-size: 0.86rem;
         line-height: 1.25;
         padding: 2px 4px 0;
+    }
+    .staff-result-wrap {
+        position: relative;
+    }
+    .success-detail {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 12px;
+        z-index: 2;
+        color: #1b5e20;
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        pointer-events: none;
     }
 </style>

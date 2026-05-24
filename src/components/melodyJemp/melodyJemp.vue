@@ -54,6 +54,16 @@
                         hide-details
                         class="mt-1"
                     />
+                    <v-select
+                        v-model="resultDisplayMs"
+                        :items="resultDisplayOptions"
+                        item-title="label"
+                        item-value="value"
+                        :label="$t('common.resultDisplay')"
+                        density="compact"
+                        hide-details
+                        class="mt-1"
+                    />
                 </v-card>
             </v-menu>
         </div>
@@ -170,6 +180,14 @@ export default {
             autoplay: true,
             melodyLength: 5,
             bpm: 80,
+            resultDisplayMs: 1500,
+            resultDisplayOptions: [
+                { label: '0.5s', value: 500 },
+                { label: '1.0s', value: 1000 },
+                { label: '1.5s', value: 1500 },
+                { label: '2.0s', value: 2000 },
+                { label: '3.0s', value: 3000 }
+            ],
             difficulty: 'easy',
             targetMelody: [],
             userMelody: [],
@@ -675,7 +693,7 @@ export default {
             if (equal && this.autoplay) {
                 this.setExactTimeout(() => {
                     this.playRandomMelody()
-                }, 1000, 20)
+                }, this.resultDisplayMs, 20)
             }
         }
     },

@@ -202,8 +202,25 @@ export const messages = {
     }
 }
 
+function detectSystemLocale() {
+    if (typeof navigator === 'undefined') return 'en'
+    const languages = navigator.languages && navigator.languages.length
+        ? navigator.languages
+        : [navigator.language]
+
+    return languages.some((language) => String(language).toLowerCase().startsWith('de'))
+        ? 'de'
+        : 'en'
+}
+
+function initialLocale() {
+    const storedLocale = localStorage.getItem(STORAGE_KEY)
+    if (messages[storedLocale]) return storedLocale
+    return detectSystemLocale()
+}
+
 export const i18nState = reactive({
-    locale: messages[localStorage.getItem(STORAGE_KEY)] ? localStorage.getItem(STORAGE_KEY) : 'en'
+    locale: initialLocale()
 })
 
 function resolveMessage(locale, key) {

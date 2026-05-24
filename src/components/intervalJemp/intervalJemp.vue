@@ -4,7 +4,12 @@
         <div class="intro-copy">
             {{ $t('intro.intervals') }}
         </div>
-        <interval-settings v-model:autoplay="autoplay" v-model:difficulty="difficulty" @setPlayOrder="setPlayOrder">
+        <interval-settings
+            v-model:autoplay="autoplay"
+            v-model:difficulty="difficulty"
+            v-model:result-display-ms="resultDisplayMs"
+            @setPlayOrder="setPlayOrder"
+        >
             <template #between>
                 <staff-renderer
                     :notes="notationNotes"
@@ -54,8 +59,10 @@
                 playOrder: ['increase'],
                 randomOrder: '',
                 delay: 700,
+                resultDisplayMs: 1500,
                 hasAnswered: false,
-                guessedSecondTone: null
+                guessedSecondTone: null,
+                lastFirstToneId: null
             }
         },
         components: {
@@ -165,17 +172,15 @@
 
             calcFirstTone() {
                 const poolFiltered = this.reducedIncList.filter((tone) => matchesTonePool(tone, this.difficulty));
-                const candidates = poolFiltered.filter((tone) => {
-                    const second = this.getInterval(tone, this.randomInterval.value, this.randomInterval.lineDist);
-                    return matchesTonePool(second, this.difficulty);
-                });
-                const usable = candidates.length ? candidates : poolFiltered;
+                const noImmediateRepeat = poolFiltered.filter((tone) => tone.id !== this.lastFirstToneId);
+                const usable = noImmediateRepeat.length ? noImmediateRepeat : poolFiltered;
                 const max = usable.length;
                 if (!max) {
                     this.firstTone = this.reducedIncList[this.randomRangeInt({min: 0, max: this.reducedIncList.length})];
                 } else {
                     this.firstTone = usable[this.randomRangeInt({min: 0, max})];
                 }
+                this.lastFirstToneId = this.firstTone ? this.firstTone.id : null;
                 this.calcInterval();
             },
 
@@ -241,7 +246,7 @@
                     if (this.autoplay) {
                         this.setExactTimeout(() => {
                             this.playRandom()
-                        },1000, 20)
+                        }, this.resultDisplayMs, 20)
                     }
 
                 } else {

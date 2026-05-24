@@ -20,8 +20,8 @@ const INTERVAL_OPTIONS = [
 const DEFAULT_INTERVAL_VALUES = [2, 3, 4, 5, 7, 9, 11, 12]
 
 const CHORD_OPTIONS = [
-    {text: 'minor', labelKey: 'chords.minor', value: 0 , toneSteps:[3,4], lineDist:[2,2], maxRange: 7},
     {text: 'major', labelKey: 'chords.major', value: 1 , toneSteps:[4,3], lineDist:[2,2], maxRange: 7},
+    {text: 'minor', labelKey: 'chords.minor', value: 0 , toneSteps:[3,4], lineDist:[2,2], maxRange: 7},
     {text: 'diminished', labelKey: 'chords.diminished', value: 2 , toneSteps:[3,3], lineDist:[2,2], maxRange: 6},
     {text: 'augmented', labelKey: 'chords.augmented', value: 3 , toneSteps:[4,4], lineDist:[2,2], maxRange: 8},
     {text: 'sus2', value: 4 , toneSteps:[2,5], lineDist:[1,3], maxRange: 7},

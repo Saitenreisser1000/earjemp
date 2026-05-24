@@ -40,14 +40,17 @@
                 </v-menu>
             </div>
             <div class="between-slot">
-                <staff-renderer
-                    :notes="notationNotes"
-                    :clef="notationClef"
-                    :clef-octave="notationClefOctave"
-                    mode="chord"
-                    :octave-offset="notationOctaveOffset"
-                    :feedback-state="notationFeedbackState"
-                ></staff-renderer>
+                <div class="staff-result-wrap">
+                    <staff-renderer
+                        :notes="notationNotes"
+                        :clef="notationClef"
+                        :clef-octave="notationClefOctave"
+                        mode="chord"
+                        :octave-offset="notationOctaveOffset"
+                        :feedback-state="notationFeedbackState"
+                    ></staff-renderer>
+                    <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
+                </div>
             </div>
             <div class="controls-row">
                 <v-btn-toggle
@@ -137,6 +140,7 @@
                 firstTone: '',
                 secondTone: '',
                 thirdTone: '',
+                successDetail: '',
                 autoplay: true,
                 playOrder: ['simultaneous'],
                 randomOrder: 'simultaneous',
@@ -195,13 +199,33 @@
             },
             hideResult() {
                 this.hasAnswered = false
+                this.successDetail = ''
                 this.resetResponse()
+            },
+            toneLabel(tone) {
+                return tone && tone.name ? tone.name.replace(/\d$/, '') : ''
             },
             inversionTitle(item) {
                 return item && item.labelKey ? this.$t(item.labelKey) : ''
             },
+            inversionRootTone() {
+                if (!this.randomInversion) return ''
+                if (this.randomInversion.value.endsWith('-first')) return this.thirdTone
+                if (this.randomInversion.value.endsWith('-second')) return this.secondTone
+                return this.firstTone
+            },
+            inversionFiguredBass() {
+                if (!this.randomInversion) return ''
+                if (this.randomInversion.value.endsWith('-first')) return '6'
+                if (this.randomInversion.value.endsWith('-second')) return '4 6'
+                return this.$t(this.randomInversion.labelKey)
+            },
+            inversionDetail() {
+                return `${this.toneLabel(this.inversionRootTone())} ${this.inversionFiguredBass()}`
+            },
             playRandom() {
                 this.clearResultTimer()
+                this.successDetail = ''
                 if (!Array.isArray(this.selectedInversions) || this.selectedInversions.length === 0) {
                     this.setResult(this.$t('feedback.chooseInversion'))
                     this.resColor = 'indianred'
@@ -256,8 +280,10 @@
             guessResult(guess) {
                 this.clearResultTimer()
                 this.hasAnswered = true
+                this.successDetail = ''
                 if (guess === this.result) {
                     this.resColor = 'green'
+                    this.successDetail = this.inversionDetail()
                     if (this.autoplay) {
                         this.resultTimer = this.setExactTimeout(() => {
                             this.resultTimer = null
@@ -333,6 +359,22 @@
         height: 50px;
         font-size: 10px;
         text-transform: none !important;
+    }
+    .staff-result-wrap {
+        position: relative;
+    }
+    .success-detail {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 12px;
+        z-index: 2;
+        color: #1b5e20;
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        pointer-events: none;
     }
     .depth-btn {
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.28);

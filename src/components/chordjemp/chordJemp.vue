@@ -11,7 +11,10 @@
                 v-model:result-display-ms="resultDisplayMs"
             >
                 <template #between>
-                    <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="chord" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+                    <div class="staff-result-wrap">
+                        <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="chord" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
+                        <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
+                    </div>
                 </template>
             </chordChoose>
             <chordPlay @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
@@ -46,6 +49,7 @@
                 secondTone: '',
                 thirdTone: '',
                 fourthTone: '',
+                successDetail: '',
 
                 autoplay: true,
                 difficulty: 'easy',
@@ -99,11 +103,35 @@
             },
             hideResult() {
                 this.hasAnswered = false
+                this.successDetail = ''
                 this.resetResponse()
+            },
+            toneLabel(tone) {
+                return tone && tone.name ? tone.name.replace(/\d$/, '') : ''
+            },
+            chordSymbol(chord, rootTone) {
+                const root = this.toneLabel(rootTone)
+                const symbols = {
+                    0: `${root}m`,
+                    1: root,
+                    2: `${root}dim`,
+                    3: `${root}aug`,
+                    4: `${root}sus2`,
+                    5: `${root}sus4`,
+                    6: `${root}m7`,
+                    7: `${root}mΔ7`,
+                    8: `${root}7`,
+                    9: `${root}Δ7`,
+                    10: `${root}m7b5`,
+                    11: `${root}dim7`,
+                    12: `${root}aug7`
+                }
+                return symbols[chord.value] || `${root} ${chord.text}`
             },
 
             playRandom(){
                 this.clearResultTimer()
+                this.successDetail = ''
                 if (!Array.isArray(this.getSelectedChords) || this.getSelectedChords.length === 0) {
                     this.setResult(this.$t('feedback.chooseChord'));
                     this.resColor = 'indianred';
@@ -183,8 +211,10 @@
             guessResult(guess) {
                 this.clearResultTimer()
                 this.hasAnswered = true
+                this.successDetail = ''
                 if (guess == this.result) {
                     this.resColor = 'green'
+                    this.successDetail = this.chordSymbol(this.randomChord, this.firstTone)
                     if (this.autoplay) {
                         this.resultTimer = this.setExactTimeout(() => {
                             this.resultTimer = null
@@ -222,5 +252,21 @@
         font-size: 0.86rem;
         line-height: 1.25;
         padding: 2px 4px 0;
+    }
+    .staff-result-wrap {
+        position: relative;
+    }
+    .success-detail {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 12px;
+        z-index: 2;
+        color: #1b5e20;
+        font-size: 0.95rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        pointer-events: none;
     }
 </style>

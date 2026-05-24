@@ -33,6 +33,16 @@
                         density="compact"
                         hide-details
                     />
+                    <v-select
+                        v-model="localResultDisplayMs"
+                        :items="resultDisplayOptions"
+                        item-title="label"
+                        item-value="value"
+                        :label="$t('common.resultDisplay')"
+                        density="compact"
+                        hide-details
+                        class="mt-1"
+                    />
                 </v-card>
             </v-menu>
         </div>
@@ -97,14 +107,25 @@ export default {
             difficulty: {
                 type: String,
                 default: 'easy'
+            },
+            resultDisplayMs: {
+                type: Number,
+                default: 1500
             }
         },
-        emits: ['update:autoplay', 'update:difficulty', 'setPlayOrder'],
+        emits: ['update:autoplay', 'update:difficulty', 'update:resultDisplayMs', 'setPlayOrder'],
         data() {
             return {
                 playOrder: ['increase'],
                 intervals: createIntervalOptions(),
-                selectInt: createDefaultSelectedIntervals()
+                selectInt: createDefaultSelectedIntervals(),
+                resultDisplayOptions: [
+                    { label: '0.5s', value: 500 },
+                    { label: '1.0s', value: 1000 },
+                    { label: '1.5s', value: 1500 },
+                    { label: '2.0s', value: 2000 },
+                    { label: '3.0s', value: 3000 }
+                ]
             }
         },
         computed: {
@@ -122,6 +143,14 @@ export default {
                 },
                 set(value) {
                     this.$emit('update:difficulty', value);
+                }
+            },
+            localResultDisplayMs: {
+                get() {
+                    return this.resultDisplayMs;
+                },
+                set(value) {
+                    this.$emit('update:resultDisplayMs', value);
                 }
             }
         },
