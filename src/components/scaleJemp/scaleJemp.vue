@@ -1,6 +1,9 @@
 <template>
     <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
     <v-card class="mx-auto bg-blue-grey-lighten-5 pb-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
+        <div class="intro-copy">
+            Train your musical ear by listening to scales and choosing the scale type.
+        </div>
         <scaleChoose v-model:autoplay="autoplay" v-model:offset-first="offsetFirst" v-model:difficulty="difficulty" v-model:play-order="playOrder">
             <template #between>
                 <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="melody" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
@@ -178,5 +181,11 @@
         max-height: calc(90vh - 16px);
         overflow-y: auto;
         overflow-x: hidden;
+    }
+    .intro-copy {
+        color: rgba(0, 0, 0, 0.68);
+        font-size: 0.86rem;
+        line-height: 1.25;
+        padding: 2px 4px 0;
     }
 </style>

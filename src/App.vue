@@ -70,7 +70,7 @@
                 height="5vh"
                 class="px-4 d-flex align-center app-footer"
         >
-            <span class="text-white">JEMPCompany</span>
+            <span class="text-white">JEMPCompany &copy;</span>
             <v-spacer></v-spacer>
             <span class="mr-2">v.1.1</span>
         </v-footer>
@@ -85,11 +85,11 @@
 
         data: () => ({
             items: [
-                {path: '/', title: 'intervalJEMP', icon: 'mdi-view-dashboard'},
-                {path: '/chordJemp', title: 'chordJEMP', icon: 'mdi-format-align-right'},
-                {path: '/scaleJemp', title: 'scaleJEMP', icon: 'mdi-chart-line'},
-                {path: '/melodyJemp', title: 'melodyJEMP (beta)', icon: 'mdi-music-note', disabled: true},
-                {path: '/about', title: 'about', icon: 'mdi-information-outline'}
+                {path: '/', title: 'Intervals', icon: 'mdi-view-dashboard'},
+                {path: '/chordJemp', title: 'Chords', icon: 'mdi-format-align-right'},
+                {path: '/scaleJemp', title: 'Scales', icon: 'mdi-chart-line'},
+                {path: '/melodyJemp', title: 'Melody (beta)', icon: 'mdi-music-note', disabled: true},
+                {path: '/about', title: 'About', icon: 'mdi-information-outline'}
             ],
             drawer: false,
             soundLoading: false,
