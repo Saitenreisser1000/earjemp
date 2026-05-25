@@ -93,7 +93,7 @@
         >
             <span class="text-white">JEMPCompany &copy;</span>
             <v-spacer></v-spacer>
-            <span class="mr-2">v.1.1</span>
+            <span class="mr-2">v.1.0.1</span>
         </v-footer>
         </template>
     </v-app>
@@ -136,14 +136,21 @@
         },
         mounted() {
             this.soundStatus = this.$t('app.soundLoading')
+            this.updateViewportHeight()
             this.updateOrientationLock()
+            window.addEventListener('resize', this.updateViewportHeight, { passive: true })
             window.addEventListener('resize', this.updateOrientationLock, { passive: true })
             window.addEventListener('orientationchange', this.updateOrientationLock, { passive: true })
+            window.addEventListener('orientationchange', this.updateViewportHeight, { passive: true })
+            window.visualViewport?.addEventListener('resize', this.updateViewportHeight, { passive: true })
             this.tryLockPortrait()
         },
         beforeUnmount() {
+            window.removeEventListener('resize', this.updateViewportHeight)
             window.removeEventListener('resize', this.updateOrientationLock)
             window.removeEventListener('orientationchange', this.updateOrientationLock)
+            window.removeEventListener('orientationchange', this.updateViewportHeight)
+            window.visualViewport?.removeEventListener('resize', this.updateViewportHeight)
         },
         methods:{
             setSoundLoaded(loading){
@@ -151,6 +158,14 @@
             },
             setSoundStatus(status){
                 this.soundStatus = status
+            },
+            updateViewportHeight() {
+                if (typeof window === 'undefined') return
+                const height = window.visualViewport?.height || window.innerHeight
+                const chromeHeight = Math.max(44, Math.round(height * 0.06))
+                document.documentElement.style.setProperty('--app-height', `${height}px`)
+                document.documentElement.style.setProperty('--app-chrome-height', `${chromeHeight}px`)
+                document.documentElement.style.setProperty('--app-main-height', `${height - (chromeHeight * 2)}px`)
             },
             updateOrientationLock() {
                 if (typeof window === 'undefined') return
@@ -171,6 +186,12 @@
     };
 </script>
 <style>
+    :root {
+        --app-height: 100vh;
+        --app-chrome-height: 6vh;
+        --app-main-height: 88vh;
+        --app-main-vertical-gap: 10px;
+    }
     .button {
         text-transform: none !important;
     }
@@ -179,20 +200,20 @@
         background-repeat: repeat;
     }
     .app-shell {
-        height: 100vh;
+        height: var(--app-height);
         overflow: hidden;
     }
     .app-nav,
     .app-header,
     .app-footer {
-        height: 6vh !important;
-        min-height: 5vh !important;
+        height: var(--app-chrome-height) !important;
+        min-height: var(--app-chrome-height) !important;
     }
     .app-main {
-        height: 90vh !important;
-        min-height: 90vh !important;
+        height: var(--app-main-height) !important;
+        min-height: var(--app-main-height) !important;
         box-sizing: border-box;
-        padding-top: 10px;
+        padding: var(--app-main-vertical-gap) 0;
     }
     .app-title {
         position: absolute;

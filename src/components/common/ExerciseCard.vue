@@ -3,7 +3,6 @@
         <v-card
             class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2 exercise-card-body"
             max-width="350"
-            min-height="550"
             :disabled="disabled"
             flat
         >
@@ -29,9 +28,12 @@
 
 <style scoped>
     .exercise-card {
-        max-height: calc(90vh - 16px);
+        max-height: calc(var(--app-main-height) - (var(--app-main-vertical-gap) * 2));
         overflow-y: auto;
         overflow-x: hidden;
+    }
+    .exercise-card-body {
+        min-height: min(550px, calc(var(--app-main-height) - (var(--app-main-vertical-gap) * 2) - 16px));
     }
     .intro-copy {
         color: rgba(0, 0, 0, 0.78);
