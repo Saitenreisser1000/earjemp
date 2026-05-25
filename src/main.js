@@ -12,6 +12,7 @@ import about from "@/components/about/about";
 import legal from "@/components/legal/legal";
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { installI18n } from '@/i18n'
+import { warmupSounds } from '@/components/mixins/playSounds'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -29,3 +30,5 @@ const router = createRouter({
 const app = createApp(App)
 installI18n(app)
 app.use(vuetify).use(router).use(store).mount('#app')
+
+warmupSounds()

@@ -1,4 +1,4 @@
-import {Howl} from 'howler'
+import {Howl, Howler} from 'howler'
 import howlMp3 from '@/assets/sounds/newAudio.mp3'
 import soundSprite from '@/assets/sounds/newAudio.json'
 
@@ -9,27 +9,93 @@ let sharedSoundLoadRetries = 0
 const maxSoundLoadRetries = 1
 let sharedResolveSoundLoad = null
 let sharedRejectSoundLoad = null
+let sharedAudioRecoveryListenersBound = false
+
+function createSharedSounds() {
+    return new Howl({
+        "src": [
+            howlMp3
+        ],
+        preload: true,
+        buffer: true,
+        "sprite": soundSprite.sprite
+    })
+}
+
+function getSharedSounds() {
+    return sharedSounds || (sharedSounds = createSharedSounds())
+}
+
+function resumeHowlerAudioContext() {
+    const ctx = Howler.ctx
+    if (!ctx || ctx.state === 'running' || typeof ctx.resume !== 'function') {
+        return Promise.resolve()
+    }
+    return ctx.resume().catch(() => {})
+}
+
+export function warmupSounds() {
+    const sounds = getSharedSounds()
+    if (sounds.state() === 'unloaded') {
+        sounds.load()
+    }
+    return resumeHowlerAudioContext()
+}
 
 export default {
     data(){
         return{
-            sounds : sharedSounds || (sharedSounds = new Howl({
-                "src": [
-                    howlMp3
-                ],
-                preload: true,
-                buffer: true,
-                "sprite": soundSprite.sprite
-            })),
+            sounds : getSharedSounds(),
         }
     },
 
     mounted() {
-        this.ensureSoundsLoaded(false).catch(() => {})
+        this.bindAudioRecoveryListeners()
+        this.ensureSoundsLoaded(true, true).catch(() => {})
     },
 
     methods: {
-        ensureSoundsLoaded(isWarmup = false) {
+        bindAudioRecoveryListeners() {
+            if (sharedAudioRecoveryListenersBound || typeof window === 'undefined') return
+            sharedAudioRecoveryListenersBound = true
+
+            const wakeAudio = () => resumeHowlerAudioContext()
+
+            window.addEventListener('pageshow', wakeAudio, { passive: true })
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) wakeAudio()
+            }, { passive: true })
+            window.addEventListener('pointerdown', wakeAudio, { passive: true })
+            window.addEventListener('touchend', wakeAudio, { passive: true })
+            window.addEventListener('keydown', wakeAudio, { passive: true })
+        },
+
+        ensureAudioContextRunning() {
+            return resumeHowlerAudioContext()
+        },
+
+        resetSharedSoundLoadState() {
+            if (sharedSoundLoadTimeoutId) {
+                clearTimeout(sharedSoundLoadTimeoutId)
+                sharedSoundLoadTimeoutId = null
+            }
+            sharedSoundLoadPromise = null
+            sharedResolveSoundLoad = null
+            sharedRejectSoundLoad = null
+        },
+
+        recreateSounds() {
+            this.resetSharedSoundLoadState()
+            if (sharedSounds) {
+                sharedSounds.off()
+                sharedSounds.unload()
+            }
+            sharedSounds = createSharedSounds()
+            this.sounds = sharedSounds
+            return this.ensureSoundsLoaded(true)
+        },
+
+        ensureSoundsLoaded(isWarmup = false, silent = false) {
             if (this.sounds.state() === 'loaded') {
                 return Promise.resolve()
             }
@@ -38,8 +104,10 @@ export default {
                 return sharedSoundLoadPromise
             }
 
-            this.$emit('setSoundStatus', isWarmup ? this.$t('app.soundPreparing') : this.$t('app.soundLoading'))
-            this.$emit('setSoundLoaded', true)
+            if (!silent) {
+                this.$emit('setSoundStatus', isWarmup ? this.$t('app.soundPreparing') : this.$t('app.soundLoading'))
+                this.$emit('setSoundLoaded', true)
+            }
 
             sharedSoundLoadPromise = new Promise((resolve, reject) => {
                 sharedResolveSoundLoad = resolve
@@ -47,27 +115,29 @@ export default {
             })
 
             sharedSoundLoadTimeoutId = setTimeout(() => {
-                this.handleSoundLoadFailure(new Error('sound load timeout'))
+                this.handleSoundLoadFailure(new Error('sound load timeout'), silent)
             }, 12000)
 
             this.sounds.once('load', () => {
-                this.handleSoundLoaded()
+                this.handleSoundLoaded(silent)
             })
             this.sounds.once('loaderror', (_id, error) => {
-                this.handleSoundLoadFailure(error)
+                this.handleSoundLoadFailure(error, silent)
             })
             this.sounds.load()
             return sharedSoundLoadPromise
         },
 
-        handleSoundLoaded() {
+        handleSoundLoaded(silent = false) {
             if (sharedSoundLoadTimeoutId) {
                 clearTimeout(sharedSoundLoadTimeoutId)
                 sharedSoundLoadTimeoutId = null
             }
             sharedSoundLoadRetries = 0
-            this.$emit('setSoundStatus', this.$t('app.soundReady'))
-            this.$emit('setSoundLoaded', false)
+            if (!silent) {
+                this.$emit('setSoundStatus', this.$t('app.soundReady'))
+                this.$emit('setSoundLoaded', false)
+            }
 
             if (sharedResolveSoundLoad) {
                 sharedResolveSoundLoad()
@@ -78,7 +148,7 @@ export default {
             sharedRejectSoundLoad = null
         },
 
-        handleSoundLoadFailure(error) {
+        handleSoundLoadFailure(error, silent = false) {
             if (sharedSoundLoadTimeoutId) {
                 clearTimeout(sharedSoundLoadTimeoutId)
                 sharedSoundLoadTimeoutId = null
@@ -86,16 +156,20 @@ export default {
 
             if (sharedSoundLoadRetries < maxSoundLoadRetries) {
                 sharedSoundLoadRetries += 1
-                this.$emit('setSoundStatus', this.$t('app.soundSlow'))
+                if (!silent) {
+                    this.$emit('setSoundStatus', this.$t('app.soundSlow'))
+                }
                 sharedSoundLoadTimeoutId = setTimeout(() => {
-                    this.handleSoundLoadFailure(new Error('sound load timeout'))
+                    this.handleSoundLoadFailure(new Error('sound load timeout'), silent)
                 }, 12000)
                 this.sounds.load()
                 return
             }
 
-            this.$emit('setSoundStatus', this.$t('app.soundFailed'))
-            this.$emit('setSoundLoaded', false)
+            if (!silent) {
+                this.$emit('setSoundStatus', this.$t('app.soundFailed'))
+                this.$emit('setSoundLoaded', false)
+            }
 
             if (sharedRejectSoundLoad) {
                 sharedRejectSoundLoad(error)
@@ -107,11 +181,41 @@ export default {
         },
 
         playAudio(tone) {
-            this.ensureSoundsLoaded().then(() => {
-                let t = this.sounds.play(tone);
-                this.sounds.fade(1, 0, 1200, t)
-                if(this.playSecond) this.playSecond()
-            }).catch(() => {})
+            this.ensureSoundsLoaded()
+                .then(() => this.ensureAudioContextRunning())
+                .then(() => this.playLoadedAudio(tone))
+                .catch(() => {
+                    this.recreateSounds()
+                        .then(() => this.ensureAudioContextRunning())
+                        .then(() => this.playLoadedAudio(tone))
+                        .catch(() => {})
+                })
+        },
+
+        playLoadedAudio(tone, retry = true) {
+            const playId = this.sounds.play(tone)
+
+            if (playId === null || typeof playId === 'undefined') {
+                if (!retry) return
+                this.recreateSounds()
+                    .then(() => this.ensureAudioContextRunning())
+                    .then(() => this.playLoadedAudio(tone, false))
+                    .catch(() => {})
+                return
+            }
+
+            this.sounds.once('playerror', (id) => {
+                if (id !== playId || !retry) return
+                this.ensureAudioContextRunning()
+                    .then(() => this.playLoadedAudio(tone, false))
+                    .catch(() => {})
+            })
+
+            this.sounds.fade(1, 0, 1200, playId)
+
+            if (this.playSecond) {
+                this.playSecond()
+            }
         },
 
         playAgain(){
