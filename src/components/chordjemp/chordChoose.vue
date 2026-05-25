@@ -1,19 +1,6 @@
 <template>
-    <div>
-        <div class="choose-header">
-            <v-menu location="bottom start" :close-on-content-click="false">
-                <template #activator="{ props }">
-                    <v-btn
-                        v-bind="props"
-                        variant="text"
-                        size="small"
-                        color="primary"
-                        prepend-icon="mdi-tune-variant"
-                    >
-                        {{ $t('app.level') }}
-                    </v-btn>
-                </template>
-                <v-card min-width="220" class="pa-2">
+    <exercise-toolbar>
+            <template #level>
                     <div class="menu-label">{{ $t('common.difficulty') }}</div>
                     <v-btn-toggle
                         v-model="localDifficulty"
@@ -61,21 +48,8 @@
                     >
                         <template #selection></template>
                     </v-select>
-                </v-card>
-            </v-menu>
-            <v-menu location="bottom end" :close-on-content-click="false">
-                <template #activator="{ props }">
-                    <v-btn
-                        v-bind="props"
-                        variant="text"
-                        size="small"
-                        color="primary"
-                        prepend-icon="mdi-cog"
-                    >
-                        {{ $t('common.options') }}
-                    </v-btn>
-                </template>
-                <v-card min-width="220" class="pa-2">
+            </template>
+            <template #options>
                     <v-switch
                         v-model="localAutoplay"
                         :label="$t('common.autoplay')"
@@ -93,22 +67,19 @@
                         hide-details
                         class="mt-1"
                     />
-                </v-card>
-            </v-menu>
-        </div>
-        <div class="between-slot">
-            <slot name="between"></slot>
-        </div>
-    </div>
+            </template>
+    </exercise-toolbar>
 </template>
 
 <script>
     import { mapActions } from "vuex";
+    import ExerciseToolbar from "@/components/common/ExerciseToolbar";
     import { createChordOptions, createDefaultSelectedChords } from "@/domain/music/definitions";
     import { chordValuesForDifficulty } from "@/domain/music/difficulty";
 
 export default {
         name: "chordChoose",
+        components: {ExerciseToolbar},
         props: {
             autoplay: {
                 type: Boolean,
@@ -202,12 +173,6 @@ export default {
 </script>
 
 <style scoped>
-    .choose-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 4px;
-    }
     .menu-label {
         color: rgba(0, 0, 0, 0.68);
         font-size: 0.78rem;
@@ -218,9 +183,6 @@ export default {
     .difficulty-toggle :deep(.v-btn) {
         text-transform: none !important;
         min-width: 52px;
-    }
-    .between-slot {
-        margin-bottom: 10px;
     }
     .play-order-toggle {
         width: 170px;

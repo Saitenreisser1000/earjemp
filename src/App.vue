@@ -192,6 +192,22 @@
         --app-main-height: 88vh;
         --app-main-vertical-gap: 10px;
     }
+    html,
+    body {
+        height: var(--app-height);
+        overflow: hidden;
+        overscroll-behavior: none;
+        touch-action: manipulation;
+    }
+    body {
+        position: fixed;
+        inset: 0;
+        width: 100%;
+    }
+    #app {
+        height: var(--app-height);
+        overflow: hidden;
+    }
     .button {
         text-transform: none !important;
     }
@@ -202,6 +218,7 @@
     .app-shell {
         height: var(--app-height);
         overflow: hidden;
+        overscroll-behavior: none;
     }
     .app-nav,
     .app-header,
@@ -214,6 +231,8 @@
         min-height: var(--app-main-height) !important;
         box-sizing: border-box;
         padding: var(--app-main-vertical-gap) 0;
+        overflow: hidden !important;
+        overscroll-behavior: none;
     }
     .app-title {
         position: absolute;

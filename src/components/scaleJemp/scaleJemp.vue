@@ -3,22 +3,27 @@
         <template #intro>
             {{ $t('nav.scales') }}
         </template>
-        <scaleChoose
-            v-model:autoplay="autoplay"
-            v-model:offset-first="offsetFirst"
-            v-model:difficulty="difficulty"
-            v-model:play-order="playOrder"
-            v-model:result-display-ms="resultDisplayMs"
-        >
-            <template #between>
+        <template #controls>
+            <scaleChoose
+                v-model:autoplay="autoplay"
+                v-model:offset-first="offsetFirst"
+                v-model:difficulty="difficulty"
+                v-model:play-order="playOrder"
+                v-model:result-display-ms="resultDisplayMs"
+            />
+        </template>
+        <template #staff>
                 <div class="staff-result-wrap">
                     <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="melody" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
                     <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
                 </div>
-            </template>
-        </scaleChoose>
-        <scalePlay @playAgain="playAgain" @playRandomScale="playRandom"></scalePlay>
-        <guess-scale @guessResult="guessResult" :selection="getSelectedScales"></guess-scale>
+        </template>
+        <template #transport>
+            <scalePlay @playAgain="playAgain" @playRandomScale="playRandom"></scalePlay>
+        </template>
+        <template #answers>
+            <guess-scale @guessResult="guessResult" :selection="getSelectedScales"></guess-scale>
+        </template>
     </exercise-card>
 </template>
 

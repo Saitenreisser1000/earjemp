@@ -3,6 +3,7 @@
             <template #intro>
                 {{ $t('nav.melody') }}
             </template>
+            <template #controls>
             <div class="choose-header">
                 <v-menu location="bottom start" :close-on-content-click="false">
                     <template #activator="{ props }">
@@ -82,7 +83,18 @@
                 </v-card>
             </v-menu>
         </div>
+        <v-select
+            v-model="melodyLength"
+            :items="lengthOptions"
+            item-title="label"
+            item-value="value"
+            :label="$t('common.selectMelodyLength')"
+            hide-details
+            class="melody-length-select flex-grow-0 mt-2"
+        />
+        </template>
 
+            <template #staff>
             <div class="between-slot">
                 <div class="staff-input-wrap">
                     <staff-renderer
@@ -147,17 +159,8 @@
                     </div>
                 </div>
             </div>
-
-            <v-select
-                v-model="melodyLength"
-                :items="lengthOptions"
-                item-title="label"
-                item-value="value"
-                :label="$t('common.selectMelodyLength')"
-                hide-details
-                class="melody-length-select flex-grow-0"
-            />
-
+            </template>
+            <template #transport>
             <div class="mb-2 mt-2 container">
                 <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
                     <span>{{ $t('common.start') }}</span>
@@ -166,12 +169,15 @@
                     <span>{{ $t('common.check') }}</span>
                 </v-btn>
             </div>
+            </template>
 
+            <template #answers>
             <div class="mb-2">
                 <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">{{ $t('common.undo') }}</v-btn>
                 <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">{{ $t('common.clear') }}</v-btn>
                 <v-btn color="primary" size="small" @click="playRandomMelody">{{ $t('common.next') }}</v-btn>
             </div>
+            </template>
     </exercise-card>
 </template>
 

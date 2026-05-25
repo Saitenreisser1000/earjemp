@@ -3,21 +3,26 @@
             <template #intro>
                 {{ $t('nav.chords') }}
             </template>
-            <chordChoose
-                v-model:autoplay="autoplay"
-                v-model:difficulty="difficulty"
-                v-model:play-order="playOrder"
-                v-model:result-display-ms="resultDisplayMs"
-            >
-                <template #between>
+            <template #controls>
+                <chordChoose
+                    v-model:autoplay="autoplay"
+                    v-model:difficulty="difficulty"
+                    v-model:play-order="playOrder"
+                    v-model:result-display-ms="resultDisplayMs"
+                />
+            </template>
+            <template #staff>
                     <div class="staff-result-wrap">
                         <staff-renderer :notes="notationNotes" :clef="notationClef" :clef-octave="notationClefOctave" mode="chord" :octave-offset="notationOctaveOffset" :feedback-state="notationFeedbackState"></staff-renderer>
                         <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
                     </div>
-                </template>
-            </chordChoose>
-            <chordPlay @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
-            <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>
+            </template>
+            <template #transport>
+                <chordPlay @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
+            </template>
+            <template #answers>
+                <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>
+            </template>
         </exercise-card>
 </template>
 

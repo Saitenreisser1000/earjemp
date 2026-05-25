@@ -3,20 +3,9 @@
             <template #intro>
                 {{ $t('nav.inversions') }}
             </template>
-            <div class="choose-header">
-                <v-menu location="bottom start" :close-on-content-click="false">
-                    <template #activator="{ props }">
-                        <v-btn
-                            v-bind="props"
-                            variant="text"
-                            size="small"
-                            color="primary"
-                            prepend-icon="mdi-tune-variant"
-                        >
-                            {{ $t('app.level') }}
-                        </v-btn>
-                    </template>
-                    <v-card min-width="220" class="pa-2">
+            <template #controls>
+            <exercise-toolbar>
+                <template #level>
                         <div class="menu-label">{{ $t('common.direction') }}</div>
                         <v-btn-toggle
                             v-model="playOrder"
@@ -51,21 +40,8 @@
                         >
                             <template #selection></template>
                         </v-select>
-                    </v-card>
-                </v-menu>
-                <v-menu location="bottom end" :close-on-content-click="false">
-                    <template #activator="{ props }">
-                        <v-btn
-                            v-bind="props"
-                            variant="text"
-                            size="small"
-                            color="primary"
-                            prepend-icon="mdi-cog"
-                        >
-                            {{ $t('common.options') }}
-                        </v-btn>
-                    </template>
-                    <v-card min-width="220" class="pa-2">
+                </template>
+                <template #options>
                         <v-switch
                             v-model="autoplay"
                             :label="$t('common.autoplay')"
@@ -83,10 +59,10 @@
                             hide-details
                             class="mt-1"
                         />
-                    </v-card>
-                </v-menu>
-            </div>
-            <div class="between-slot">
+                </template>
+            </exercise-toolbar>
+            </template>
+            <template #staff>
                 <div class="staff-result-wrap">
                     <staff-renderer
                         :notes="notationNotes"
@@ -98,8 +74,11 @@
                     ></staff-renderer>
                     <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
                 </div>
-            </div>
-            <chord-play @playAgain="playAgain" @playRandomChord="playRandom"></chord-play>
+            </template>
+            <template #transport>
+                <chord-play @playAgain="playAgain" @playRandomChord="playRandom"></chord-play>
+            </template>
+            <template #answers>
             <div>
                 <v-btn
                     v-for="item in selectedInversions"
@@ -112,12 +91,14 @@
                     {{ inversionTitle(item) }}
                 </v-btn>
             </div>
+            </template>
     </exercise-card>
 </template>
 
 <script>
     import {mapGetters} from 'vuex';
     import ExerciseCard from "@/components/common/ExerciseCard";
+    import ExerciseToolbar from "@/components/common/ExerciseToolbar";
     import chordPlay from "@/components/chordjemp/chordPlay";
     import toneCalcService from "@/components/mixins/toneCalcService";
     import playSounds from "@/components/mixins/playSounds";
@@ -137,7 +118,7 @@
 
     export default {
         name: "inversionJemp",
-        components: {ExerciseCard, chordPlay, StaffRenderer},
+        components: {ExerciseCard, ExerciseToolbar, chordPlay, StaffRenderer},
         mixins: [toneCalcService, playSounds, responseMixin],
         data() {
             const inversions = cloneOptions();
@@ -323,17 +304,6 @@
 </script>
 
 <style scoped>
-    .between-slot {
-        margin-bottom: 0;
-    }
-    .choose-header {
-        display: flex;
-        align-items: center;
-    }
-    .choose-header {
-        justify-content: space-between;
-        margin-bottom: 4px;
-    }
     .menu-label {
         color: rgba(0, 0, 0, 0.68);
         font-size: 0.78rem;

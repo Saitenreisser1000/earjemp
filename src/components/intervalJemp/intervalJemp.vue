@@ -3,13 +3,15 @@
         <template #intro>
             {{ $t('nav.intervals') }}
         </template>
-        <interval-settings
-            v-model:autoplay="autoplay"
-            v-model:difficulty="difficulty"
-            v-model:result-display-ms="resultDisplayMs"
-            @setPlayOrder="setPlayOrder"
-        >
-            <template #between>
+        <template #controls>
+            <interval-settings
+                v-model:autoplay="autoplay"
+                v-model:difficulty="difficulty"
+                v-model:result-display-ms="resultDisplayMs"
+                @setPlayOrder="setPlayOrder"
+            />
+        </template>
+        <template #staff>
                 <staff-renderer
                     :notes="notationNotes"
                     :comparison-notes="notationComparisonNotes"
@@ -20,10 +22,13 @@
                     :octave-offset="notationOctaveOffset"
                     :feedback-state="notationFeedbackState"
                 ></staff-renderer>
-            </template>
-        </interval-settings>
-        <interval-play @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
-        <guessInterval @guessResult="guessResult"></guessInterval>
+        </template>
+        <template #transport>
+            <interval-play @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
+        </template>
+        <template #answers>
+            <guessInterval @guessResult="guessResult"></guessInterval>
+        </template>
     </exercise-card>
 </template>
 
