@@ -1,18 +1,69 @@
 <template>
     <div>
         <div class="choose-header">
-            <v-btn-toggle
-                v-model="localDifficulty"
-                class="text-white difficulty-toggle"
-                density="compact"
-                active-class="primary"
-                background-color="secondary"
-                mandatory
-            >
-                <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
-                <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
-                <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
-            </v-btn-toggle>
+            <v-menu location="bottom start" :close-on-content-click="false">
+                <template #activator="{ props }">
+                    <v-btn
+                        v-bind="props"
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        prepend-icon="mdi-tune-variant"
+                    >
+                        {{ $t('app.level') }}
+                    </v-btn>
+                </template>
+                <v-card min-width="220" class="pa-2">
+                    <div class="menu-label">{{ $t('common.difficulty') }}</div>
+                    <v-btn-toggle
+                        v-model="localDifficulty"
+                        class="text-white difficulty-toggle mb-2"
+                        density="compact"
+                        active-class="primary"
+                        background-color="secondary"
+                        mandatory
+                    >
+                        <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
+                        <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
+                        <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
+                    </v-btn-toggle>
+                    <div class="menu-label">{{ $t('common.direction') }}</div>
+                    <v-btn-toggle
+                        v-model="localPlayOrder"
+                        class="text-white play-order-toggle"
+                        dense
+                        active-class="primary"
+                        background-color="secondary"
+                        multiple
+                        mandatory
+                    >
+                        <v-btn value="increase">
+                            <span>{{ $t('common.up') }}</span>
+                        </v-btn>
+                        <v-btn value="decrease">
+                            <span>{{ $t('common.down') }}</span>
+                        </v-btn>
+                        <v-btn value="simultaneous">
+                            <span>=</span>
+                        </v-btn>
+                    </v-btn-toggle>
+                    <v-select
+                        v-model="selectedScales"
+                        :items="scales"
+                        mandatory
+                        :item-title="scaleTitle"
+                        item-value="value"
+                        return-object
+                        :label="$t('common.selectScales')"
+                        multiple
+                        density="compact"
+                        hide-details
+                        class="mt-2"
+                    >
+                        <template #selection></template>
+                    </v-select>
+                </v-card>
+            </v-menu>
             <v-menu location="bottom end" :close-on-content-click="false">
                 <template #activator="{ props }">
                     <v-btn
@@ -55,42 +106,6 @@
         </div>
         <div class="between-slot">
             <slot name="between"></slot>
-        </div>
-        <div class="controls-row mt-2">
-            <v-btn-toggle
-                    v-model="localPlayOrder"
-                    class="text-white play-order-toggle"
-                    dense
-                    active-class="primary"
-                    background-color="secondary"
-                    multiple
-                    mandatory
-            >
-                <v-btn value="increase">
-                    <span>{{ $t('common.up') }}</span>
-                </v-btn>
-                <v-btn value="decrease">
-                    <span>{{ $t('common.down') }}</span>
-                </v-btn>
-                <v-btn value="simultaneous">
-                    <span>=</span>
-                </v-btn>
-            </v-btn-toggle>
-            <v-select
-                    v-model="selectedScales"
-                    :items="scales"
-                    mandatory
-                    :item-title="scaleTitle"
-                    item-value="value"
-                    return-object
-                    :label="$t('common.selectScales')"
-                    multiple
-                    density="compact"
-                    hide-details
-                    class="scale-inline-select"
-            >
-                <template #selection></template>
-            </v-select>
         </div>
     </div>
 </template>
@@ -213,17 +228,19 @@ export default {
         align-items: center;
         margin-bottom: 4px;
     }
+    .menu-label {
+        color: rgba(0, 0, 0, 0.68);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.2;
+        margin: 4px 0 6px;
+    }
     .difficulty-toggle :deep(.v-btn) {
         text-transform: none !important;
         min-width: 52px;
     }
     .between-slot {
         margin-bottom: 10px;
-    }
-    .controls-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
     .play-order-toggle {
         width: 170px;
@@ -233,14 +250,6 @@ export default {
         flex: 1 1 0;
         min-width: 0 !important;
         text-align: center;
-    }
-    .scale-inline-select {
-        min-width: 136px;
-        max-width: 160px;
-        flex: 0 1 160px;
-    }
-    .scale-inline-select :deep(.v-field) {
-        min-height: 38px !important;
     }
     .v-btn{
         text-transform: none !important;

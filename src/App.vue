@@ -19,8 +19,10 @@
                     <v-icon>mdi-menu</v-icon>
                 </v-btn>
                 <v-toolbar-title class="app-title">
-                    <img src="/earjemp.png" alt="" class="app-title-icon">
-                    <span>earJEMP</span>
+                    <span class="app-title-content">
+                        <img src="/earjemp.png" alt="" class="app-title-icon">
+                        <span>earJEMP</span>
+                    </span>
                 </v-toolbar-title>
 
             </v-toolbar>
@@ -194,14 +196,20 @@
     }
     .app-title {
         position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
+        inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
         text-align: center;
         pointer-events: none;
+        margin-inline: 0 !important;
+        width: 100%;
+    }
+    .app-title-content {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
     }
     .app-title-icon {
         width: 24px;

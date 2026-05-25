@@ -1,7 +1,7 @@
 <template>
     <div class="mb-6 mt-6 container">
         <v-btn color="primary"  width="62.5%" height="52" class="mr-2 depth-btn" @click="$emit('playAgain')">
-            <v-icon>mdi-play</v-icon>
+            <span>{{ $t('common.start') }}</span>
         </v-btn>
         <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="$emit('playRandomInterval')">
             <span>{{ $t('common.next') }}</span>

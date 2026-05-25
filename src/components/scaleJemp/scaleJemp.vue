@@ -1,9 +1,8 @@
 <template>
-    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
-    <v-card class="mx-auto bg-blue-grey-lighten-5 pb-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
-        <div class="intro-copy">
-            {{ $t('intro.scales') }}
-        </div>
+    <exercise-card :disabled="lockInput">
+        <template #intro>
+            {{ $t('nav.scales') }}
+        </template>
         <scaleChoose
             v-model:autoplay="autoplay"
             v-model:offset-first="offsetFirst"
@@ -20,11 +19,11 @@
         </scaleChoose>
         <scalePlay @playAgain="playAgain" @playRandomScale="playRandom"></scalePlay>
         <guess-scale @guessResult="guessResult" :selection="getSelectedScales"></guess-scale>
-    </v-card>
-    </v-card>
+    </exercise-card>
 </template>
 
 <script>
+    import ExerciseCard from "@/components/common/ExerciseCard";
     import scaleChoose from "@/components/scaleJemp/scaleChoose";
     import scalePlay from "@/components/scaleJemp/scalePlay";
     import guessScale from "@/components/scaleJemp/guessScale";
@@ -37,7 +36,7 @@
 
     export default {
         name: "scaleJemp",
-        components: {guessScale, scaleChoose, scalePlay, StaffRenderer},
+        components: {ExerciseCard, guessScale, scaleChoose, scalePlay, StaffRenderer},
         data() {
             return {
                 lockInput: false,
@@ -205,17 +204,6 @@
 </script>
 
 <style scoped>
-    .exercise-card {
-        max-height: calc(90vh - 16px);
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    .intro-copy {
-        color: rgba(0, 0, 0, 0.68);
-        font-size: 0.86rem;
-        line-height: 1.25;
-        padding: 2px 4px 0;
-    }
     .staff-result-wrap {
         position: relative;
     }

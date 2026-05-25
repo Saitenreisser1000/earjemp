@@ -1,22 +1,37 @@
 <template>
-    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
-        <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled="lockInput" flat>
-            <div class="intro-copy">
-            {{ $t('intro.melody') }}
-            </div>
+    <exercise-card :disabled="lockInput">
+            <template #intro>
+                {{ $t('nav.melody') }}
+            </template>
             <div class="choose-header">
-                <v-btn-toggle
-                    v-model="difficulty"
-                    class="text-white difficulty-toggle"
-                    density="compact"
-                    active-class="primary"
-                    background-color="secondary"
-                    mandatory
-                >
-                    <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
-                    <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
-                    <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
-                </v-btn-toggle>
+                <v-menu location="bottom start" :close-on-content-click="false">
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            variant="text"
+                            size="small"
+                            color="primary"
+                            prepend-icon="mdi-tune-variant"
+                        >
+                            {{ $t('app.level') }}
+                        </v-btn>
+                    </template>
+                    <v-card min-width="220" class="pa-2">
+                        <div class="menu-label">{{ $t('common.difficulty') }}</div>
+                        <v-btn-toggle
+                            v-model="difficulty"
+                            class="text-white difficulty-toggle"
+                            density="compact"
+                            active-class="primary"
+                            background-color="secondary"
+                            mandatory
+                        >
+                            <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
+                            <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
+                            <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
+                        </v-btn-toggle>
+                    </v-card>
+                </v-menu>
                 <v-menu location="bottom end" :close-on-content-click="false">
                     <template #activator="{ props }">
                         <v-btn
@@ -145,7 +160,7 @@
 
             <div class="mb-2 mt-2 container">
                 <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
-                    <v-icon>mdi-play</v-icon>
+                    <span>{{ $t('common.start') }}</span>
                 </v-btn>
                 <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="checkAnswer">
                     <span>{{ $t('common.check') }}</span>
@@ -157,12 +172,12 @@
                 <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">{{ $t('common.clear') }}</v-btn>
                 <v-btn color="primary" size="small" @click="playRandomMelody">{{ $t('common.next') }}</v-btn>
             </div>
-        </v-card>
-    </v-card>
+    </exercise-card>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import ExerciseCard from "@/components/common/ExerciseCard";
 import toneCalcService from "@/components/mixins/toneCalcService";
 import playSounds from "@/components/mixins/playSounds";
 import responseMixin from "@/components/mixins/responseMixin";
@@ -172,7 +187,7 @@ import { matchesTonePool } from "@/domain/music/difficulty";
 
 export default {
     name: "melodyJemp",
-    components: { StaffRenderer },
+    components: { ExerciseCard, StaffRenderer },
     mixins: [toneCalcService, playSounds, responseMixin],
     data() {
         return {
@@ -708,16 +723,18 @@ export default {
 </script>
 
 <style scoped>
-.exercise-card {
-    max-height: calc(90vh - 16px);
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 .choose-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 4px;
+}
+.menu-label {
+    color: rgba(0, 0, 0, 0.68);
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.2;
+    margin: 4px 0 6px;
 }
 .difficulty-toggle :deep(.v-btn) {
     text-transform: none !important;
@@ -822,11 +839,5 @@ export default {
 .depth-btn {
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.28);
     filter: brightness(0.96);
-}
-.intro-copy {
-    color: rgba(0, 0, 0, 0.68);
-    font-size: 0.86rem;
-    line-height: 1.25;
-    padding: 2px 4px 0;
 }
 </style>

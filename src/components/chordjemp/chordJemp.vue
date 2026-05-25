@@ -1,9 +1,8 @@
 <template>
-        <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
-        <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled=lockInput flat>
-            <div class="intro-copy">
-                {{ $t('intro.chords') }}
-            </div>
+        <exercise-card :disabled="lockInput">
+            <template #intro>
+                {{ $t('nav.chords') }}
+            </template>
             <chordChoose
                 v-model:autoplay="autoplay"
                 v-model:difficulty="difficulty"
@@ -19,12 +18,12 @@
             </chordChoose>
             <chordPlay @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
             <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>
-        </v-card>
-    </v-card>
+        </exercise-card>
 </template>
 
 <script>
     import {mapGetters} from 'vuex';
+    import ExerciseCard from "@/components/common/ExerciseCard";
     import chordChoose from "@/components/chordjemp/chordChoose";
     import chordPlay from "@/components/chordjemp/chordPlay";
     import guessChord from "@/components/chordjemp/guessChord";
@@ -36,7 +35,7 @@
 
     export default {
         name: "chordjemp",
-        components: {chordChoose, chordPlay, guessChord, StaffRenderer},
+        components: {ExerciseCard, chordChoose, chordPlay, guessChord, StaffRenderer},
         data() {
             return {
                 lockInput: false,
@@ -242,17 +241,6 @@
 </script>
 
 <style scoped>
-    .exercise-card {
-        max-height: calc(90vh - 16px);
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    .intro-copy {
-        color: rgba(0, 0, 0, 0.68);
-        font-size: 0.86rem;
-        line-height: 1.25;
-        padding: 2px 4px 0;
-    }
     .staff-result-wrap {
         position: relative;
     }

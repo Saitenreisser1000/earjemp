@@ -1,11 +1,58 @@
 <template>
-    <v-card class="pa-2 mx-auto bg-blue-grey-lighten-5 exercise-card" max-width="350" elevation="10">
-        <v-card class="mx-auto bg-blue-grey-lighten-5 d-flex flex-column ga-2" max-width="350" min-height="550" :disabled="lockInput" flat>
-            <div class="intro-copy">
-                {{ $t('intro.inversions') }}
-            </div>
+    <exercise-card :disabled="lockInput">
+            <template #intro>
+                {{ $t('nav.inversions') }}
+            </template>
             <div class="choose-header">
-                <v-spacer></v-spacer>
+                <v-menu location="bottom start" :close-on-content-click="false">
+                    <template #activator="{ props }">
+                        <v-btn
+                            v-bind="props"
+                            variant="text"
+                            size="small"
+                            color="primary"
+                            prepend-icon="mdi-tune-variant"
+                        >
+                            {{ $t('app.level') }}
+                        </v-btn>
+                    </template>
+                    <v-card min-width="220" class="pa-2">
+                        <div class="menu-label">{{ $t('common.direction') }}</div>
+                        <v-btn-toggle
+                            v-model="playOrder"
+                            class="text-white play-order-toggle"
+                            dense
+                            active-class="primary"
+                            background-color="secondary"
+                            multiple
+                            mandatory
+                        >
+                            <v-btn value="increase">
+                                <span>{{ $t('common.up') }}</span>
+                            </v-btn>
+                            <v-btn value="decrease">
+                                <span>{{ $t('common.down') }}</span>
+                            </v-btn>
+                            <v-btn value="simultaneous">
+                                <span>=</span>
+                            </v-btn>
+                        </v-btn-toggle>
+                        <v-select
+                            v-model="selectedInversions"
+                            :items="inversions"
+                            :item-title="inversionTitle"
+                            item-value="value"
+                            return-object
+                            :label="$t('common.selectInversions')"
+                            multiple
+                            density="compact"
+                            hide-details
+                            class="mt-2"
+                        >
+                            <template #selection></template>
+                        </v-select>
+                    </v-card>
+                </v-menu>
                 <v-menu location="bottom end" :close-on-content-click="false">
                     <template #activator="{ props }">
                         <v-btn
@@ -52,41 +99,6 @@
                     <div v-if="successDetail" class="success-detail">{{ successDetail }}</div>
                 </div>
             </div>
-            <div class="controls-row">
-                <v-btn-toggle
-                    v-model="playOrder"
-                    class="text-white play-order-toggle"
-                    dense
-                    active-class="primary"
-                    background-color="secondary"
-                    multiple
-                    mandatory
-                >
-                    <v-btn value="increase">
-                        <span>{{ $t('common.up') }}</span>
-                    </v-btn>
-                    <v-btn value="decrease">
-                        <span>{{ $t('common.down') }}</span>
-                    </v-btn>
-                    <v-btn value="simultaneous">
-                        <span>=</span>
-                    </v-btn>
-                </v-btn-toggle>
-                <v-select
-                    v-model="selectedInversions"
-                    :items="inversions"
-                    :item-title="inversionTitle"
-                    item-value="value"
-                    return-object
-                    :label="$t('common.selectInversions')"
-                    multiple
-                    density="compact"
-                    hide-details
-                    class="inversion-inline-select"
-                >
-                    <template #selection></template>
-                </v-select>
-            </div>
             <chord-play @playAgain="playAgain" @playRandomChord="playRandom"></chord-play>
             <div>
                 <v-btn
@@ -100,12 +112,12 @@
                     {{ inversionTitle(item) }}
                 </v-btn>
             </div>
-        </v-card>
-    </v-card>
+    </exercise-card>
 </template>
 
 <script>
     import {mapGetters} from 'vuex';
+    import ExerciseCard from "@/components/common/ExerciseCard";
     import chordPlay from "@/components/chordjemp/chordPlay";
     import toneCalcService from "@/components/mixins/toneCalcService";
     import playSounds from "@/components/mixins/playSounds";
@@ -125,7 +137,7 @@
 
     export default {
         name: "inversionJemp",
-        components: {chordPlay, StaffRenderer},
+        components: {ExerciseCard, chordPlay, StaffRenderer},
         mixins: [toneCalcService, playSounds, responseMixin],
         data() {
             const inversions = cloneOptions();
@@ -311,31 +323,23 @@
 </script>
 
 <style scoped>
-    .exercise-card {
-        max-height: calc(90vh - 16px);
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-    .intro-copy {
-        color: rgba(0, 0, 0, 0.68);
-        font-size: 0.86rem;
-        line-height: 1.25;
-        padding: 2px 4px 0;
-    }
     .between-slot {
-        margin-bottom: 10px;
+        margin-bottom: 0;
     }
-    .choose-header,
-    .controls-row {
+    .choose-header {
         display: flex;
         align-items: center;
     }
     .choose-header {
-        justify-content: flex-end;
+        justify-content: space-between;
         margin-bottom: 4px;
     }
-    .controls-row {
-        gap: 8px;
+    .menu-label {
+        color: rgba(0, 0, 0, 0.68);
+        font-size: 0.78rem;
+        font-weight: 600;
+        line-height: 1.2;
+        margin: 4px 0 6px;
     }
     .play-order-toggle {
         width: 170px;
@@ -345,14 +349,6 @@
         flex: 1 1 0;
         min-width: 0 !important;
         text-align: center;
-    }
-    .inversion-inline-select {
-        min-width: 136px;
-        max-width: 160px;
-        flex: 0 1 160px;
-    }
-    .inversion-inline-select :deep(.v-field) {
-        min-height: 38px !important;
     }
     .btn {
         width: 30%;
