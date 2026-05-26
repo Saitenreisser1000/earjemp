@@ -123,6 +123,8 @@ export const messages = {
             augmented: 'augmented'
         },
         scales: {
+            major: 'major',
+            minor: 'minor',
             ionian: 'major/ionian',
             dorian: 'dorian',
             phrygian: 'phrygian',
@@ -131,7 +133,9 @@ export const messages = {
             aeolian: 'natural-minor',
             locrian: 'locrian',
             melodicMinor: 'melodic-minor',
-            harmonicMinor: 'harmonic-minor'
+            harmonicMinor: 'harmonic-minor',
+            pentatonicMajor: 'pentatonic major',
+            pentatonicMinor: 'pentatonic minor'
         }
     },
     de: {
@@ -249,6 +253,8 @@ export const messages = {
             augmented: 'Übermäßig'
         },
         scales: {
+            major: 'Dur',
+            minor: 'Moll',
             ionian: 'Ionisch/Dur',
             dorian: 'Dorisch',
             phrygian: 'Phrygisch',
@@ -257,7 +263,9 @@ export const messages = {
             aeolian: 'Aeolisch/Moll',
             locrian: 'Lokrisch',
             melodicMinor: 'Melodisch-Moll',
-            harmonicMinor: 'Harmonisch-Moll'
+            harmonicMinor: 'Harmonisch-Moll',
+            pentatonicMajor: 'Pentatonik Dur',
+            pentatonicMinor: 'Pentatonik Moll'
         }
     }
 }

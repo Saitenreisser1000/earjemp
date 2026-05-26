@@ -1,10 +1,11 @@
 <template>
     <div class="mb-6 mt-6 container">
-        <v-btn color="primary" class="mr-2 depth-btn" width="62.5%" height="52" @click="$emit('playAgain')">
-            <span>{{ $t('common.start') }}</span>
+        <v-btn color="success" class="mr-2 depth-btn" width="62.5%" height="52" @click="$emit('playAgain')">
+            <v-icon v-if="started" size="24">mdi-replay</v-icon>
+            <span v-else>{{ $t('common.start') }}</span>
         </v-btn>
-        <v-btn color="primary" class="button depth-btn" width="30%" height="52" @click="$emit('playRandomChord')">
-            <span>{{ $t('common.next') }}</span>
+        <v-btn color="error" class="button depth-btn" width="30%" height="52" :disabled="!started" @click="$emit('playRandomChord')">
+            <v-icon size="24">mdi-skip-next</v-icon>
         </v-btn>
         <br>
     </div>
@@ -13,6 +14,12 @@
 <script>
     export default {
         name: "chordPlay",
+        props: {
+            started: {
+                type: Boolean,
+                default: false
+            }
+        }
     }
 </script>
 

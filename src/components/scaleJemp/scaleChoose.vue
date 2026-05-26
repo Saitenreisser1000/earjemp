@@ -10,9 +10,11 @@
                         background-color="secondary"
                         mandatory
                     >
-                        <v-btn value="easy" size="small">{{ $t('common.easy') }}</v-btn>
-                        <v-btn value="advanced" size="small">{{ $t('common.advanced') }}</v-btn>
-                        <v-btn value="expert" size="small">{{ $t('common.expert') }}</v-btn>
+                        <v-btn value="scale1" size="small">1</v-btn>
+                        <v-btn value="scale2" size="small">2</v-btn>
+                        <v-btn value="scale3" size="small">3</v-btn>
+                        <v-btn value="scale4" size="small">4</v-btn>
+                        <v-btn value="scale5" size="small">5</v-btn>
                     </v-btn-toggle>
                     <div class="menu-label">{{ $t('common.direction') }}</div>
                     <v-btn-toggle
@@ -99,7 +101,7 @@ export default {
             },
             difficulty: {
                 type: String,
-                default: 'easy'
+                default: 'scale1'
             },
             playOrder: {
                 type: Array,
@@ -170,6 +172,12 @@ export default {
         methods: {
           ...mapActions(['setSelectedScales']),
           scaleTitle(item) {
+            if ((this.difficulty === 'scale1' || this.difficulty === 'scale2') && item && item.value === 1) {
+              return this.$t('scales.major')
+            }
+            if ((this.difficulty === 'scale1' || this.difficulty === 'scale2') && item && item.value === 6) {
+              return this.$t('scales.minor')
+            }
             return item && item.labelKey ? this.$t(item.labelKey) : item.text
           }
         },
@@ -202,7 +210,7 @@ export default {
     }
     .difficulty-toggle :deep(.v-btn) {
         text-transform: none !important;
-        min-width: 52px;
+        min-width: 36px;
     }
     .play-order-toggle {
         width: 170px;

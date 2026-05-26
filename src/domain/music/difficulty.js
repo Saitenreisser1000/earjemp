@@ -17,9 +17,14 @@ export function intervalPlayOrderForDifficulty(difficulty) {
 }
 
 export function scaleValuesForDifficulty(difficulty) {
-    if (difficulty === 'easy') return [1, 2, 3, 5, 6]
-    if (difficulty === 'advanced') return [1, 2, 3, 4, 5, 6, 7]
-    return [1, 2, 3, 4, 5, 6, 7, 9, 10]
+    if (difficulty === 'scale1') return [1, 6]
+    if (difficulty === 'scale2') return [1, 6, 9, 10]
+    if (difficulty === 'scale3') return [1, 2, 3, 5, 6, 11, 12]
+    if (difficulty === 'scale4') return [1, 2, 3, 4, 5, 6, 7, 11, 12]
+    if (difficulty === 'scale5') return [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
+    if (difficulty === 'easy') return [1, 2, 3, 5, 6, 11, 12]
+    if (difficulty === 'advanced') return [1, 2, 3, 4, 5, 6, 7, 11, 12]
+    return [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
 }
 
 export function chordValuesForDifficulty(difficulty) {
@@ -59,8 +64,8 @@ export function chordStartMinIndex(max, difficulty) {
 }
 
 export function scaleRootRange(difficulty) {
-    if (difficulty === 'easy') return {min: 10, max: 20}
-    if (difficulty === 'advanced') return {min: 7, max: 23}
+    if (difficulty === 'easy' || difficulty === 'scale1' || difficulty === 'scale3') return {min: 10, max: 20}
+    if (difficulty === 'advanced' || difficulty === 'scale2' || difficulty === 'scale4') return {min: 7, max: 23}
     return {min: 5, max: 25}
 }
 

@@ -1,10 +1,11 @@
 <template>
     <div class="mb-6 mt-6 container">
-        <v-btn color="primary" width="62.5%" height="52" class="mr-2 " @click="$emit('playAgain')">
-            <span>{{ $t('common.start') }}</span>
+        <v-btn color="success" width="62.5%" height="52" class="mr-2 " @click="$emit('playAgain')">
+            <v-icon v-if="started" size="24">mdi-replay</v-icon>
+            <span v-else>{{ $t('common.start') }}</span>
         </v-btn>
-        <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="$emit('playRandomScale')">
-            <span>{{ $t('common.next') }}</span>
+        <v-btn class="button depth-btn" color="error" width="30%" height="52" :disabled="!started" @click="$emit('playRandomScale')">
+            <v-icon size="24">mdi-skip-next</v-icon>
         </v-btn>
         <br>
     </div>
@@ -13,6 +14,12 @@
 <script>
     export default {
         name: "scalePlay",
+        props: {
+            started: {
+                type: Boolean,
+                default: false
+            }
+        }
     }
 </script>
 

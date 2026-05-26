@@ -18,7 +18,7 @@
                     </div>
             </template>
             <template #transport>
-                <chordPlay @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
+                <chordPlay :started="!!firstTone" @playAgain="playAgain" @playRandomChord="playRandom"></chordPlay>
             </template>
             <template #answers>
                 <guessChord @guessResult="guessResult" :selection="getSelectedChords"></guessChord>

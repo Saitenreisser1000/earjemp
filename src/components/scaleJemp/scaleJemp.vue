@@ -19,10 +19,10 @@
                 </div>
         </template>
         <template #transport>
-            <scalePlay @playAgain="playAgain" @playRandomScale="playRandom"></scalePlay>
+            <scalePlay :started="!!firstTone" @playAgain="playAgain" @playRandomScale="playRandom"></scalePlay>
         </template>
         <template #answers>
-            <guess-scale @guessResult="guessResult" :selection="getSelectedScales"></guess-scale>
+            <guess-scale @guessResult="guessResult" :selection="getSelectedScales" :difficulty="difficulty"></guess-scale>
         </template>
     </exercise-card>
 </template>
@@ -57,7 +57,7 @@
                 successDetail: '',
                 showFullScale: false,
                 autoplay: true,
-                difficulty: 'easy',
+                difficulty: 'scale1',
                 firstTone: '',
                 playOrder: ['increase'],
                 randomOrder: 'increase',
@@ -105,6 +105,12 @@
                 return tone && tone.name ? tone.name.replace(/\d$/, '') : ''
             },
             scaleTitle(item) {
+                if ((this.difficulty === 'scale1' || this.difficulty === 'scale2') && item && item.value === 1) {
+                    return this.$t('scales.major')
+                }
+                if ((this.difficulty === 'scale1' || this.difficulty === 'scale2') && item && item.value === 6) {
+                    return this.$t('scales.minor')
+                }
                 return item && item.labelKey ? this.$t(item.labelKey) : item.text
             },
 

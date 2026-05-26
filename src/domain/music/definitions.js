@@ -47,9 +47,11 @@ const SCALE_OPTIONS = [
     {text: 'locrian', labelKey: 'scales.locrian', value: 7 , scale: [1,2,2,1,2,2,2], maxRange: 7},
     {text: 'melodic-minor', labelKey: 'scales.melodicMinor', value: 9 , scale: [2,1,2,2,2,2,1], maxRange: 7},
     {text: 'harmonic-minor', labelKey: 'scales.harmonicMinor', value:10 , scale: [2,1,2,2,1,3,1], maxRange: 7},
+    {text: 'pentatonic major', labelKey: 'scales.pentatonicMajor', value:11 , scale: [2,2,3,2,3], maxRange: 7},
+    {text: 'pentatonic minor', labelKey: 'scales.pentatonicMinor', value:12 , scale: [3,2,2,3,2], maxRange: 7},
 ]
 
-const DEFAULT_SCALE_VALUES = [1, 2, 3, 4, 5, 6, 7, 9, 10]
+const DEFAULT_SCALE_VALUES = [1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12]
 
 export const MELODY_LENGTH_OPTIONS = [
     { label: '4 Notes', value: 4 },

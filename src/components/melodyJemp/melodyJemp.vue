@@ -162,8 +162,9 @@
             </template>
             <template #transport>
             <div class="mb-2 mt-2 container">
-                <v-btn color="primary" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
-                    <span>{{ $t('common.start') }}</span>
+                <v-btn color="success" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
+                    <v-icon v-if="targetMelody.length" size="24">mdi-replay</v-icon>
+                    <span v-else>{{ $t('common.start') }}</span>
                 </v-btn>
                 <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="checkAnswer">
                     <span>{{ $t('common.check') }}</span>
@@ -175,7 +176,9 @@
             <div class="mb-2">
                 <v-btn class="mr-2" variant="tonal" size="small" @click="undoInput">{{ $t('common.undo') }}</v-btn>
                 <v-btn class="mr-2" variant="tonal" size="small" @click="clearInput">{{ $t('common.clear') }}</v-btn>
-                <v-btn color="primary" size="small" @click="playRandomMelody">{{ $t('common.next') }}</v-btn>
+                <v-btn color="error" size="small" :disabled="!targetMelody.length" @click="playRandomMelody">
+                    <v-icon size="20">mdi-skip-next</v-icon>
+                </v-btn>
             </div>
             </template>
     </exercise-card>

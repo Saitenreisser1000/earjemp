@@ -24,7 +24,7 @@
                 ></staff-renderer>
         </template>
         <template #transport>
-            <interval-play @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
+            <interval-play :started="!!firstTone" @playAgain="playAgain" @playRandomInterval="playRandom"></interval-play>
         </template>
         <template #answers>
             <guessInterval @guessResult="guessResult"></guessInterval>

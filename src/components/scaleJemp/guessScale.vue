@@ -10,11 +10,23 @@
 
     export default {
         name: "guessScale",
+        props: {
+            difficulty: {
+                type: String,
+                default: 'scale1'
+            }
+        },
         computed:{
             ...mapGetters(['getSelectedScales'])
         },
         methods: {
             scaleTitle(item) {
+                if ((this.difficulty === 'scale1' || this.difficulty === 'scale2') && item && item.value === 1) {
+                    return this.$t('scales.major')
+                }
+                if ((this.difficulty === 'scale1' || this.difficulty === 'scale2') && item && item.value === 6) {
+                    return this.$t('scales.minor')
+                }
                 return item && item.labelKey ? this.$t(item.labelKey) : item.text
             }
         }

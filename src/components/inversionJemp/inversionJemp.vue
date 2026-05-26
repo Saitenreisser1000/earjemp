@@ -76,7 +76,7 @@
                 </div>
             </template>
             <template #transport>
-                <chord-play @playAgain="playAgain" @playRandomChord="playRandom"></chord-play>
+                <chord-play :started="!!firstTone" @playAgain="playAgain" @playRandomChord="playRandom"></chord-play>
             </template>
             <template #answers>
             <div>
