@@ -1,6 +1,49 @@
 import { createStore } from 'vuex'
 import { TONE_CHAIN } from '@/domain/music/toneChain'
 
+const STATS_STORAGE_KEY = 'earjemp-stats'
+const EXERCISE_KEYS = ['intervals', 'chords', 'inversions', 'scales', 'melody']
+
+function createEmptyStats() {
+    const byExercise = {}
+    for (const key of EXERCISE_KEYS) {
+        byExercise[key] = { total: 0, correct: 0 }
+    }
+    return { total: 0, correct: 0, byExercise }
+}
+
+function normalizeStats(stats) {
+    const normalized = createEmptyStats()
+    if (!stats || typeof stats !== 'object') return normalized
+
+    normalized.total = Number(stats.total) || 0
+    normalized.correct = Number(stats.correct) || 0
+
+    for (const key of EXERCISE_KEYS) {
+        const entry = stats.byExercise && stats.byExercise[key]
+        normalized.byExercise[key] = {
+            total: Number(entry && entry.total) || 0,
+            correct: Number(entry && entry.correct) || 0
+        }
+    }
+
+    return normalized
+}
+
+function loadStats() {
+    if (typeof localStorage === 'undefined') return createEmptyStats()
+    try {
+        return normalizeStats(JSON.parse(localStorage.getItem(STATS_STORAGE_KEY)))
+    } catch (e) {
+        return createEmptyStats()
+    }
+}
+
+function saveStats(stats) {
+    if (typeof localStorage === 'undefined') return
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats))
+}
+
 export const store = createStore({
     state: {
 
@@ -30,7 +73,8 @@ export const store = createStore({
 
         selectedIntervals: [],
         selectedChords: [],
-        selectedScales: []
+        selectedScales: [],
+        stats: loadStats()
 
     },
 
@@ -50,6 +94,27 @@ export const store = createStore({
 
         setSelectedScales(state, scales) {
             state.selectedScales = scales
+        },
+
+        recordExerciseResult(state, { exercise, correct }) {
+            if (!state.stats.byExercise[exercise]) {
+                state.stats.byExercise[exercise] = { total: 0, correct: 0 }
+            }
+
+            state.stats.total += 1
+            state.stats.byExercise[exercise].total += 1
+
+            if (correct) {
+                state.stats.correct += 1
+                state.stats.byExercise[exercise].correct += 1
+            }
+
+            saveStats(state.stats)
+        },
+
+        resetStats(state) {
+            state.stats = createEmptyStats()
+            saveStats(state.stats)
         }
     },
 
@@ -65,6 +130,12 @@ export const store = createStore({
         },
         setSelectedScales: ({commit}, payload) => {
             commit('setSelectedScales', payload)
+        },
+        recordExerciseResult: ({commit}, payload) => {
+            commit('recordExerciseResult', payload)
+        },
+        resetStats: ({commit}) => {
+            commit('resetStats')
         }
     },
 
@@ -80,6 +151,9 @@ export const store = createStore({
         },
         getSelectedScales: (state) => {
             return state.selectedScales
+        },
+        getStats: (state) => {
+            return state.stats
         },
 
     }

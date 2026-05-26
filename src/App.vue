@@ -24,6 +24,10 @@
                         <span>earJEMP</span>
                     </span>
                 </v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn icon variant="text" color="white" class="mr-n2" :aria-label="$t('app.statistics')" @click.stop="statsDrawer = !statsDrawer">
+                    <v-icon>mdi-chart-box-outline</v-icon>
+                </v-btn>
 
             </v-toolbar>
 
@@ -74,6 +78,77 @@
                 </v-list-item>
             </v-list>
         </v-navigation-drawer>
+        <v-navigation-drawer
+                v-model="statsDrawer"
+                color="primary"
+                theme="dark"
+                location="right"
+                absolute
+                temporary
+                width="300"
+        >
+            <div class="stats-drawer">
+                <div class="stats-header">
+                    <v-icon>mdi-chart-box-outline</v-icon>
+                    <span>{{ $t('stats.title') }}</span>
+                </div>
+
+                <div v-if="stats.total === 0" class="stats-empty">
+                    {{ $t('stats.noResults') }}
+                </div>
+
+                <template v-else>
+                    <div class="stats-summary">
+                        <v-progress-circular
+                                :model-value="overallAccuracy"
+                                size="104"
+                                width="9"
+                                color="white"
+                                bg-color="rgba(255,255,255,0.22)"
+                        >
+                            <span class="stats-percent">{{ overallAccuracy }}%</span>
+                        </v-progress-circular>
+                        <div class="stats-summary-text">
+                            <div>{{ $t('stats.correct') }}: {{ stats.correct }}/{{ stats.total }}</div>
+                            <div>{{ $t('stats.accuracy') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="stats-list">
+                        <div
+                                v-for="item in exerciseStats"
+                                :key="item.key"
+                                class="stats-row"
+                        >
+                            <div class="stats-row-top">
+                                <span>{{ item.label }}</span>
+                                <span>{{ item.accuracy }}%</span>
+                            </div>
+                            <v-progress-linear
+                                    :model-value="item.accuracy"
+                                    height="7"
+                                    rounded
+                                    color="white"
+                                    bg-color="rgba(255,255,255,0.22)"
+                            ></v-progress-linear>
+                            <div class="stats-row-bottom">
+                                {{ item.correct }}/{{ item.total }} {{ $t('stats.attempts') }}
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <v-btn
+                        variant="outlined"
+                        color="white"
+                        block
+                        class="mt-4"
+                        @click="resetStats"
+                >
+                    {{ $t('stats.reset') }}
+                </v-btn>
+            </div>
+        </v-navigation-drawer>
         <v-overlay :model-value="soundLoading" :opacity="0.82" class="align-center justify-center">
             <v-sheet rounded="lg" elevation="8" class="pa-4" min-width="280">
                 <div class="text-subtitle-2 mb-2">{{ $t('app.soundLoad') }}</div>
@@ -108,11 +183,37 @@
         data: () => ({
             locales: LOCALES,
             drawer: false,
+            statsDrawer: false,
             soundLoading: false,
             soundStatus: '',
             orientationLocked: false
         }),
         computed: {
+            stats() {
+                return this.$store.getters.getStats
+            },
+            overallAccuracy() {
+                return this.accuracyFor(this.stats)
+            },
+            exerciseStats() {
+                const exercises = [
+                    { key: 'intervals', label: this.$t('nav.intervals') },
+                    { key: 'chords', label: this.$t('nav.chords') },
+                    { key: 'inversions', label: this.$t('nav.inversions') },
+                    { key: 'scales', label: this.$t('nav.scales') },
+                    { key: 'melody', label: this.$t('nav.melody') }
+                ]
+
+                return exercises.map((exercise) => {
+                    const entry = this.stats.byExercise[exercise.key] || { total: 0, correct: 0 }
+                    return {
+                        ...exercise,
+                        total: entry.total,
+                        correct: entry.correct,
+                        accuracy: this.accuracyFor(entry)
+                    }
+                })
+            },
             items() {
                 return [
                     {path: '/', title: this.$t('nav.intervals'), icon: 'mdi-view-dashboard'},
@@ -158,6 +259,13 @@
             },
             setSoundStatus(status){
                 this.soundStatus = status
+            },
+            accuracyFor(entry) {
+                if (!entry || !entry.total) return 0
+                return Math.round((entry.correct / entry.total) * 100)
+            },
+            resetStats() {
+                this.$store.dispatch('resetStats')
             },
             updateViewportHeight() {
                 if (typeof window === 'undefined') return
@@ -257,6 +365,68 @@
         object-fit: contain;
         filter: brightness(0) invert(1);
         transform: translateY(2px);
+    }
+    .stats-drawer {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 16px;
+    }
+    .stats-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 18px;
+    }
+    .stats-empty {
+        color: rgba(255, 255, 255, 0.78);
+        font-size: 0.92rem;
+        line-height: 1.35;
+        margin-top: 8px;
+    }
+    .stats-summary {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .stats-percent {
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+    .stats-summary-text {
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.85rem;
+        line-height: 1.45;
+    }
+    .stats-list {
+        display: flex;
+        flex-direction: column;
+        gap: 13px;
+    }
+    .stats-row {
+        color: white;
+    }
+    .stats-row-top,
+    .stats-row-bottom {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .stats-row-top {
+        font-size: 0.88rem;
+        font-weight: 700;
+        line-height: 1.2;
+        margin-bottom: 5px;
+    }
+    .stats-row-bottom {
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 0.74rem;
+        line-height: 1.2;
+        margin-top: 4px;
     }
     .language-toggle .v-btn {
         text-transform: none !important;

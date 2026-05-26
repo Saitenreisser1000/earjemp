@@ -1,20 +1,20 @@
 const deepClone = (value) => JSON.parse(JSON.stringify(value))
 
 const INTERVAL_OPTIONS = [
-    {text: 'b2', value: 1 , lineDist:1},
-    {text: '2',  value: 2 , lineDist:1},
-    {text: 'b3', value: 3 , lineDist:2},
-    {text: '3',  value: 4 , lineDist:2},
-    {text: '4',  value: 5 , lineDist:3},
-    {text: '#4', value: 6 , lineDist:3},
-    {text: '5',  value: 7 , lineDist:4},
-    {text: 'b6', value: 8 , lineDist:5},
-    {text: '6',  value: 9 , lineDist:5},
-    {text: 'b7', value: 10, lineDist:6},
-    {text: '7',  value: 11, lineDist:6},
-    {text: '8',  value: 12, lineDist:7},
-    {text: 'b9', value: 13, lineDist:8},
-    {text: '9',  value: 14, lineDist:8}
+    {text: 'b2', labelKey: 'intervals.flat2', value: 1 , lineDist:1},
+    {text: '2',  labelKey: 'intervals.major2', value: 2 , lineDist:1},
+    {text: 'b3', labelKey: 'intervals.flat3', value: 3 , lineDist:2},
+    {text: '3',  labelKey: 'intervals.major3', value: 4 , lineDist:2},
+    {text: '4',  labelKey: 'intervals.perfect4', value: 5 , lineDist:3},
+    {text: '#4', labelKey: 'intervals.tritone', value: 6 , lineDist:3},
+    {text: '5',  labelKey: 'intervals.perfect5', value: 7 , lineDist:4},
+    {text: 'b6', labelKey: 'intervals.flat6', value: 8 , lineDist:5},
+    {text: '6',  labelKey: 'intervals.major6', value: 9 , lineDist:5},
+    {text: 'b7', labelKey: 'intervals.flat7', value: 10, lineDist:6},
+    {text: '7',  labelKey: 'intervals.major7', value: 11, lineDist:6},
+    {text: '8',  labelKey: 'intervals.octave', value: 12, lineDist:7},
+    {text: 'b9', labelKey: 'intervals.flat9', value: 13, lineDist:8},
+    {text: '9',  labelKey: 'intervals.major9', value: 14, lineDist:8}
 ]
 
 const DEFAULT_INTERVAL_VALUES = [2, 3, 4, 5, 7, 9, 11, 12]

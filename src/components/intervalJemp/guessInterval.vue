@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn :key="index" @click="$emit('guessResult', item.text)" class="mb-2 mr-2 btn depth-btn" color="primary" v-for="(item, index) in orderedList" size="x-large">{{item.text}}
+        <v-btn :key="index" @click="$emit('guessResult', item.text)" class="mb-2 mr-2 btn depth-btn" color="primary" v-for="(item, index) in orderedList" size="x-large">{{ intervalTitle(item) }}
         </v-btn>
     </div>
 </template>
@@ -18,6 +18,11 @@
                 return _.orderBy(this.getSelectedIntervals, 'value')
             }
         },
+        methods: {
+            intervalTitle(item) {
+                return item && item.labelKey ? this.$t(item.labelKey) : item.text
+            }
+        }
     }
 </script>
 

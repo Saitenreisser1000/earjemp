@@ -191,7 +191,10 @@
 
             guessResult(guess) {
                 this.successDetail = ''
-                if (guess == this.result) {
+                const correct = guess == this.result
+                this.recordExerciseResult('scales', correct)
+
+                if (correct) {
                     this.resColor = 'green';
                     this.showFullScale = true;
                     this.successDetail = `${this.toneLabel(this.scale[0])} ${this.scaleTitle(this.randomScale)}`;

@@ -711,6 +711,7 @@ export default {
             const equal = sameLength && entered.every((n, i) => n === target[i])
             this.showCheckOverlay = true
             this.resColor = equal ? 'green' : 'indianred'
+            this.recordExerciseResult('melody', equal)
             if (equal && this.autoplay) {
                 this.setExactTimeout(() => {
                     this.playRandomMelody()

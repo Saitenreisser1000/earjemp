@@ -274,7 +274,10 @@
                 this.clearResultTimer()
                 this.hasAnswered = true
                 this.successDetail = ''
-                if (guess === this.result) {
+                const correct = guess === this.result
+                this.recordExerciseResult('inversions', correct)
+
+                if (correct) {
                     this.resColor = 'green'
                     this.successDetail = this.inversionDetail()
                     if (this.autoplay) {

@@ -246,7 +246,10 @@
                     this.guessedSecondTone = null;
                 }
 
-                if (guess == this.result) {
+                const correct = guess == this.result
+                this.recordExerciseResult('intervals', correct)
+
+                if (correct) {
                     this.resColor = 'green'
                     if (this.autoplay) {
                         this.setExactTimeout(() => {

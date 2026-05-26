@@ -20,7 +20,8 @@ export const messages = {
             soundPreparing: 'preparing sounds...',
             soundReady: 'sounds ready',
             soundSlow: 'sound load slow, retrying...',
-            soundFailed: 'sound load failed, tap play to retry'
+            soundFailed: 'sound load failed, tap play to retry',
+            statistics: 'Statistics'
         },
         nav: {
             intervals: 'Intervals',
@@ -55,6 +56,15 @@ export const messages = {
             selectInversions: 'Select Inversions',
             selectScales: 'Select Scales'
         },
+        stats: {
+            title: 'Statistics',
+            total: 'Total',
+            correct: 'Correct',
+            accuracy: 'Accuracy',
+            noResults: 'No results yet',
+            reset: 'reset',
+            attempts: 'attempts'
+        },
         intro: {
             intervals: 'Train your musical ear by listening to intervals and choosing what you hear.',
             chords: 'Train your musical ear by listening to chords and choosing their quality.',
@@ -81,6 +91,22 @@ export const messages = {
             chooseInversion: 'choose at least one inversion',
             chooseScale: 'choose at least one scale',
             chooseChord: 'choose at least one chord'
+        },
+        intervals: {
+            flat2: 'b2',
+            major2: '2',
+            flat3: 'b3',
+            major3: '3',
+            perfect4: '4',
+            tritone: '#4',
+            perfect5: '5',
+            flat6: 'b6',
+            major6: '6',
+            flat7: 'b7',
+            major7: '7',
+            octave: '8',
+            flat9: 'b9',
+            major9: '9'
         },
         inversions: {
             majorRoot: 'major root',
@@ -120,7 +146,8 @@ export const messages = {
             soundPreparing: 'Sounds werden vorbereitet...',
             soundReady: 'Sounds bereit',
             soundSlow: 'Sound-Laden langsam, erneuter Versuch...',
-            soundFailed: 'Sounds konnten nicht geladen werden, tippe auf Play'
+            soundFailed: 'Sounds konnten nicht geladen werden, tippe auf Play',
+            statistics: 'Statistik'
         },
         nav: {
             intervals: 'Intervalle',
@@ -155,6 +182,15 @@ export const messages = {
             selectInversions: 'Umkehrungen wählen',
             selectScales: 'Tonleitern wählen'
         },
+        stats: {
+            title: 'Statistik',
+            total: 'Gesamt',
+            correct: 'Richtig',
+            accuracy: 'Quote',
+            noResults: 'Noch keine Ergebnisse',
+            reset: 'zurücksetzen',
+            attempts: 'Versuche'
+        },
         intro: {
             intervals: 'Trainiere dein musikalisches Gehör, indem du Intervalle hörst und erkennst.',
             chords: 'Trainiere dein musikalisches Gehör, indem du Akkorde hörst und ihre Qualität erkennst.',
@@ -181,6 +217,22 @@ export const messages = {
             chooseInversion: 'wähle mindestens eine Umkehrung',
             chooseScale: 'wähle mindestens eine Tonleiter',
             chooseChord: 'wähle mindestens einen Akkord'
+        },
+        intervals: {
+            flat2: 'kl.2',
+            major2: 'gr.2',
+            flat3: 'kl.3',
+            major3: 'gr.3',
+            perfect4: '4',
+            tritone: 'Trit.',
+            perfect5: '5',
+            flat6: 'kl.6',
+            major6: 'gr.6',
+            flat7: 'kl.7',
+            major7: 'gr.7',
+            octave: '8',
+            flat9: 'kl.9',
+            major9: 'gr.9'
         },
         inversions: {
             majorRoot: 'Dur Grundstellung',

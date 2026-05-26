@@ -39,7 +39,7 @@
                         v-model="selectInt"
                         :items="intervals"
                         mandatory
-                        item-title="text"
+                        :item-title="intervalTitle"
                         item-value="value"
                         return-object
                         :label="$t('common.selectIntervals')"
@@ -141,6 +141,9 @@ export default {
 
         methods: {
             ...mapActions(['setSelectedIntervals']),
+            intervalTitle(item) {
+                return item && item.labelKey ? this.$t(item.labelKey) : item.text
+            }
         },
 
         watch: {

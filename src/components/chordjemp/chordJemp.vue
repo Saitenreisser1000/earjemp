@@ -216,7 +216,10 @@
                 this.clearResultTimer()
                 this.hasAnswered = true
                 this.successDetail = ''
-                if (guess == this.result) {
+                const correct = guess == this.result
+                this.recordExerciseResult('chords', correct)
+
+                if (correct) {
                     this.resColor = 'green'
                     this.successDetail = this.chordSymbol(this.randomChord, this.firstTone)
                     if (this.autoplay) {

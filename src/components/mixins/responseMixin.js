@@ -11,5 +11,12 @@ export default {
         setResult(res) {
             this.result = res
         },
+
+        recordExerciseResult(exercise, correct) {
+            this.$store.dispatch('recordExerciseResult', {
+                exercise,
+                correct: Boolean(correct)
+            })
+        },
     }
 }
