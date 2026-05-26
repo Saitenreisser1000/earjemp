@@ -201,7 +201,6 @@ export default {
         },
 
         playLoadedAudio(tone, retry = true) {
-            this.sounds.volume(1)
             const playId = this.sounds.play(tone)
 
             if (playId === null || typeof playId === 'undefined') {
