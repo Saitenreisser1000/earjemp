@@ -161,12 +161,12 @@
             </div>
             </template>
             <template #transport>
-            <div class="mb-2 mt-2 container">
-                <v-btn color="success" width="62.5%" height="52" class="mr-2 depth-btn" @click="playAgain">
+            <div class="mb-2 mt-2 transport-grid">
+                <v-btn color="success" height="52" class="depth-btn" @click="playAgain">
                     <v-icon v-if="targetMelody.length" size="24">mdi-replay</v-icon>
                     <span v-else>{{ $t('common.start') }}</span>
                 </v-btn>
-                <v-btn class="button depth-btn" color="primary" width="30%" height="52" @click="checkAnswer">
+                <v-btn class="button depth-btn" color="primary" height="52" @click="checkAnswer">
                     <span>{{ $t('common.check') }}</span>
                 </v-btn>
             </div>
@@ -840,11 +840,11 @@ export default {
 .container{
     padding: 0;
 }
-.btn{
-    width: 30%;
-    height: 50px;
-    font-size: 10px;
-    text-transform: none !important;
+.transport-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 8px;
+    padding: 0;
 }
 .depth-btn {
     box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.28);

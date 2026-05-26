@@ -79,12 +79,12 @@
                 <chord-play :started="!!firstTone" @playAgain="playAgain" @playRandomChord="playRandom"></chord-play>
             </template>
             <template #answers>
-            <div>
+            <div class="answer-grid">
                 <v-btn
                     v-for="item in selectedInversions"
                     :key="item.value"
                     @click="guessResult(item.text)"
-                    class="mb-2 mr-2 btn depth-btn"
+                    class="btn depth-btn"
                     color="primary"
                     size="x-large"
                 >
@@ -324,10 +324,14 @@
         text-align: center;
     }
     .btn {
-        width: 30%;
         height: 50px;
         font-size: 10px;
         text-transform: none !important;
+    }
+    .answer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
     }
     .staff-result-wrap {
         position: relative;

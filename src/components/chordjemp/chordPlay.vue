@@ -1,13 +1,12 @@
 <template>
-    <div class="mb-6 mt-6 container">
-        <v-btn color="success" class="mr-2 depth-btn" width="62.5%" height="52" @click="$emit('playAgain')">
+    <div class="mb-6 mt-6 transport-grid">
+        <v-btn color="success" class="depth-btn" height="52" @click="$emit('playAgain')">
             <v-icon v-if="started" size="24">mdi-replay</v-icon>
             <span v-else>{{ $t('common.start') }}</span>
         </v-btn>
-        <v-btn color="error" class="button depth-btn" width="30%" height="52" :disabled="!started" @click="$emit('playRandomChord')">
+        <v-btn color="error" class="button depth-btn" height="52" :disabled="!started" @click="$emit('playRandomChord')">
             <v-icon size="24">mdi-skip-next</v-icon>
         </v-btn>
-        <br>
     </div>
 </template>
 
@@ -24,7 +23,10 @@
 </script>
 
 <style scoped>
-    .container{
+    .transport-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 8px;
         padding:0;
     }
     .depth-btn {

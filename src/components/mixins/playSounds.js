@@ -2,6 +2,8 @@ import {Howl, Howler} from 'howler'
 import howlMp3 from '@/assets/sounds/newAudio.mp3'
 import soundSprite from '@/assets/sounds/newAudio.json'
 
+Howler.autoSuspend = false
+
 let sharedSounds = null
 let sharedSoundLoadPromise = null
 let sharedSoundLoadTimeoutId = null
@@ -27,6 +29,10 @@ function getSharedSounds() {
 }
 
 function resumeHowlerAudioContext() {
+    if (typeof Howler._autoResume === 'function') {
+        Howler._autoResume()
+    }
+
     const ctx = Howler.ctx
     if (!ctx || ctx.state === 'running' || typeof ctx.resume !== 'function') {
         return Promise.resolve()
@@ -66,6 +72,7 @@ export default {
                 if (!document.hidden) wakeAudio()
             }, { passive: true })
             window.addEventListener('pointerdown', wakeAudio, { passive: true })
+            window.addEventListener('touchstart', wakeAudio, { passive: true })
             window.addEventListener('touchend', wakeAudio, { passive: true })
             window.addEventListener('keydown', wakeAudio, { passive: true })
         },
@@ -181,6 +188,7 @@ export default {
         },
 
         playAudio(tone) {
+            this.ensureAudioContextRunning()
             this.ensureSoundsLoaded()
                 .then(() => this.ensureAudioContextRunning())
                 .then(() => this.playLoadedAudio(tone))
@@ -193,6 +201,7 @@ export default {
         },
 
         playLoadedAudio(tone, retry = true) {
+            this.sounds.volume(1)
             const playId = this.sounds.play(tone)
 
             if (playId === null || typeof playId === 'undefined') {
@@ -211,6 +220,7 @@ export default {
                     .catch(() => {})
             })
 
+            this.sounds.volume(1, playId)
             this.sounds.fade(1, 0, 1200, playId)
 
             if (this.playSecond) {
