@@ -28,6 +28,7 @@ export const messages = {
             chords: 'Chords',
             inversions: 'Inversions',
             scales: 'Scales',
+            intonation: 'Intonation',
             melody: 'Melody (beta)',
             about: 'About',
             legal: 'Imprint'
@@ -70,6 +71,7 @@ export const messages = {
             chords: 'Train your musical ear by listening to chords and choosing their quality.',
             inversions: 'Train your musical ear by listening to major and minor triad inversions.',
             scales: 'Train your musical ear by listening to scales and choosing the scale type.',
+            intonation: 'Train your musical ear by choosing which interval is tuned correctly.',
             melody: 'Train your musical ear by listening to short melodies and entering the notes you hear.'
         },
         about: {
@@ -136,6 +138,22 @@ export const messages = {
             harmonicMinor: 'harmonic-minor',
             pentatonicMajor: 'pentatonic major',
             pentatonicMinor: 'pentatonic minor'
+        },
+        intonation: {
+            tuning: 'Tuning',
+            interval: 'Interval',
+            equal: 'Equal temperament',
+            just: 'Just intonation',
+            chooseCorrect: 'Choose the correct tuning',
+            currentInterval: 'Played interval',
+            random: 'random',
+            variant: 'Variant',
+            minorThird: 'minor 3rd',
+            majorThird: 'major 3rd',
+            fourth: 'perfect 4th',
+            fifth: 'perfect 5th',
+            minorSixth: 'minor 6th',
+            majorSixth: 'major 6th'
         }
     },
     de: {
@@ -158,6 +176,7 @@ export const messages = {
             chords: 'Akkorde',
             inversions: 'Umkehrungen',
             scales: 'Tonleitern',
+            intonation: 'Intonation',
             melody: 'Melodie (Beta)',
             about: 'Über',
             legal: 'Impressum'
@@ -200,6 +219,7 @@ export const messages = {
             chords: 'Trainiere dein musikalisches Gehör, indem du Akkorde hörst und ihre Qualität erkennst.',
             inversions: 'Trainiere dein musikalisches Gehör mit Dur- und Moll-Dreiklängen in ihren Umkehrungen.',
             scales: 'Trainiere dein musikalisches Gehör, indem du Tonleitern hörst und ihren Typ erkennst.',
+            intonation: 'Trainiere dein musikalisches Gehör, indem du die korrekt gestimmte Variante auswählst.',
             melody: 'Trainiere dein musikalisches Gehör, indem du kurze Melodien hörst und die Töne eingibst.'
         },
         about: {
@@ -266,6 +286,22 @@ export const messages = {
             harmonicMinor: 'Harmonisch-Moll',
             pentatonicMajor: 'Pentatonik Dur',
             pentatonicMinor: 'Pentatonik Moll'
+        },
+        intonation: {
+            tuning: 'Stimmung',
+            interval: 'Intervall',
+            equal: 'Gleichstufig',
+            just: 'Rein',
+            chooseCorrect: 'Wähle die richtige Stimmung',
+            currentInterval: 'Gespieltes Intervall',
+            random: 'random',
+            variant: 'Variante',
+            minorThird: 'kleine Terz',
+            majorThird: 'große Terz',
+            fourth: 'reine Quart',
+            fifth: 'reine Quint',
+            minorSixth: 'kleine Sext',
+            majorSixth: 'große Sext'
         }
     }
 }

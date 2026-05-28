@@ -2,7 +2,7 @@ import { createStore } from 'vuex'
 import { TONE_CHAIN } from '@/domain/music/toneChain'
 
 const STATS_STORAGE_KEY = 'earjemp-stats'
-const EXERCISE_KEYS = ['intervals', 'chords', 'inversions', 'scales', 'melody']
+const EXERCISE_KEYS = ['intervals', 'chords', 'inversions', 'scales', 'intonation', 'melody']
 
 function createEmptyStats() {
     const byExercise = {}

@@ -187,27 +187,27 @@ export default {
             sharedRejectSoundLoad = null
         },
 
-        playAudio(tone) {
+        playAudio(tone, options = {}) {
             this.ensureAudioContextRunning()
             this.ensureSoundsLoaded()
                 .then(() => this.ensureAudioContextRunning())
-                .then(() => this.playLoadedAudio(tone))
+                .then(() => this.playLoadedAudio(tone, true, options))
                 .catch(() => {
                     this.recreateSounds()
                         .then(() => this.ensureAudioContextRunning())
-                        .then(() => this.playLoadedAudio(tone))
+                        .then(() => this.playLoadedAudio(tone, true, options))
                         .catch(() => {})
                 })
         },
 
-        playLoadedAudio(tone, retry = true) {
+        playLoadedAudio(tone, retry = true, options = {}) {
             const playId = this.sounds.play(tone)
 
             if (playId === null || typeof playId === 'undefined') {
                 if (!retry) return
                 this.recreateSounds()
                     .then(() => this.ensureAudioContextRunning())
-                    .then(() => this.playLoadedAudio(tone, false))
+                    .then(() => this.playLoadedAudio(tone, false, options))
                     .catch(() => {})
                 return
             }
@@ -215,12 +215,15 @@ export default {
             this.sounds.once('playerror', (id) => {
                 if (id !== playId || !retry) return
                 this.ensureAudioContextRunning()
-                    .then(() => this.playLoadedAudio(tone, false))
+                    .then(() => this.playLoadedAudio(tone, false, options))
                     .catch(() => {})
             })
 
+            if (options.rate) {
+                this.sounds.rate(options.rate, playId)
+            }
             this.sounds.volume(1, playId)
-            this.sounds.fade(1, 0, 1200, playId)
+            this.sounds.fade(1, 0, options.fadeMs || 1200, playId)
 
             if (this.playSecond) {
                 this.playSecond()

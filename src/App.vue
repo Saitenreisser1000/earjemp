@@ -201,6 +201,7 @@
                     { key: 'chords', label: this.$t('nav.chords') },
                     { key: 'inversions', label: this.$t('nav.inversions') },
                     { key: 'scales', label: this.$t('nav.scales') },
+                    { key: 'intonation', label: this.$t('nav.intonation') },
                     { key: 'melody', label: this.$t('nav.melody') }
                 ]
 
@@ -220,6 +221,7 @@
                     {path: '/chordJemp', title: this.$t('nav.chords'), icon: 'mdi-format-align-right'},
                     {path: '/inversions', title: this.$t('nav.inversions'), icon: 'mdi-format-rotate-90'},
                     {path: '/scaleJemp', title: this.$t('nav.scales'), icon: 'mdi-chart-line'},
+                    {path: '/intonationJemp', title: this.$t('nav.intonation'), icon: 'mdi-tune-vertical'},
                     {path: '/melodyJemp', title: this.$t('nav.melody'), icon: 'mdi-music-note', disabled: true},
                     {path: '/about', title: this.$t('nav.about'), icon: 'mdi-information-outline'},
                     {path: '/impressum', title: this.$t('nav.legal'), icon: 'mdi-file-document-outline'}
