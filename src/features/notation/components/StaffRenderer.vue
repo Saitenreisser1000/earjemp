@@ -92,6 +92,18 @@ export default {
       type: Array,
       default: () => []
     },
+    chordGroups: {
+      type: Array,
+      default: () => []
+    },
+    chordGroupLabels: {
+      type: Array,
+      default: () => []
+    },
+    chordGroupStates: {
+      type: Array,
+      default: () => []
+    },
     mismatchIndices: {
       type: Array,
       default: () => []
@@ -172,6 +184,24 @@ export default {
       this.renderStaff()
     },
     comparisonNotes: {
+      deep: true,
+      handler() {
+        this.renderStaff()
+      }
+    },
+    chordGroups: {
+      deep: true,
+      handler() {
+        this.renderStaff()
+      }
+    },
+    chordGroupLabels: {
+      deep: true,
+      handler() {
+        this.renderStaff()
+      }
+    },
+    chordGroupStates: {
       deep: true,
       handler() {
         this.renderStaff()
@@ -342,6 +372,33 @@ export default {
       }
       ctx.restore()
     },
+    drawChordGroupLabels(vf, noteObjects) {
+      if (!vf || !Array.isArray(noteObjects) || !noteObjects.length) return
+      if (!Array.isArray(this.chordGroupLabels) || !this.chordGroupLabels.length) return
+      const ctx = vf.getContext()
+      if (!ctx) return
+
+      ctx.save()
+      ctx.setFont('700 12px Arial, sans-serif')
+      for (let i = 0; i < Math.min(noteObjects.length, this.chordGroupLabels.length); i++) {
+        const label = this.chordGroupLabels[i]
+        if (!label) continue
+        const note = noteObjects[i]
+        const x = this.noteLabelX(note)
+        if (!Number.isFinite(x)) continue
+        const state = this.chordGroupStates[i]
+        const color = state === 'success'
+          ? 'rgba(46,125,50,0.98)'
+          : state === 'high'
+            ? 'rgba(198,40,40,0.98)'
+            : state === 'low'
+              ? 'rgba(2,119,189,0.98)'
+              : 'rgba(0,0,0,0.78)'
+        ctx.setFillStyle(color)
+        this.drawCenteredText(ctx, label, x, 122)
+      }
+      ctx.restore()
+    },
     parseNote(noteName) {
       const match = /^([A-Ga-g])([#bxs]{1,2}|bb|##)?(\d)$/.exec(noteName || '')
       if (!match) return null
@@ -386,8 +443,11 @@ export default {
       const comp = this.octaveCompensation(layout.clefOctave)
       let maxLedger = 0
       let sumLedger = 0
+      const layoutNotes = this.mode === 'chord-sequence'
+        ? this.chordGroups.flat()
+        : this.notes
 
-      for (const name of this.notes) {
+      for (const name of layoutNotes) {
         const parsed = this.parseNote(name)
         if (!parsed) continue
         const shownOctave = Math.max(0, Math.min(8, parsed.octave + this.octaveOffset + comp))
@@ -569,8 +629,10 @@ export default {
       this.renderedSlotXs = []
 
       const baseWidth = Math.max(300, root.parentElement?.clientWidth || root.clientWidth || 320)
+      const chordGroupCount = this.mode === 'chord-sequence' ? this.chordGroups.length : 0
       const noteCountForWidth = Math.max(
         this.notes.length,
+        chordGroupCount,
         this.comparisonNotes.length,
         this.insertCount
       )
@@ -585,16 +647,38 @@ export default {
 
       const parsed = this.notes.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset))
       const parsedComparison = this.comparisonNotes.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset))
+      const parsedChordGroups = this.chordGroups.map((group) => (
+        Array.isArray(group)
+          ? group.map((n) => this.toVexflowToken(n, this.renderedOctaveOffset)).filter(Boolean)
+          : []
+      )).filter((group) => group.length)
       const parsedPreview = this.mode === 'melody'
         ? this.toVexflowToken(this.previewNote, this.renderedOctaveOffset)
         : null
 
-      if (!parsed.length && !parsedPreview && !parsedComparison.length) {
+      if (!parsed.length && !parsedPreview && !parsedComparison.length && !parsedChordGroups.length) {
         const stave = system.addStave({ voices: [] })
         if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
         else stave.addClef(this.renderedClef)
         vf.draw()
         if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
+        return
+      }
+
+      if (this.mode === 'chord-sequence' && parsedChordGroups.length) {
+        const spec = parsedChordGroups.map((group) => `(${group.join(' ')})/q`).join(', ')
+        const beats = parsedChordGroups.length
+        const notes = score.notes(spec, { clef: this.renderedClef })
+        const voice = score.voice(notes, { time: `${beats}/4` })
+        voice.setStrict(false)
+        const stave = system.addStave({ voices: [voice] })
+        if (this.renderedClefOctave) stave.addClef(this.renderedClef, undefined, this.renderedClefOctave)
+        else stave.addClef(this.renderedClef)
+        vf.draw()
+        this.drawChordGroupLabels(vf, notes)
+        this.updateRenderedSlotXs(notes)
+        if (scrollContainer) scrollContainer.scrollLeft = prevScrollLeft
+        this.$nextTick(() => this.updatePersistentScrollbar())
         return
       }
 

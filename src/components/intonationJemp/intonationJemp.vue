@@ -16,14 +16,33 @@
                         background-color="secondary"
                         mandatory
                     >
-                        <v-btn :value="25" size="small">1</v-btn>
-                        <v-btn :value="15" size="small">2</v-btn>
-                        <v-btn :value="10" size="small">3</v-btn>
-                        <v-btn :value="5" size="small">4</v-btn>
+                        <v-btn :value="25" size="small">1 (25¢)</v-btn>
+                        <v-btn :value="15" size="small">2 (15¢)</v-btn>
+                        <v-btn :value="10" size="small">3 (10¢)</v-btn>
+                        <v-btn :value="5" size="small">4 (5¢)</v-btn>
                     </v-btn-toggle>
+
+                    <div class="menu-label mt-3">{{ $t('intonation.interval') }}</div>
+                    <div class="interval-checkbox-grid">
+                        <v-checkbox
+                            v-for="interval in playableIntervals()"
+                            :key="interval.value"
+                            v-model="selectedIntervalValues"
+                            :label="intervalTitle(interval)"
+                            :value="interval.value"
+                            density="compact"
+                            hide-details
+                        />
+                    </div>
                 </template>
                 <template #options>
                     <div class="menu-label">{{ $t('intonation.tuning') }}</div>
+                    <v-checkbox
+                        v-model="autoplay"
+                        :label="$t('common.autoplay')"
+                        density="compact"
+                        hide-details
+                    />
                     <v-btn-toggle
                         v-model="tuning"
                         class="text-white choice-toggle mb-2"
@@ -35,17 +54,6 @@
                         <v-btn value="equal" size="small">{{ $t('intonation.equal') }}</v-btn>
                         <v-btn value="just" size="small">{{ $t('intonation.just') }}</v-btn>
                     </v-btn-toggle>
-
-                    <div class="menu-label">{{ $t('intonation.interval') }}</div>
-                    <v-select
-                        v-model="selectedInterval"
-                        :items="intervals"
-                        :item-title="intervalTitle"
-                        item-value="value"
-                        return-object
-                        density="compact"
-                        hide-details
-                    />
 
                     <div class="menu-label">{{ $t('common.direction') }}</div>
                     <v-btn-toggle
@@ -74,6 +82,9 @@
                     :mode="notationMode"
                     :octave-offset="notationOctaveOffset"
                     :feedback-state="notationFeedbackState"
+                    :chord-groups="notationChordGroups"
+                    :chord-group-labels="notationVariantLabels"
+                    :chord-group-states="notationVariantStates"
                 ></staff-renderer>
                 <div v-if="showActiveInterval" class="active-interval">
                     {{ $t('intonation.currentInterval') }}: {{ intervalTitle(activeInterval) }}
@@ -81,30 +92,36 @@
                 <div v-if="answered" class="result-text">
                     {{ resultText }}
                 </div>
-            </div>
-        </template>
-
-        <template #transport>
-            <div class="intonation-transport">
-                <div class="transport-grid">
-                    <v-btn color="success" height="52" class="depth-btn" @click="playAgain">
-                        <v-icon v-if="started" size="24">mdi-replay</v-icon>
-                        <span v-else>{{ $t('common.start') }}</span>
-                    </v-btn>
-                    <v-btn color="error" height="52" class="depth-btn" :disabled="!started" @click="playRandom">
-                        <v-icon size="24">mdi-skip-next</v-icon>
-                    </v-btn>
-                </div>
-                <div class="variant-row">
+                <div v-if="showVariantReplayButtons" class="notation-play-row">
                     <v-btn
                         v-for="variant in variants"
-                        :key="variant.index"
-                        class="variant-play depth-btn"
+                        :key="`staff-play-${variant.index}`"
+                        class="notation-play-btn depth-btn"
                         color="primary"
+                        icon
                         :disabled="!started || lockInput"
                         @click="playVariant(variant)"
                     >
-                        {{ variant.index }}
+                        <v-icon size="22">mdi-play</v-icon>
+                    </v-btn>
+                    <div
+                        v-for="variant in variants"
+                        :key="`staff-play-label-${variant.index}`"
+                        class="notation-play-label"
+                    >
+                        #{{ variant.index }}
+                    </div>
+                </div>
+                <div v-else class="notation-action-row">
+                    <v-btn
+                        color="success"
+                        height="44"
+                        class="notation-action-btn depth-btn"
+                        :disabled="lockInput"
+                        @click="playAgain"
+                    >
+                        <v-icon size="22">mdi-play</v-icon>
+                        <span>Play</span>
                     </v-btn>
                 </div>
             </div>
@@ -123,6 +140,17 @@
                     {{ variant.index }}
                 </v-btn>
             </div>
+            <v-btn
+                v-if="showVariantReplayButtons"
+                color="error"
+                height="44"
+                class="answer-next-btn depth-btn"
+                :disabled="lockInput"
+                @click="playRandom"
+            >
+                <v-icon size="22">mdi-skip-next</v-icon>
+                <span>{{ $t('common.next') }}</span>
+            </v-btn>
         </template>
     </exercise-card>
 </template>
@@ -153,6 +181,7 @@
         { value: 'b9', labelKey: 'intervals.flat9', semitones: 13, justCents: 1311.73 },
         { value: '9', labelKey: 'intervals.major9', semitones: 14, justCents: 1403.91 }
     ]
+    const DEFAULT_INTERVAL_VALUES = ['b3', '3', '4', '5']
 
     export default {
         name: "intonationJemp",
@@ -164,16 +193,19 @@
                 tuning: 'equal',
                 centSpread: 15,
                 intervals: INTONATION_INTERVALS,
-                selectedInterval: INTONATION_INTERVALS[0],
+                selectedIntervalValues: DEFAULT_INTERVAL_VALUES,
                 activeInterval: null,
+                autoplay: true,
                 playOrder: 'simultaneous',
                 rootTone: null,
                 targetTone: null,
                 variants: [],
+                playedVariantIndices: [],
                 correctVariant: null,
                 started: false,
                 answered: false,
-                resColor: '#9DA0A9'
+                resColor: '#9DA0A9',
+                resultDisplayMs: 1500
             }
         },
         computed: {
@@ -185,12 +217,46 @@
                     : `${this.$t('stats.correct')}: ${this.correctVariant}`
             },
             showActiveInterval() {
-                return this.started && this.selectedInterval && this.selectedInterval.random && this.activeInterval
+                return this.started && this.selectedIntervals.length !== 1 && this.activeInterval
+            },
+            selectedIntervals() {
+                const selected = this.playableIntervals()
+                    .filter((interval) => this.selectedIntervalValues.includes(interval.value))
+                return selected.length ? selected : this.playableIntervals()
             },
             notationNotes() {
                 if (!this.rootTone || !this.targetTone) return []
                 if (this.playOrder === 'decrease') return [this.targetTone.name, this.rootTone.name]
                 return [this.rootTone.name, this.targetTone.name]
+            },
+            notationChordGroups() {
+                if (!this.notationNotes.length || !this.visibleNotationVariants.length) return []
+                return this.visibleNotationVariants.map(() => this.notationNotes)
+            },
+            notationVariantLabels() {
+                if (!this.visibleNotationVariants.length) return []
+                if (!this.answered) {
+                    return this.visibleNotationVariants.map((variant) => String(variant.index))
+                }
+                return this.visibleNotationVariants.map((variant) => {
+                    if (variant.offset === 0) return '✓'
+                    return variant.offset > 0 ? '↑' : '↓'
+                })
+            },
+            notationVariantStates() {
+                if (!this.visibleNotationVariants.length) return []
+                if (!this.answered) return this.visibleNotationVariants.map(() => 'neutral')
+                return this.visibleNotationVariants.map((variant) => {
+                    if (variant.offset === 0) return 'success'
+                    return variant.offset > 0 ? 'high' : 'low'
+                })
+            },
+            visibleNotationVariants() {
+                const played = new Set(this.playedVariantIndices)
+                return this.variants.filter((variant) => played.has(variant.index))
+            },
+            showVariantReplayButtons() {
+                return this.variants.length > 0 && this.visibleNotationVariants.length === this.variants.length
             },
             notationOctaveOffset() {
                 return 1
@@ -213,7 +279,7 @@
                 return Math.max(...this.notationAdjustedOctaves) >= 6 ? '8va' : ''
             },
             notationMode() {
-                return this.playOrder === 'simultaneous' ? 'chord' : 'melody'
+                return 'chord-sequence'
             },
             notationFeedbackState() {
                 if (this.resColor === 'green') return 'success'
@@ -229,8 +295,7 @@
                 return this.intervals.filter((interval) => !interval.random)
             },
             resolveActiveInterval() {
-                if (!this.selectedInterval || !this.selectedInterval.random) return this.selectedInterval
-                const intervals = this.playableIntervals()
+                const intervals = this.selectedIntervals
                 return intervals[this.randomRangeInt({min: 0, max: intervals.length})]
             },
             targetCents(interval = this.activeInterval) {
@@ -274,6 +339,7 @@
             playRandom() {
                 this.answered = false
                 this.resColor = '#9DA0A9'
+                this.playedVariantIndices = []
                 this.activeInterval = this.resolveActiveInterval()
                 this.rootTone = this.randomRootTone()
                 this.targetTone = this.toneBySemitoneDistance(this.rootTone, this.activeInterval.semitones)
@@ -300,6 +366,7 @@
             },
             playVariant(variant) {
                 if (!this.rootTone || !this.targetTone || !variant) return
+                this.markVariantPlayed(variant.index)
                 const rootOptions = {fadeMs: 900}
                 const targetOptions = {
                     rate: this.rateForCents(variant.centsFromEqual),
@@ -321,25 +388,41 @@
                 this.playAudio(this.rootTone.tone, rootOptions)
                 this.playAudio(this.targetTone.tone, targetOptions)
             },
+            markVariantPlayed(index) {
+                if (this.playedVariantIndices.includes(index)) return
+                this.playedVariantIndices = [...this.playedVariantIndices, index]
+            },
             guessResult(index) {
                 if (!this.started || this.answered) return
                 const correct = index === this.correctVariant
                 this.answered = true
                 this.resColor = correct ? 'green' : 'indianred'
                 this.recordExerciseResult('intonation', correct)
+                if (correct && this.autoplay) {
+                    this.setExactTimeout(() => {
+                        this.playRandom()
+                    }, this.resultDisplayMs, 20)
+                }
             }
         },
         watch: {
             tuning() {
                 this.started = false
                 this.answered = false
+                this.variants = []
+                this.playedVariantIndices = []
                 this.resColor = '#9DA0A9'
             },
-            selectedInterval() {
-                this.started = false
-                this.answered = false
-                this.activeInterval = null
-                this.resColor = '#9DA0A9'
+            selectedIntervalValues: {
+                deep: true,
+                handler() {
+                    this.started = false
+                    this.answered = false
+                    this.activeInterval = null
+                    this.variants = []
+                    this.playedVariantIndices = []
+                    this.resColor = '#9DA0A9'
+                }
             }
         }
     }
@@ -365,8 +448,19 @@
         min-width: 0 !important;
         text-transform: none !important;
     }
+    .interval-checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 8px;
+        max-height: 230px;
+        overflow-y: auto;
+    }
+    .interval-checkbox-grid :deep(.v-label) {
+        font-size: 0.82rem;
+    }
     .staff-result-wrap {
         position: relative;
+        padding-bottom: 64px;
     }
     .intonation-staff {
         width: 100%;
@@ -383,31 +477,26 @@
         text-align: center;
         top: 4px;
     }
-    .variant-row,
-    .answer-grid,
-    .transport-grid {
+    .answer-grid {
         display: grid;
         gap: 8px;
         width: 100%;
     }
-    .variant-row,
     .answer-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-    .transport-grid {
-        grid-template-columns: 2fr 1fr;
-    }
-    .intonation-transport {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin: 24px 0;
-        width: 100%;
-    }
-    .variant-play,
     .answer-btn {
         height: 44px;
         min-width: 0 !important;
+    }
+    .answer-next-btn {
+        margin-top: 18px;
+        min-width: 0 !important;
+        text-transform: none !important;
+        width: 100%;
+    }
+    .answer-next-btn :deep(.v-btn__content) {
+        gap: 6px;
     }
     .result-text {
         color: rgba(0, 0, 0, 0.72);
@@ -419,7 +508,47 @@
         position: absolute;
         right: 0;
         text-align: center;
-        bottom: 10px;
+        bottom: 48px;
+    }
+    .notation-play-row {
+        align-items: center;
+        bottom: 0;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        left: 0;
+        position: absolute;
+        right: 0;
+    }
+    .notation-play-label {
+        color: rgba(0, 0, 0, 0.68);
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+    }
+    .notation-action-row {
+        align-items: center;
+        bottom: 0;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: 1fr;
+        left: 0;
+        position: absolute;
+        right: 0;
+    }
+    .notation-play-btn {
+        height: 40px !important;
+        justify-self: center;
+        min-width: 40px !important;
+        width: 40px;
+    }
+    .notation-action-btn {
+        min-width: 0 !important;
+        text-transform: none !important;
+    }
+    .notation-action-btn :deep(.v-btn__content) {
+        gap: 6px;
     }
     .depth-btn {
         box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.22), 0 1px 0 rgba(255, 255, 255, 0.28);
