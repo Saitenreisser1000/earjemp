@@ -5,9 +5,10 @@
                 <v-btn
                     v-bind="props"
                     variant="text"
-                    size="small"
+                    size="large"
                     color="primary"
                     prepend-icon="mdi-tune-variant"
+                    class="toolbar-btn"
                 >
                     {{ $t('app.level') }}
                 </v-btn>
@@ -22,9 +23,10 @@
                 <v-btn
                     v-bind="props"
                     variant="text"
-                    size="small"
+                    size="large"
                     color="primary"
                     prepend-icon="mdi-cog"
+                    class="toolbar-btn"
                 >
                     {{ $t('common.options') }}
                 </v-btn>
@@ -47,6 +49,12 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 36px;
+        min-height: 48px;
+    }
+    .toolbar-btn {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: none;
     }
 </style>

@@ -379,7 +379,6 @@ export default {
       if (!ctx) return
 
       ctx.save()
-      ctx.setFont('700 12px Arial, sans-serif')
       for (let i = 0; i < Math.min(noteObjects.length, this.chordGroupLabels.length); i++) {
         const label = this.chordGroupLabels[i]
         if (!label) continue
@@ -395,6 +394,10 @@ export default {
               ? 'rgba(2,119,189,0.98)'
               : 'rgba(0,0,0,0.78)'
         ctx.setFillStyle(color)
+        ctx.setFont(state === 'success' || state === 'high' || state === 'low'
+          ? '800 20px Arial, sans-serif'
+          : '700 12px Arial, sans-serif'
+        )
         this.drawCenteredText(ctx, label, x, 122)
       }
       ctx.restore()
@@ -636,8 +639,12 @@ export default {
         this.comparisonNotes.length,
         this.insertCount
       )
+      const chordSequenceWidth = chordGroupCount > 0 ? 120 + (chordGroupCount * 90) : baseWidth
       const extendedWidth = noteCountForWidth > 6 ? 100 + (noteCountForWidth * 52) : baseWidth
-      const width = Math.max(baseWidth, extendedWidth)
+      const preferredWidth = this.mode === 'chord-sequence'
+        ? Math.max(extendedWidth, chordSequenceWidth)
+        : extendedWidth
+      const width = Math.max(baseWidth, preferredWidth)
       this.renderWidth = width
       const vf = new Factory({
         renderer: { elementId: root, width, height: 145 }
