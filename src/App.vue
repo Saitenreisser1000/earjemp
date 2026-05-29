@@ -217,7 +217,8 @@
             },
             items() {
                 return [
-                    {path: '/', title: this.$t('nav.intervals'), icon: 'mdi-view-dashboard'},
+                    {path: '/', title: this.$t('nav.home'), icon: 'mdi-home-outline'},
+                    {path: '/intervallJemp', title: this.$t('nav.intervals'), icon: 'mdi-view-dashboard'},
                     {path: '/chordJemp', title: this.$t('nav.chords'), icon: 'mdi-format-align-right'},
                     {path: '/inversions', title: this.$t('nav.inversions'), icon: 'mdi-format-rotate-90'},
                     {path: '/scaleJemp', title: this.$t('nav.scales'), icon: 'mdi-chart-line'},

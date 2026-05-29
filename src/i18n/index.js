@@ -24,6 +24,7 @@ export const messages = {
             statistics: 'Statistics'
         },
         nav: {
+            home: 'Home',
             intervals: 'Intervals',
             chords: 'Chords',
             inversions: 'Inversions',
@@ -73,6 +74,13 @@ export const messages = {
             scales: 'Train your musical ear by listening to scales and choosing the scale type.',
             intonation: 'Train your musical ear by choosing which interval is tuned correctly.',
             melody: 'Train your musical ear by listening to short melodies and entering the notes you hear.'
+        },
+        landing: {
+            kicker: 'Ear training for musicians',
+            copy: 'Practice intervals, chords, scales, and intonation in short focused sessions.',
+            start: 'Start training',
+            trainTitle: 'Choose an exercise',
+            trainCopy: 'Jump straight into the listening task you want to sharpen today.'
         },
         about: {
             title: 'about',
@@ -175,6 +183,7 @@ export const messages = {
             statistics: 'Statistik'
         },
         nav: {
+            home: 'Home',
             intervals: 'Intervalle',
             chords: 'Akkorde',
             inversions: 'Umkehrungen',
@@ -224,6 +233,13 @@ export const messages = {
             scales: 'Trainiere dein musikalisches Gehör, indem du Tonleitern hörst und ihren Typ erkennst.',
             intonation: 'Trainiere dein musikalisches Gehör, indem du die korrekt gestimmte Variante auswählst.',
             melody: 'Trainiere dein musikalisches Gehör, indem du kurze Melodien hörst und die Töne eingibst.'
+        },
+        landing: {
+            kicker: 'Gehörtraining für Musiker:innen',
+            copy: 'Übe Intervalle, Akkorde, Tonleitern und Intonation in kurzen fokussierten Einheiten.',
+            start: 'Training starten',
+            trainTitle: 'Übung wählen',
+            trainCopy: 'Spring direkt zu der Hörübung, die du heute schärfen möchtest.'
         },
         about: {
             title: 'über',

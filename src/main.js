@@ -3,6 +3,7 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 import { store } from './store/store'
 import '@mdi/font/css/materialdesignicons.css'
+import LandingPage from "@/components/landing/LandingPage";
 import intervalJemp from "@/components/intervalJemp/intervalJemp";
 import chordJemp from "@/components/chordjemp/chordJemp";
 import inversionJemp from "@/components/inversionJemp/inversionJemp";
@@ -18,7 +19,8 @@ import { warmupSounds } from '@/components/mixins/playSounds'
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: '/', component: intervalJemp},
+    { path: '/', component: LandingPage},
+    { path: '/intervallJemp', component: intervalJemp},
     { path: '/chordJemp', component: chordJemp},
     { path: '/inversions', component: inversionJemp},
     { path: '/scaleJemp', component: scaleJemp},
