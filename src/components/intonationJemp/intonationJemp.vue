@@ -55,6 +55,25 @@
                         <v-btn value="just" size="small">{{ $t('intonation.just') }}</v-btn>
                     </v-btn-toggle>
 
+                    <div class="menu-label">{{ $t('intonation.sound') }}</div>
+                    <v-btn-toggle
+                        v-model="soundMode"
+                        class="text-white sound-toggle mb-2"
+                        density="compact"
+                        active-class="primary"
+                        background-color="secondary"
+                        mandatory
+                    >
+                        <v-btn
+                            v-for="sound in soundModes"
+                            :key="sound.value"
+                            :value="sound.value"
+                            size="small"
+                        >
+                            {{ $t(sound.labelKey) }}
+                        </v-btn>
+                    </v-btn-toggle>
+
                     <div class="menu-label">{{ $t('common.direction') }}</div>
                     <v-btn-toggle
                         v-model="playOrder"
@@ -163,6 +182,7 @@
     import toneCalcService from "@/components/mixins/toneCalcService";
     import responseMixin from "@/components/mixins/responseMixin";
     import StaffRenderer from "@/features/notation/components/StaffRenderer";
+    import { playIntonationSample, preloadIntonationInstrument } from "@/domain/audio/intonationSamplePlayer";
 
     const INTONATION_INTERVALS = [
         { value: 'random', labelKey: 'intonation.random', random: true },
@@ -182,6 +202,12 @@
         { value: '9', labelKey: 'intervals.major9', semitones: 14, justCents: 1403.91 }
     ]
     const DEFAULT_INTERVAL_VALUES = ['b3', '3', '4', '5']
+    const INTONATION_SOUND_MODES = [
+        { value: 'piano', labelKey: 'intonation.soundPiano' },
+        { value: 'brass', labelKey: 'intonation.soundBrass' },
+        { value: 'woodwinds', labelKey: 'intonation.soundWoodwinds' },
+        { value: 'strings', labelKey: 'intonation.soundStrings' }
+    ]
 
     export default {
         name: "intonationJemp",
@@ -196,6 +222,8 @@
                 selectedIntervalValues: DEFAULT_INTERVAL_VALUES,
                 activeInterval: null,
                 autoplay: true,
+                soundModes: INTONATION_SOUND_MODES,
+                soundMode: 'piano',
                 playOrder: 'simultaneous',
                 rootTone: null,
                 targetTone: null,
@@ -374,19 +402,31 @@
                 }
 
                 if (this.playOrder === 'increase') {
-                    this.playAudio(this.rootTone.tone, rootOptions)
-                    this.setExactTimeout(() => this.playAudio(this.targetTone.tone, targetOptions), 520, 20)
+                    this.playIntonationTone(this.rootTone.tone, rootOptions)
+                    this.setExactTimeout(() => this.playIntonationTone(this.targetTone.tone, targetOptions), 520, 20)
                     return
                 }
 
                 if (this.playOrder === 'decrease') {
-                    this.playAudio(this.targetTone.tone, targetOptions)
-                    this.setExactTimeout(() => this.playAudio(this.rootTone.tone, rootOptions), 520, 20)
+                    this.playIntonationTone(this.targetTone.tone, targetOptions)
+                    this.setExactTimeout(() => this.playIntonationTone(this.rootTone.tone, rootOptions), 520, 20)
                     return
                 }
 
-                this.playAudio(this.rootTone.tone, rootOptions)
-                this.playAudio(this.targetTone.tone, targetOptions)
+                this.playIntonationTone(this.rootTone.tone, rootOptions)
+                this.playIntonationTone(this.targetTone.tone, targetOptions)
+            },
+            playIntonationTone(tone, options = {}) {
+                if (this.soundMode === 'piano') {
+                    this.playAudio(tone, options)
+                    return
+                }
+                this.ensureAudioContextRunning()
+                preloadIntonationInstrument(this.soundMode)
+                    .then(() => playIntonationSample(this.soundMode, tone, options))
+                    .catch(() => {
+                        this.playAudio(tone, options)
+                    })
             },
             markVariantPlayed(index) {
                 if (this.playedVariantIndices.includes(index)) return
@@ -406,6 +446,11 @@
             }
         },
         watch: {
+            soundMode() {
+                if (this.soundMode === 'piano') return
+                this.ensureAudioContextRunning()
+                preloadIntonationInstrument(this.soundMode).catch(() => {})
+            },
             tuning() {
                 this.started = false
                 this.answered = false
@@ -438,15 +483,33 @@
     }
     .choice-toggle,
     .spread-toggle,
-    .direction-toggle {
+    .direction-toggle,
+    .sound-toggle {
         width: 100%;
     }
     .choice-toggle :deep(.v-btn),
     .spread-toggle :deep(.v-btn),
-    .direction-toggle :deep(.v-btn) {
+    .direction-toggle :deep(.v-btn),
+    .sound-toggle :deep(.v-btn) {
         flex: 1 1 0;
         min-width: 0 !important;
         text-transform: none !important;
+    }
+    .sound-toggle {
+        flex-wrap: wrap;
+        height: auto !important;
+        gap: 8px;
+    }
+    .sound-toggle :deep(.v-btn) {
+        flex-basis: 50%;
+        min-height: 52px !important;
+        padding: 0 12px !important;
+    }
+    .sound-toggle :deep(.v-btn__content) {
+        font-size: 0.92rem;
+        font-weight: 700;
+        line-height: 1.15;
+        white-space: normal;
     }
     .interval-checkbox-grid {
         display: grid;

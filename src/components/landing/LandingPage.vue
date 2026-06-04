@@ -9,13 +9,9 @@
                 <h1>earJEMP</h1>
                 <p>{{ $t('landing.copy') }}</p>
                 <div class="hero-actions">
-                    <v-btn color="primary" size="large" class="depth-btn" to="/intervallJemp">
+                    <v-btn color="primary" size="large" class="depth-btn" :to="startTrainingPath">
                         <v-icon size="22">mdi-play</v-icon>
                         <span>{{ $t('landing.start') }}</span>
-                    </v-btn>
-                    <v-btn color="primary" variant="tonal" size="large" class="depth-btn" to="/intonationJemp">
-                        <v-icon size="22">mdi-tune-vertical</v-icon>
-                        <span>{{ $t('nav.intonation') }}</span>
                     </v-btn>
                 </div>
             </div>
@@ -42,9 +38,14 @@
 </template>
 
 <script>
+    import { DEFAULT_TRAINING_ROUTE, loadLastTrainingRoute } from '@/domain/navigation/lastTrainingRoute'
+
     export default {
         name: 'LandingPage',
         computed: {
+            startTrainingPath() {
+                return loadLastTrainingRoute() || DEFAULT_TRAINING_ROUTE
+            },
             exerciseLinks() {
                 return [
                     { path: '/intervallJemp', title: this.$t('nav.intervals'), icon: 'mdi-view-dashboard' },

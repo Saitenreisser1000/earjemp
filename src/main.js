@@ -15,6 +15,7 @@ import legal from "@/components/legal/legal";
 import { createRouter, createWebHashHistory } from 'vue-router'
 import { installI18n } from '@/i18n'
 import { warmupSounds } from '@/components/mixins/playSounds'
+import { saveLastTrainingRoute } from '@/domain/navigation/lastTrainingRoute'
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -30,6 +31,10 @@ const router = createRouter({
     { path: '/impressum', component: legal}
   ]
 });
+
+router.afterEach((to) => {
+  saveLastTrainingRoute(to.path)
+})
 
 const app = createApp(App)
 installI18n(app)

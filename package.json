@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "prepare:vpo-intonation": "node scripts/prepare-vpo-intonation.mjs",
     "test:unit": "vitest",
     "lint": "eslint src --ext .js,.vue"
   },
